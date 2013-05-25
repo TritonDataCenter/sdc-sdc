@@ -1,0 +1,66 @@
+---
+title: SDC tools/ops zone
+markdown2extras: wiki-tables, code-friendly
+apisections:
+---
+
+# SDC tools/ops zone
+
+This repository holds the code for the 'sdc' core SmartDataCenter zone.
+This document will briefly introduce those tools and also give a general
+overview of the various APIs and systems in SDC.
+
+
+# Tools
+
+As a rule all (most) tools are prefixed with 'sdc-' to avoid name conflicts,
+make the scope obvious, and to facilitate discovery in the shell via
+`sdc-<TAB>`.
+
+There are a number of APIs in SDC and most of them have tools to facilitate
+using them from the command line. Typically those are in two categories:
+(a) A raw tool that just wraps calling the API and does minimal massaging of
+the response. For the HTTP APIs, these raw tools are typically a light wrapper
+around `curl`. Examples: sdc-imgapi, sdc-vmapi. (b) A higher-level and
+friendlier CLI tool, often with 'adm' in the name (following the smartos
+administrator tool naming tradition).
+
+||**API**||**Raw API Tool**||**Friendlier "adm" tool**||jh
+||Amon Master API (amon)||sdc-amon||--||
+||Amon Relay API (a small debugging-only API)||sdc-amonrelay||--||
+||Compute Node API (CNAPI)||sdc-cnapi||--, sdc-server||
+||Designation API (DAPI)||sdc-dapi||--||
+||Firewall API (FWAPI)||sdc-fwapi||--||
+||Image API (IMGAPI)||sdc-imgapi||sdc-imgadm||
+||Network API (NAPI)||sdc-napi||--||
+||Virtual Machine API (VMAPI)||sdc-vmapi||--||
+||Workflow API||sdc-workflow||--||
+||UFDS||sdc-ldap||--||
+||Service API (SAPI)||sdc-sapi||sapiadm (*)||
+||x||x||x||
+
+In addition there are a number of other tools not directly associated with
+an API in the DC:
+
+||**Description**||**Tool**||
+||Joyent Images (images.joyent.com)||joyent-imgadm||
+||SDC Updates (updates.joyent.com)||updates-imgadm||
+
+
+TODO: document appropriate of:
+
+    sdc-amon                 sdc-imgapi               sdc-rollback
+    sdc-amonrelay            sdc-lastcomm             sdc-sapi
+    sdc-backup               sdc-ldap                 sdc-sbcreate
+    sdc-cnapi                sdc-login                sdc-sbupload
+    sdc-create-2nd-manatee   sdc-manatee-clear-error  sdc-server
+    sdc-create-binder        sdc-manatee-history      sdc-setconsole
+    sdc-dapi                 sdc-manatee-stat         sdc-upgrade
+    sdc-dcapi                sdc-napi                 sdc-vm
+    sdc-dsapi                sdc-network              sdc-vmapi
+    sdc-factoryreset         sdc-oneachnode           sdc-vmmanifest
+    sdc-fwapi                sdc-phonehome            sdc-vmname
+    sdc-healthcheck          sdc-post-upgrade         sdc-workflow
+    sdc-heartbeatsnoop       sdc-rabbitstat           sdc-zfs-io-throttle.d
+    sdc-image-sync           sdc-restore
+    sdc-imgadm               sdc-role

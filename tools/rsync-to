@@ -1,0 +1,37 @@
+#!/bin/bash
+#
+# Rsync the build in this working copy to the 'sdc' zone on the
+# given HN.
+#
+
+#set -o xtrace
+set -o errexit
+
+TOP=$(cd $(dirname $0)/../; pwd)
+NODE=$1
+
+if [[ -z "$SDC_ZONE" ]]; then
+    SDC_ZONE=$(ssh $NODE "/opt/smartdc/bin/sdc-vmapi /vms" 2>/dev/null \
+        | json -H -c 'this.tags && this.tags.smartdc_role === "sdc"' \
+            -c 'this.state === "running"' 0.uuid)
+fi
+echo "SDC_ZONE: $SDC_ZONE"
+
+extraOpts=
+if [[ $(uname -s) != "SunOS" ]]; then
+    extraOpts="--exclude *.node --exclude build"
+else
+    # Clean node_modules everytime.
+    ssh $NODE rm -rf /zones/$SDC_ZONE/root/opt/smartdc/sdc/node_modules
+fi
+
+rsync -av ${TOP}/ \
+    $NODE:/zones/$SDC_ZONE/root/opt/smartdc/sdc/ \
+    $extraOpts \
+    --include "test/*.zfs.bz2" \
+    --exclude "*.zfs.bz2" \
+    --exclude .git/ \
+    --exclude /deps/ \
+    --exclude /doc/ \
+    --exclude /tools/ \
+    --exclude /tmp/

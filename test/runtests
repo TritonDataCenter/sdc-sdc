@@ -1,0 +1,111 @@
+#!/bin/bash
+#
+# Copyright (c) 2013, Joyent, Inc. All rights reserved.
+#
+# Run the sdc tools tests. This is expected to be run in the 'sdc' zone
+# in a full SDC setup.
+#
+# Run `./runtests -h` for usage info.
+#
+
+if [ "$TRACE" != "" ]; then
+    export PS4='${BASH_SOURCE}:${LINENO}: ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
+    set -o xtrace
+fi
+set -o errexit
+set -o pipefail
+
+
+
+#---- guard
+
+if [[ ! -f "/lib/sdc/.sdc-test-no-production-data" ]]; then
+    cat <<EOF
+To run this test you must create the file:
+
+    /lib/sdc/.sdc-test-no-production-data
+
+after ensuring you have no production data on this SDC.
+EOF
+    exit 2
+fi
+
+
+
+#---- config
+
+NAME=sdc
+TOP=$(cd $(dirname $0)/../; pwd)
+
+opt_reporter=default
+
+
+
+#---- support functions
+
+function fatal
+{
+    echo "$(basename $0): fatal error: $*"
+    exit 1
+}
+
+function usage
+{
+    echo "Usage:"
+    echo "  runtests [OPTIONS...]"
+    echo ""
+    echo "Options:"
+    echo "  -f FILTER    Filter pattern (substring match) for test files to run."
+    echo "  -r REPORTER  Nodeunit test reporter to use (default is '$opt_reporter')."
+    echo "  -c CNAPI-IP  CNAPI IP to test. Defaults to the current net0 IP."
+}
+
+
+
+#---- mainline
+
+if [[ "$(zonename)" == "global" ]]; then
+    fatal "$0 must be run within the $NAME zone"
+fi
+
+start_time=$(date +%s)
+
+# Options.
+opt_test_pattern=
+while getopts "hf:r:" opt
+do
+    case "$opt" in
+        h)
+            usage
+            exit 0
+            ;;
+        f)
+            opt_test_pattern=$OPTARG
+            ;;
+        r)
+            opt_reporter=$OPTARG
+            ;;
+        *)
+            usage
+            exit 1
+            ;;
+    esac
+done
+
+
+
+#---- start tests
+
+cd ${TOP}
+
+retval=0
+test_files=$(ls -1 test/test-*.js)
+if [[ -n "$opt_test_pattern" ]]; then
+    test_files=$(echo "$test_files" | grep "$opt_test_pattern" || true)
+    echo "# Running filtered set of test files: $test_files"
+fi
+PATH=${TOP}/build/node/bin node ./node_modules/.bin/nodeunit \
+    --reporter $opt_reporter $test_files
+retval=$?
+
+exit $retval

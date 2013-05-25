@@ -1,0 +1,14 @@
+- zone build
+- get zone installable as a sapi service
+- figure out if this is a proto zone?
+- ditch sdc-dcapi
+- add a dev tool here to add a changelog note and incr version
+    $ ./tools/verbump
+    Tools affected [sdc-imgadm]: _______  # pull default(s) from 'git status'
+    Short changelog:
+
+# new tools to add
+
+- sdc-amqpsnoop ?
+- sdc-ufds (pedro)
+
