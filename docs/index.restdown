@@ -25,7 +25,7 @@ around `curl`. Examples: sdc-imgapi, sdc-vmapi. (b) A higher-level and
 friendlier CLI tool, often with 'adm' in the name (following the smartos
 administrator tool naming tradition).
 
-||**API**||**Raw API Tool**||**Friendlier "adm" tool**||jh
+||**API**||**Raw API Tool**||**Friendlier "adm" tool**||
 ||Amon Master API (amon)||sdc-amon||--||
 ||Amon Relay API (a small debugging-only API)||sdc-amonrelay||--||
 ||Compute Node API (CNAPI)||sdc-cnapi||--, sdc-server||
