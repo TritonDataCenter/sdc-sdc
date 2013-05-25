@@ -39,6 +39,8 @@ RELTMPDIR       := /tmp/$(STAMP)
 #
 .PHONY: all
 all: | $(NPM_EXEC) node_modules/bunyan/package.json
+
+node_modules/bunyan/package.json: | $(NPM_EXEC)
 	$(NPM) install
 
 .PHONY: release
