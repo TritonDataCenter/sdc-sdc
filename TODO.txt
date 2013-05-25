@@ -7,6 +7,7 @@
     Tools affected [sdc-imgadm]: _______  # pull default(s) from 'git status'
     Short changelog:
 
+
 # new tools to add
 
 - sdc-amqpsnoop ?

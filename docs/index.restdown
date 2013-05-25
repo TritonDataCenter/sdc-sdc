@@ -49,18 +49,18 @@ an API in the DC:
 
 TODO: document appropriate of:
 
-    sdc-amon                 sdc-imgapi               sdc-rollback
-    sdc-amonrelay            sdc-lastcomm             sdc-sapi
-    sdc-backup               sdc-ldap                 sdc-sbcreate
-    sdc-cnapi                sdc-login                sdc-sbupload
+    sdc-rollback
+    sdc-lastcomm
+    sdc-backup               sdc-sbcreate
+    sdc-login                sdc-sbupload
     sdc-create-2nd-manatee   sdc-manatee-clear-error  sdc-server
     sdc-create-binder        sdc-manatee-history      sdc-setconsole
-    sdc-dapi                 sdc-manatee-stat         sdc-upgrade
-    sdc-dcapi                sdc-napi                 sdc-vm
-    sdc-dsapi                sdc-network              sdc-vmapi
+    sdc-manatee-stat         sdc-upgrade
+    sdc-vm
+    sdc-dsapi                sdc-network
     sdc-factoryreset         sdc-oneachnode           sdc-vmmanifest
-    sdc-fwapi                sdc-phonehome            sdc-vmname
-    sdc-healthcheck          sdc-post-upgrade         sdc-workflow
+    sdc-phonehome            sdc-vmname
+    sdc-healthcheck          sdc-post-upgrade
     sdc-heartbeatsnoop       sdc-rabbitstat           sdc-zfs-io-throttle.d
     sdc-image-sync           sdc-restore
-    sdc-imgadm               sdc-role
+    sdc-role

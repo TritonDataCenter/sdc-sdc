@@ -14,7 +14,6 @@ JSL_CONF_NODE	 = tools/jsl.node.conf
 JSL_FILES_NODE	 = $(JS_FILES)
 JSSTYLE_FILES	 = $(JS_FILES)
 JSSTYLE_FLAGS	 = -f tools/jsstyle.conf
-NODEUNIT	:= ./node_modules/.bin/nodeunit
 
 NODE_PREBUILT_VERSION=v0.8.23
 ifeq ($(shell uname -s),SunOS)
@@ -39,31 +38,37 @@ RELTMPDIR       := /tmp/$(STAMP)
 # Targets
 #
 .PHONY: all
-all: | $(NODEUNIT)
+all: | $(NPM_EXEC) node_modules/bunyan/package.json
 	$(NPM) install
-
-$(NODEUNIT): | $(NPM_EXEC)
-	$(NPM) install
-
-.PHONY: test
-test: | $(NODEUNIT)
-	$(NODEUNIT) test/*.test.js
 
 .PHONY: release
-release: all
+release: all docs
 	@echo "Building $(RELEASE_TARBALL)"
-	mkdir -p $(RELTMPDIR)/$(NAME)
+	mkdir -p $(RELTMPDIR)/root/opt/smartdc/$(NAME)
+	mkdir -p $(RELTMPDIR)/site
+	touch $(RELTMPDIR)/site/.do-not-delete-me
+	mkdir -p $(RELTMPDIR)/root
 	cp -r \
 		$(TOP)/bin \
-		$(TOP)/build \
 		$(TOP)/lib \
 		$(TOP)/node_modules \
 		$(TOP)/package.json \
 		$(TOP)/README.md \
 		$(TOP)/CHANGES.md \
 		$(TOP)/test \
-		$(RELTMPDIR)/$(NAME)
-	(cd $(RELTMPDIR) && $(TAR) -jcf $(TOP)/$(RELEASE_TARBALL) $(NAME))
+		$(RELTMPDIR)/root/opt/smartdc/$(NAME)
+	mkdir -p $(RELTMPDIR)/root/opt/smartdc/$(NAME)/build
+	cp -r \
+		$(TOP)/build/node \
+		$(TOP)/build/docs \
+		$(RELTMPDIR)/root/opt/smartdc/$(NAME)/build
+	# TODO
+	#mkdir -p $(RELTMPDIR)/root/var/svc
+	#cp -r \
+	#	$(TOP)/sdc/setup \
+	#	$(TOP)/sdc/configure \
+	#	$(RELTMPDIR)/root/var/svc
+	(cd $(RELTMPDIR) && $(TAR) -jcf $(TOP)/$(RELEASE_TARBALL) root site)
 	@rm -rf $(RELTMPDIR)
 
 .PHONY: publish
