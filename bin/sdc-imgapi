@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Copyright (c) 2012 Joyent Inc., All rights reserved.
+# Copyright (c) 2013 Joyent Inc., All rights reserved.
 #
 # Convenience wrapper for calling the Image API.
 #
@@ -36,16 +36,8 @@ shift;
 
 
 # Determine server URL.
-if [[ -z "$IMGAPI_URL" && -f /lib/sdc/config.sh ]]; then
-    source /lib/sdc/config.sh
-    load_sdc_config
-
-    if [[ -z ${CONFIG_imgapi_domain} ]]; then
-        echo "error: Unable to find IP for imgapi. Is it installed?"
-        exit 1
-    fi
-
-    IMGAPI_URL=http://${CONFIG_imgapi_domain}
+if [[ -z "$IMGAPI_URL" && -f /opt/smartdc/sdc/etc/config.json ]]; then
+    IMGAPI_URL=http://$(json -f /opt/smartdc/sdc/etc/config.json imgapi_domain)
 fi
 if [[ -z "$IMGAPI_URL" ]]; then
     echo "error: IMGAPI_URL envvar is not set and could not be determined"
