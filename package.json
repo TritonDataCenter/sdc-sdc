@@ -16,7 +16,8 @@
   },
   "devDependencies": {
     "jshint": "0.5",
-    "nodeunit": "0.8.0"
+    "nodeunit": "0.8.0",
+    "ronn": "0.4.0"
   },
   "bin": {
     "sdc-amon": "./bin/sdc-amon"

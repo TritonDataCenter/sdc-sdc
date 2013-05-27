@@ -14,6 +14,7 @@ JSL_CONF_NODE	 = tools/jsl.node.conf
 JSL_FILES_NODE	 = $(JS_FILES)
 JSSTYLE_FILES	 = $(JS_FILES)
 JSSTYLE_FLAGS	 = -f tools/jsstyle.conf
+RONNJS		 = $(NODE) ./node_modules/.bin/ronn
 
 NODE_PREBUILT_VERSION=v0.8.23
 ifeq ($(shell uname -s),SunOS)
@@ -43,8 +44,16 @@ all: | $(NPM_EXEC) node_modules/bunyan/package.json
 node_modules/bunyan/package.json: | $(NPM_EXEC)
 	$(NPM) install
 
+.PHONY: man
+man:
+	for f in $(shell find man -name "*.ronn"); do \
+		echo "Ronn'ing $$f"; \
+		$(RONNJS) --roff --build $$f \
+			--date $(shell git log -1 --date=short --pretty=format:'%cd' $$f) $(shell date +%Y); \
+	done
+
 .PHONY: release
-release: all docs
+release: all docs man
 	@echo "Building $(RELEASE_TARBALL)"
 	mkdir -p $(RELTMPDIR)/root/opt/smartdc/$(NAME)
 	mkdir -p $(RELTMPDIR)/site
@@ -59,6 +68,11 @@ release: all docs
 		$(TOP)/CHANGES.md \
 		$(TOP)/test \
 		$(RELTMPDIR)/root/opt/smartdc/$(NAME)
+	mkdir -p $(RELTMPDIR)/root/opt/smartdc/$(NAME)/man
+	for f in $$(cd man && find . -type f -name "*.roff"); do \
+		mkdir -p $(RELTMPDIR)/root/opt/smartdc/$(NAME)/man/$$(dirname $$f); \
+		cp man/$$f $(RELTMPDIR)/root/opt/smartdc/$(NAME)/man/$$(dirname $$f)/$$(basename $$f .roff); \
+	done
 	mkdir -p $(RELTMPDIR)/root/opt/smartdc/$(NAME)/build
 	cp -r \
 		$(TOP)/build/node \
