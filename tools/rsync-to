@@ -11,9 +11,7 @@ TOP=$(cd $(dirname $0)/../; pwd)
 NODE=$1
 
 if [[ -z "$SDC_ZONE" ]]; then
-    SDC_ZONE=$(ssh $NODE "/opt/smartdc/bin/sdc-vmapi /vms" 2>/dev/null \
-        | json -H -c 'this.tags && this.tags.smartdc_role === "sdc"' \
-            -c 'this.state === "running"' 0.uuid)
+    SDC_ZONE=$(ssh $NODE vmadm lookup -1 tags.smartdc_role=sdc)
 fi
 echo "SDC_ZONE: $SDC_ZONE"
 

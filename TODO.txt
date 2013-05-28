@@ -1,5 +1,4 @@
-- sdc tool and man page in usb-headnode
-- tools/install-sdc-gz-links
+- sdc-amon, sdc-amonrelay, sdc-ldap, sdc-dsapi
 - re-enable usbheadnodetar build after sdc build in jenkins
 - ditch sdc-dcapi
 - start working through all the tools, with tests, to get them working
