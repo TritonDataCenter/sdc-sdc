@@ -30,5 +30,5 @@ EOF
     exit 1
 fi
 
-vmapi "$@" | json -q
+vmapi "$@" | (json -q || true)
 exit $?

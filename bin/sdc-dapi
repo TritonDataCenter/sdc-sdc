@@ -30,5 +30,5 @@ EOF
     exit 1
 fi
 
-dapi "$@" | json -q
+dapi "$@" | (json -q || true)
 exit $?

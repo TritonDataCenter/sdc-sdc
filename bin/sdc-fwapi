@@ -30,5 +30,5 @@ EOF
     exit 1
 fi
 
-fwapi "$@" | json -q
+fwapi "$@" | (json -q || true)
 exit $?

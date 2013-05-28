@@ -30,5 +30,5 @@ EOF
     exit 1
 fi
 
-workflow "$@" | json -q
+workflow "$@" | (json -q || true)
 exit $?

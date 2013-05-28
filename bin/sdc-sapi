@@ -30,5 +30,5 @@ EOF
     exit 1
 fi
 
-sapi "$@" | json -q
+sapi "$@" | (json -q || true)
 exit $?
