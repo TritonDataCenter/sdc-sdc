@@ -6,7 +6,8 @@
 #
 
 
-CONFIG=/opt/smartdc/sdc/etc/config.json
+TOP=$(cd $(dirname $0)/../ 2>/dev/null; pwd)
+CONFIG=$TOP/etc/config.json
 
 if [[ $1 == "--no-headers" ]]; then
     CURL_OPTS="--connect-timeout 10 -sS -H accept:application/json"

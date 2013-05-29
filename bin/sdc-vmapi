@@ -12,11 +12,13 @@ fi
 set -o errexit
 set -o pipefail
 
-if [[ ! -f /opt/smartdc/sdc/lib/libdc.sh ]]; then
-    echo "sdc-vmapi: fatal: unable to find libdc.sh"
+TOP=$(cd $(dirname $0)/../ 2>/dev/null; pwd)
+LIBDC=$TOP/lib/libdc.sh
+if [[ ! -f $LIBDC ]]; then
+    echo "$(basename $0): fatal: unable to find $LIBDC"
     exit 1
 fi
-source /opt/smartdc/sdc/lib/libdc.sh
+source $LIBDC
 
 path=$1
 if [[ -z ${path} ]]; then

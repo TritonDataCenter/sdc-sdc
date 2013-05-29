@@ -12,6 +12,7 @@ fi
 set -o errexit
 set -o pipefail
 
+TOP=$(cd $(dirname $0)/../ 2>/dev/null; pwd)
 
 
 # Arguments.
@@ -36,8 +37,8 @@ shift;
 
 
 # Determine server URL.
-if [[ -z "$IMGAPI_URL" && -f /opt/smartdc/sdc/etc/config.json ]]; then
-    IMGAPI_URL=http://$(json -f /opt/smartdc/sdc/etc/config.json imgapi_domain)
+if [[ -z "$IMGAPI_URL" && -f $TOP/etc/config.json ]]; then
+    IMGAPI_URL=http://$(json -f $TOP/etc/config.json imgapi_domain)
 fi
 if [[ -z "$IMGAPI_URL" ]]; then
     echo "error: IMGAPI_URL envvar is not set and could not be determined"
