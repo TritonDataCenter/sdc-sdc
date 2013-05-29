@@ -1,0 +1,62 @@
+# sdc-dirty-vms(1) -- check VMs in VMAPI and ensure properties are as expected.
+
+
+## SYNOPSIS
+
+`sdc-dirty-vms [-d] [-j]`
+
+
+## DESCRIPTION
+
+This tool looks at all the active VMs in VMAPI and ensures that the parameters
+meet the associated package and that other VM properties are set as expected.
+
+By default the output is a table with one row per invalid property found. The
+columns in each row are:
+
+`vm_uuid`
+    the UUID of the VM to which this problem applies
+
+`vm_brand`
+    the brand of the VM to which this problem applies
+
+`property`
+    the VM property of the VM which has the problem
+
+`actual`
+    the value for this property the VM currently has
+
+`expected`
+    the value we expected this VM to have for this property
+
+When using the '-j' option for JSON output, the output will be a JSON array with
+each object in the array having the above fields, but may also contain:
+
+`vm_creation`
+    the timestamp representing when this VM was created
+
+`package_uuid`
+    the uuid of the package we found for this VM (when available)
+
+`package_name`
+    the name of the package we found for this VM (when available)
+
+
+## OPTIONS
+
+`-d`
+    output some debug information to STDERR while running, also outputs a
+    summary of the number of VMs checked and problems found when complete.
+
+`-j`
+    output should be in JSON instead of a table.
+
+
+## COPYRIGHT
+
+sdc-dirty-vms Copyright (c) 2013 Joyent Inc., All rights reserved.
+
+
+## SEE ALSO
+
+sdc-vmapi (1), sdc-ldap (1)

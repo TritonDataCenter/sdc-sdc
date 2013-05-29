@@ -1,0 +1,473 @@
+#!/usr/node/bin/node
+/*
+ * copyright (c) 2013 Joyent Inc.
+ *
+ * This script is intended to be run on an SDC7 HN and will output a line of
+ * information for each problem it finds. By default it outputs as a table but
+ * it is also possible to output in json format with the -j option.
+ *
+ * with -t, the table contains:
+ *
+ *    vm_uuid: uuid of the VM with the problem
+ *    vm_brand: brand of the VM
+ *    property: property with the problem
+ *    expected: value we expected to see
+ *    actual: value we actually saw
+ *
+ * with -j, JSON contains:
+ *
+ *  {
+ *    vm_uuid: <vm_uuid>,
+ *    vm_brand: <vm_brand>,
+ *    vm_creation: <vm_create_timestamp>,
+ *    package_uuid: <pkg_uuid>, (when available)
+ *    package_name: <pkg_name>, (when available)
+ *    property: '<name of VM property with the problem>',
+ *    actual: '<actual value of the property for this VM>',
+ *    expected: '<expected value of the property for this VM>'
+ *  }
+ *
+ */
+
+var assert = require('assert-plus');
+var async = require('async');
+var cp = require('child_process');
+var dashdash = require('dashdash');
+var sdc_clients = require('sdc-clients');
+var spawn = cp.spawn;
+var sprintf = require('extsprintf').sprintf;
+
+var config = require('../etc/config.json');
+var debug = false;
+var problems = [];
+var output_type = 'table';
+var vms_checked = 0;
+
+var options = [
+    {
+        name: 'version',
+        type: 'bool',
+        help: 'Print tool version and exit.'
+    },
+    {
+        names: ['help', 'h', '?'],
+        type: 'bool',
+        help: 'Print this help and exit.'
+    },
+    {
+        names: ['d'],
+        type: 'bool',
+        help: 'Debug output.'
+    },
+    {
+        names: ['j'],
+        type: 'bool',
+        help: 'Output results in JSON format'
+    },
+    {
+        names: ['t'],
+        type: 'bool',
+        help: 'Output results in tabular format (DEFAULT)',
+        default: true
+    }
+];
+
+/**
+ * Print a table of the given items.  (Credit goes to Trent)
+ *
+ * @params items {Array}
+ * @params options {Object}
+ *      - `columns` {String} of comma-separated field names for columns
+ *      - `skipHeader` {Boolean} Default false.
+ *      - `sort` {String} of comma-separate fields on which to alphabetically
+ *        sort the rows. Optional.
+ *      - `validFields` {String} valid fields for `columns` and `sort`
+ */
+function tabulate(items, options) {
+    assert.arrayOfObject(items, 'items');
+    assert.object(options, 'options');
+    assert.string(options.columns, 'options.columns');
+    assert.optionalBool(options.skipHeader, 'options.skipHeader');
+    assert.optionalString(options.sort, 'options.sort');
+    assert.string(options.validFields, 'options.validFields');
+
+    if (items.length === 0) {
+        return;
+    }
+
+    // Validate.
+    var validFields = options.validFields.split(',');
+    var columns = options.columns.split(',');
+    var sort = options.sort ? options.sort.split(',') : [];
+    columns.forEach(function (c) {
+        if (validFields.indexOf(c) === -1) {
+            throw new TypeError(format('invalid output field: "%s"', c));
+        }
+    });
+    sort.forEach(function (s) {
+        if (validFields.indexOf(s) === -1) {
+            throw new TypeError(format('invalid sort field: "%s"', s));
+        }
+    });
+
+    // Determine columns and widths.
+    var widths = {};
+    columns.forEach(function (c) { widths[c] = c.length });
+    items.forEach(function (i) {
+        columns.forEach(function (c) {
+            widths[c] = Math.max(widths[c], (i[c] ? String(i[c]).length : 0));
+        });
+    });
+
+    var template = '';
+    columns.forEach(function (c) {
+        template += '%-' + String(widths[c]) + 's  ';
+    });
+    template = template.trim();
+
+    if (sort.length) {
+        function cmp(a, b) {
+          for (var i = 0; i < sort.length; i++) {
+            var field = sort[i];
+            var invert = false;
+            if (field[0] === '-') {
+                invert = true;
+                field = field.slice(1);
+            }
+            assert.ok(field.length, 'zero-length sort field: ' + options.sort);
+            var a_cmp = Number(a[field]);
+            var b_cmp = Number(b[field]);
+            if (isNaN(a_cmp) || isNaN(b_cmp)) {
+                a_cmp = a[field];
+                b_cmp = b[field];
+            }
+            if (a_cmp < b_cmp) {
+                return (invert ? 1 : -1);
+            } else if (a_cmp > b_cmp) {
+                return (invert ? -1 : 1);
+            }
+          }
+          return 0;
+        }
+        items.sort(cmp);
+    }
+
+    if (!options.skipHeader) {
+        var header = columns.map(function (c) { return c.toUpperCase(); });
+        header.unshift(template);
+        console.log(sprintf.apply(null, header));
+    }
+    items.forEach(function (i) {
+        var row = columns.map(function (c) {
+            var cell = i[c];
+            if (cell === null || cell === undefined) {
+                return '-';
+            } else {
+                return String(i[c]);
+            }
+        });
+        row.unshift(template)
+        console.log(sprintf.apply(null, row));
+    })
+}
+
+function getPackages(callback)
+{
+    var args = ['search', 'objectclass=sdcpackage'];
+    var buffer = '';
+    var cmd = 'sdc-ldap';
+    var child;
+    var packages = {};
+    var package_uuid;
+
+    child = spawn(cmd, args, {'customFds': [-1, -1, -1]});
+    if (debug) {
+        console.error('>> running sdc-ldap w/ PID ' + child.pid);
+    }
+
+    child.stdout.on('data', function (data) {
+        var chunks = [];
+        var line;
+        var matches;
+
+        buffer += data.toString();
+        lines = buffer.split('\n');
+        while (lines.length > 1) {
+            line = lines.shift();
+
+            matches = line.match(/dn: uuid=([^\s]*), /);
+            if (matches) {
+                package_uuid = matches[1];
+                if (packages[package_uuid]) {
+                    console.warn('WARNING: package ' + package_uuid
+                        + 'already exists, overwriting');
+                }
+                packages[package_uuid] = {};
+            } else if (line.length > 0) {
+                chunks = line.split(': ');
+                if (chunks[0] === 'traits') {
+                    // ignore traits
+                } else if (chunks.length !== 2) {
+                    console.warn('>> SKIPPING UNEXPECTED LINE: ' + line);
+                } else {
+                    packages[package_uuid][chunks[0]] = chunks[1];
+                }
+            }
+        }
+        buffer = lines.pop();
+    });
+
+    // we don't send any input on stdin
+    child.stdin.end();
+
+    child.on('exit', function (code) {
+        if (debug) {
+            console.error('>> sdc-ldap exited: ' + code);
+        }
+        if (code === 0) {
+            callback(null, packages);
+        } else {
+            callback(new Error('sdc-ldap exited prematurely with code: '
+                + code));
+        }
+    });
+}
+
+function logProblem(vm, pkg, property, expected, actual)
+{
+    var problem = {
+        vm_uuid: vm.uuid,
+        vm_brand: vm.brand,
+        vm_create_timestamp: vm.create_timestamp,
+        property: property,
+        expected: expected,
+        actual: actual
+    };
+
+    if (pkg && pkg.uuid) {
+        problem.package_uuid = pkg.uuid;
+        if (pkg.hasOwnProperty('name')) {
+            problem.package_name = pkg.name;
+        }
+    } else {
+        problem.package_uuid = 'undefined';
+    }
+
+    problems.push(problem);
+}
+
+function checkVMs(vmapi, pkgs, callback)
+{
+    vmapi.listVms({state: 'active', limit: 100000}, function (err, vms) {
+        if (err) {
+            callback(err);
+            return;
+        }
+
+        vms.forEach(function(vm) {
+            var len;
+            var pkg;
+
+            vms_checked++;
+
+            // All VMs need billing_id, otherwise we can't check package values
+            if (!vm.hasOwnProperty('billing_id')) {
+                logProblem(vm, null, 'billing_id', '<UUID>', '<MISSING>');
+                return;
+            }
+
+            // billing_id needs to refer to an existing package
+            pkg = pkgs[vm.billing_id];
+            if (!pkg) {
+                logProblem(vm, pkg, 'billing_id', '<EXISTING PACKAGE>',
+                    vm.billing_id);
+                return;
+            }
+
+            // -- below here we're checking the package values --
+
+            // 'fss' in package is cpu_shares everywhere else.
+            if (pkg.hasOwnProperty('fss')
+                && (Number(pkg.fss) !== Number(vm.cpu_shares))) {
+
+                logProblem(vm, pkg, 'cpu_shares', Number(pkg.fss),
+                    Number(vm.cpu_shares));
+            }
+
+            ['cpu_cap', 'max_lwps', 'zfs_io_priority'].forEach(function (prop) {
+                if (Number(pkg[prop]) !== Number(vm[prop])) {
+                    logProblem(vm, pkg, prop, Number(pkg[prop]),
+                        Number(vm[prop]));
+                }
+            });
+
+            if (vm.brand === 'kvm') {
+                // check vcpus
+                if (Number(pkg.vcpus) !== Number(vm.vcpus)) {
+                    logProblem(vm, pkg, 'vcpus', Number(pkg.vcpus),
+                        Number(vm.vcpus));
+                }
+
+                // for KVM max_physical and max_swap should be + 1024 (MiB)
+                ['max_physical_memory', 'max_swap'].forEach(function (prop) {
+                    if ((Number(pkg[prop]) + 1024) !== Number(vm[prop])) {
+                        logProblem(vm, pkg, prop, (Number(pkg[prop]) + 1024),
+                            Number(vm[prop]));
+                    }
+                });
+
+                // KVM 'ram' should match pkg's max_physical, that's what the
+                // customer sees (MiB)
+                if (Number(pkg.max_physical_memory) !== vm.ram) {
+                    logProblem(vm, pkg, 'ram', Number(pkg.max_physical_memory),
+                        Number(vm.ram));
+                }
+
+                // package quota should match second disk. (disks.*.size is MiB)
+                if (!vm.disks || vm.disks.length !==2) {
+                    if (!vm.disks) {
+                        len = 0;
+                    } else {
+                        len = vm.disks.length;
+                    }
+                    logProblem(vm, pkg, 'vm.disks.length', 2, len);
+                } else if (!vm.disks[1].hasOwnProperty('size')) {
+                    logProblem(vm, pkg, 'vm.disks[1].size', '<SIZE>',
+                        'undefined');
+                } else if (Number(pkg.quota) !== Number(vm.disks[1].size)) {
+                    logProblem(vm, pkg, 'vm.disks[1].size', Number(pkg.quota),
+                        Number(vm.disks[1].size));
+                }
+
+                if (vm.disks && vm.disks.length > 0 &&
+                    !vm.disks[0].image_uuid) {
+
+                    logProblem(vm, pkg, 'disks[0].image_uuid', '<UUID>',
+                        'none');
+                }
+
+                // all KVM VMs should have quota = 10, since that's the zoneroot
+                // quota and not for their use, vm.quota is GiB
+                if (isNaN(Number(vm.quota))) {
+                    logProblem(vm, pkg, 'quota', 10, 'NaN');
+                } else if (Number(vm.quota) !== 10) {
+                    logProblem(vm, pkg, 'quota', 10, Number(vm.quota));
+                }
+            } else {
+                // check that VM has image_uuid
+                if (!vm.hasOwnProperty('image_uuid') || !vm.image_uuid) {
+                    logProblem(vm, pkg, 'image_uuid', '<UUID>', 'none');
+                }
+
+                // package quota should match VM quota. pkg.quota is MiB,
+                // vm.quota is GiB
+                if (isNaN(Number(vm.quota))) {
+                    logProblem(vm, pkg, 'quota', '<NUMBER>', 'NaN');
+                } else if (Number(pkg.quota) !== (Number(vm.quota) * 1024)) {
+                    logProblem(vm, pkg, 'quota', Number(pkg.quota),
+                        (Number(vm.quota) * 1024));
+                }
+
+                // non-KVM max_physical_memory and max_swap themselves should
+                // match (units in MiB)
+                ['max_physical_memory', 'max_swap'].forEach(function (prop) {
+                    if (Number(pkg[prop]) !== Number(vm[prop])) {
+                        logProblem(vm, pkg, prop, Number(pkg[prop]),
+                            Number(vm[prop]));
+                    }
+                });
+            }
+        });
+
+        callback();
+    });
+}
+
+function parseArgs(callback)
+{
+    var h;
+    var opts;
+    var parser = dashdash.createParser({options: options});
+
+    try {
+        opts = parser.parse(process.argv);
+    } catch (e) {
+        console.error('parser: error: %s', e.message);
+        callback(e);
+        return;
+    }
+
+    // console.log("# opts:", opts);
+    // console.log("# args:", opts._args);
+
+    if (opts.j) {
+        // default is -t, if -j is specified use instead
+        output_type = 'json';
+        opts.t = false;
+    } else {
+        output_type = 'table';
+    }
+
+    if (opts.d) {
+        debug = true;
+    }
+
+    if (opts.help) {
+        help = parser.help({includeEnv: false}).trimRight();
+        console.log('usage: sdc-dirty-vms [OPTIONS]\n'
+            + 'options:\n' + help);
+        callback(new Error('usage'));
+    } else {
+        callback();
+    }
+}
+
+function main()
+{
+    var packages;
+    var vmapi;
+
+    async.series([
+        parseArgs,
+        function (cb) {
+            vmapi = new sdc_clients.VMAPI({
+                url: 'http://' + config.vmapi_domain,
+                agent: false
+            });
+            cb();
+        }, function (cb) {
+            getPackages(function (err, pkgs) {
+                if (err) {
+                    console.error('failed to get packages: ' + err.message);
+                    cb(err);
+                    return;
+                }
+                packages = pkgs;
+                cb();
+            });
+        }, function (cb) {
+            checkVMs(vmapi, packages, function (err) {
+                cb(err);
+            });
+        }, function (cb) {
+            // dump the output
+            if (output_type === 'json') {
+                console.dir(problems);
+            } else {
+                tabulate(problems, {
+                    columns: 'vm_uuid,vm_brand,property,actual,expected',
+                    sort: 'vm_uuid,property',
+                    validFields: 'vm_uuid,vm_brand,property,actual,expected'
+                });
+            }
+            cb();
+        }
+    ], function (err) {
+        if (debug) {
+            console.error('sdc-dirty-vms: ' + vms_checked + ' VMs checked, '
+                + problems.length + ' problems found.');
+        }
+    });
+}
+
+main();
