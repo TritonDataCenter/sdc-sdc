@@ -3,7 +3,7 @@
 
 ## SYNOPSIS
 
-`sdc-imgapi [-v] URLPATH [CURL-OPTIONS...]`
+`sdc-imgapi [-v] PATH [CURL-OPTIONS...]`
 
 
 ## DESCRIPTION
@@ -18,7 +18,7 @@ Formatting of the response is done via the `json` tool.
 
 `-v`
     Show the curl command that is being issued. If used this option must appear
-    before the URLPATH argument.
+    before the PATH argument.
 
 Any additional options supported by `curl` may be used.
 

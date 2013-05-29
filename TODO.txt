@@ -1,4 +1,4 @@
-- sdc-amon, sdc-amonrelay, sdc-ldap, sdc-dsapi
+- sdc-dsapi
 - no GZ links: sdc-heartbeatsnoop, sdc-create-2nd-manatee, sdc-create-binder
 - re-enable usbheadnodetar build after sdc build in jenkins
 - ditch sdc-dcapi

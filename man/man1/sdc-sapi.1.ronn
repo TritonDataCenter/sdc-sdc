@@ -17,7 +17,7 @@ Formatting of the response is done via the `json` tool.
 
 ## OPTIONS
 
-Any additional options supported by `curl` may be used after the `URLPATH`
+Any additional options supported by `curl` may be used after the `PATH`
 argument.
 
 

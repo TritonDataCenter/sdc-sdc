@@ -23,6 +23,30 @@ function fatal() {
 }
 
 
+AMON_URL=
+function amon() {
+    path=$1
+    shift
+    if [[ -z "$AMON_URL" ]]; then
+        AMON_URL="http://$(json -f $CONFIG amon_domain)"
+    fi
+    (curl ${CURL_OPTS} --url "${AMON_URL}${path}" "$@") || return $?
+    echo ""  # sometimes the result is not terminated with a newline
+    return 0
+}
+
+AMON_RELAY_URL=
+function amonrelay() {
+    path=$1
+    shift
+    if [[ -z "$AMON_RELAY_URL" ]]; then
+        AMON_RELAY_URL="http://$(json -f $CONFIG admin_ip):4307"
+    fi
+    (curl ${CURL_OPTS} --url "${AMON_RELAY_URL}${path}" "$@") || return $?
+    echo ""  # sometimes the result is not terminated with a newline
+    return 0
+}
+
 CNAPI_URL=
 function cnapi() {
     path=$1

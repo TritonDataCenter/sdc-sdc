@@ -31,5 +31,5 @@ zone (akin to the Manta 'ops') zone was created. This repo is it.
 
   Or the shortcut for COAL:
 
-        make coaltest
+        make coaltest    # NYI
 

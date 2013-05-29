@@ -1,0 +1,49 @@
+# sdc-amon(1) -- call the Amon Master API for this datacenter
+
+
+## SYNOPSIS
+
+`sdc-amon [--no-headers] PATH [CURL-OPTIONS...]`
+
+
+## DESCRIPTION
+
+This is a light convenience wrapper around `curl` for calling the Amon Master
+API for this datacenter.
+
+Formatting of the response is done via the `json` tool.
+
+
+## OPTIONS
+
+Any additional options supported by `curl` may be used after the `PATH`
+argument.
+
+
+## EXAMPLES
+
+    $ sdc-amon /ping
+    HTTP/1.1 200 OK
+    Content-Type: application/json
+    Content-Length: 43
+    Date: Wed, 29 May 2013 23:09:33 GMT
+    Server: Amon Master/1.0.0
+    Request-Id: d2c9df90-c8b4-11e2-8b4f-4f65896289f4
+    Response-Time: 2
+    Connection: keep-alive
+
+    {
+      "ping": "pong",
+      "pid": 45734,
+      "redis": "2.4.1"
+    }
+
+
+## COPYRIGHT
+
+sdc-amon Copyright (c) 2013 Joyent Inc., All rights reserved.
+
+
+## SEE ALSO
+
+curl (1), json (1), sdc-amonrelay (1)

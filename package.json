@@ -1,7 +1,7 @@
 {
   "name": "sdc",
   "description": "SDC ops/tools zone",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "author": "Joyent (joyent.com)",
   "private": true,
   "dependencies": {

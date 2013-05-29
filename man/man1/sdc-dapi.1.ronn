@@ -17,13 +17,13 @@ Formatting of the response is done via the `json` tool.
 
 ## OPTIONS
 
-Any additional options supported by `curl` may be used after the `URLPATH`
+Any additional options supported by `curl` may be used after the `PATH`
 argument.
 
 
 ## COPYRIGHT
 
-sdc-dapi Copyright (c) 2012 Joyent Inc., All rights reserved.
+sdc-dapi Copyright (c) 2013 Joyent Inc., All rights reserved.
 
 
 ## SEE ALSO

@@ -1,0 +1,44 @@
+# sdc-amonrelay(1) -- call the Amon Relay API for this node
+
+
+## SYNOPSIS
+
+`sdc-amonrelay [--no-headers] PATH [CURL-OPTIONS...]`
+
+
+## DESCRIPTION
+
+This is a light convenience wrapper around `curl` for calling the Amon Relay
+API for this node.
+
+Formatting of the response is done via the `json` tool.
+
+
+## OPTIONS
+
+Any additional options supported by `curl` may be used after the `PATH`
+argument.
+
+
+## EXAMPLES
+
+    $ sdc-amonrelay /ping
+    HTTP/1.1 200 OK
+    Content-Type: application/json
+    Content-Length: 15
+    Date: Wed, 29 May 2013 23:17:35 GMT
+    Connection: keep-alive
+
+    {
+      "ping": "pong"
+    }
+
+
+## COPYRIGHT
+
+sdc-amonrelay Copyright (c) 2013 Joyent Inc., All rights reserved.
+
+
+## SEE ALSO
+
+curl (1), json (1), sdc-amonrelay (1)
