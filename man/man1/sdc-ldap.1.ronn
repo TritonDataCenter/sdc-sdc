@@ -1,0 +1,39 @@
+# sdc-ldap(1) -- light wrapper around ldap* commands for this datacenter's LDAP
+
+## SYNOPSIS
+
+`sdc-ldap [-v] COMMAND ARGS`
+
+
+## DESCRIPTION
+
+This is a light convenience wrapper around the ldap* commands for talking to
+the local datacenter's UFDS.
+
+
+## COMMANDS
+
+`search, s`
+    call 'ldapsearch' with appropriate connection/auth args
+
+`modify`
+    call 'ldapmodify'
+
+`add`
+    call 'ldapadd'
+
+`delete, del, rm`
+    call 'ldapdelete'"
+
+
+See the manpages of the called ldap* commands for additional options.
+
+
+## COPYRIGHT
+
+sdc-ldap Copyright (c) 2013 Joyent Inc., All rights reserved.
+
+
+## SEE ALSO
+
+ldapadd(1), ldapdelete(1), ldapmodify(1), ldapsearch(1)
