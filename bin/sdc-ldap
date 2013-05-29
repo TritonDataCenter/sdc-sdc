@@ -5,7 +5,9 @@
 # Convenience wrapper for calling some of the "ldap*" commands against UFDS.
 #
 
-CONFIG_JSON="/opt/smartdc/sdc/etc/config.json"
+# Find the directory the script lives in. We'll load config relative to that.
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+CONFIG_JSON="${SCRIPT_DIR}/../etc/config.json"
 
 if [[ -n "$TRACE" ]]; then
     export PS4='[\D{%FT%TZ}] ${BASH_SOURCE}:${LINENO}: ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
