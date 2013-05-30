@@ -301,6 +301,17 @@ function checkVMs(vmapi, pkgs, callback)
                 }
             });
 
+            // *_pw keys in customer_metadata do not work because when looking
+            // up w/ mdata-get we use internal_metadata when key matches _pw$
+            if (vm.hasOwnProperty('customer_metadata')) {
+                Object.keys(vm.customer_metadata).forEach(function (k) {
+                    if (k.match(/_pw$/)) {
+                        logProblem(vm, pkg, 'customer_metadata', '<VALID-KEY>',
+                            k);
+                    }
+                });
+            }
+
             if (vm.brand === 'kvm') {
                 // check vcpus
                 if (Number(pkg.vcpus) !== Number(vm.vcpus)) {
