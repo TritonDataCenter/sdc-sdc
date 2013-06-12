@@ -44,6 +44,10 @@ all: | $(NPM_EXEC) node_modules/bunyan/package.json
 node_modules/bunyan/package.json: | $(NPM_EXEC)
 	$(NPM) install
 
+.PHONY: force-npm-install
+force-npm-install:
+	$(NPM) install
+
 .PHONY: man
 man:
 	for f in $(shell find man -name "*.ronn"); do \

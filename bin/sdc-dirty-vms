@@ -1,4 +1,4 @@
-#!/usr/node/bin/node
+#!/opt/smartdc/sdc/build/node/bin/node
 /*
  * copyright (c) 2013 Joyent Inc.
  *
