@@ -1,0 +1,52 @@
+# sdc-papi(1) -- call the Packages API for this datacenter
+
+
+## SYNOPSIS
+
+`sdc-papi [--no-headers] PATH [CURL-OPTIONS...]`
+
+
+## DESCRIPTION
+
+This is a light convenience wrapper around `curl` for calling the Packages
+API for this datacenter.
+
+Formatting of the response is done via the `json` tool.
+
+
+## OPTIONS
+
+Any additional options supported by `curl` may be used after the `PATH`
+argument.
+
+
+## EXAMPLES
+
+    $ sdc-papi /ping
+    HTTP/1.1 200 OK
+    Content-Type: application/json
+    Content-Length: 28
+    Access-Control-Allow-Origin: *
+    Access-Control-Allow-Methods: GET
+    Connection: Keep-Alive
+    Content-MD5: +FfzWSAQUMrX8vse+phW9A==
+    Date: Wed, 19 Jun 2013 11:54:13 GMT
+    Server: SDC Package API 7.0.0
+    Api-Version: 7.0.0
+    Request-Id: f5abbc90-d8d6-11e2-988b-a725c24ba5b0
+    Response-Time: 3
+
+    {
+      "pid": 53539,
+      "backend": "up"
+    }
+
+
+## COPYRIGHT
+
+sdc-papi Copyright (c) 2013 Joyent Inc., All rights reserved.
+
+
+## SEE ALSO
+
+curl (1), json (1)

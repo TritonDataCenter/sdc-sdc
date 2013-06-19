@@ -1,5 +1,9 @@
 # sdc (SDC ops core zone) Changelog
 
+## 1.0.3
+
+Added sdc-papi.
+
 ## 1.0.2
 
 Added sdc-amon, sdc-amonrelay.
