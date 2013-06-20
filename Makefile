@@ -68,6 +68,7 @@ release: all docs man
 		$(TOP)/lib \
 		$(TOP)/node_modules \
 		$(TOP)/package.json \
+		$(TOP)/sapi_manifests \
 		$(TOP)/README.md \
 		$(TOP)/CHANGES.md \
 		$(TOP)/test \
