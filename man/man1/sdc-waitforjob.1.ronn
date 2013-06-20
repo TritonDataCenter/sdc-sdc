@@ -1,0 +1,54 @@
+# sdc-waitforjob(1) -- wait for a Workflow API job to complete
+
+
+## SYNOPSIS
+
+`sdc-waitforjob [<options>] <job-uuid>`
+
+`  ... JSON response with job_uuid key ... | sdc-waitforjob [<options>]`
+
+## DESCRIPTION
+
+Wait for a Workflow API job to complete.
+
+
+## OPTIONS
+
+`-h`
+    Print usage help and exit.
+
+`-q`
+    Quiet. No progress output.
+
+`-t <timeout>`
+    A timeout in seconds. By default it waits forever.
+
+
+## EXAMPLES
+
+    $ sdc-vmapi /vms/48337a36-6901-4661-9f15-67a626c916ff?action=reboot -X POST | sdc-waitforjob
+    HTTP/1.1 202 Accepted
+    Content-Type: application/json
+    Content-Length: 100
+    Content-MD5: T9ucqEUQyWArgIKQ3I2+bQ==
+    Date: Thu, 20 Jun 2013 00:04:04 GMT
+    Connection: keep-alive
+
+    {
+      "vm_uuid": "48337a36-6901-4661-9f15-67a626c916ff",
+      "job_uuid": "a4e7c41e-5783-40ac-b138-5569371d174e"
+    }
+
+    Wait for job a4e7c41e-5783-40ac-b138-5569371d174e to complete (timeout=none)
+    ......
+    Job a4e7c41e-5783-40ac-b138-5569371d174e succeeded (elapsed=11s)
+
+
+## COPYRIGHT
+
+sdc-waitforjob Copyright (c) 2013 Joyent Inc., All rights reserved.
+
+
+## SEE ALSO
+
+sdc-workflow (1)

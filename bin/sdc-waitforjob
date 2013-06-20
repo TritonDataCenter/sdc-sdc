@@ -1,0 +1,131 @@
+#!/bin/bash
+#
+# Wait for a given workflow job.
+#
+# Usage:
+#   sdc-waitforjob <job-uuid>
+#   ...stdin JSON API response with job_uuid ... | sdc-waitforjob
+#
+
+if [[ -n "$TRACE" ]]; then
+    export PS4='[\D{%FT%TZ}] ${BASH_SOURCE}:${LINENO}: ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
+    set -o xtrace
+fi
+set -o errexit
+set -o pipefail
+
+
+
+#---- globals/config
+
+TOP=$(cd $(dirname $0)/../; pwd)
+
+
+
+#---- support stuff
+
+function fatal
+{
+    echo "$(basename $0): fatal error: $*"
+    exit 1
+}
+
+function usage () {
+    echo "Usage:"
+    echo "  sdc-waitforjob [<options>] <job-uuid>"
+    echo "  ... JSON response with job_uuid key ... | sdc-waitforjob [<options>]"
+    echo ""
+    echo "Options:"
+    echo "  -h              Show this help and exit."
+    echo "  -q              Quiet. No progress output."
+    echo "  -t <timeout>    Timeout in seconds. By default this waits forever."
+}
+
+function wait_for_job {
+    local job_uuid=$1
+    local job_status
+    local start_time=$(date +%s)
+    local i=1
+
+    [ -z "$opt_quiet" ] \
+        && echo "Wait for job $job_uuid to complete (timeout=$timeout_str)"
+    while true; do
+        if [ -z "$opt_quiet" ]; then
+            if [[ $(($i % 15)) == 0 ]]; then
+                echo ". ($(date))"   # new line ~ every 30 seconds
+            else
+                echo -n '.'
+            fi
+            i=$(( $i + 1 ))
+        fi
+        job_status=$($TOP/bin/sdc-workflow /jobs/$job_uuid | json -H execution)
+        if [[ ("$job_status" != "queued") && ("$job_status" != "running") ]]; then
+            echo ""
+            break
+        fi
+        if [[ -n "$opt_timeout" ]]; then
+            elapsed=$(( $(date +%s) - ${start_time} ))
+            if [[ $elapsed -gt $opt_timeout ]]; then
+                [ -z "$opt_quiet" ] && echo ""
+                fatal "timeout waiting for job $job_uuid: >${timeout_str} (elapsed=${elapsed}s)"
+            fi
+        fi
+        sleep 2
+    done
+    job_status=$($TOP/bin/sdc-workflow /jobs/$job_uuid </dev/null | json -H execution)
+    elapsed=$(( $(date +%s) - ${start_time} ))
+    if [[ "$job_status" == "succeeded" ]]; then
+        [ -z "$opt_quiet" ] \
+            && echo "Job $job_uuid succeeded (elapsed=${elapsed}s)"
+    else
+        [ -z "$opt_quiet" ] && echo ""
+        fatal "job $job_uuid failed (status '$job_status', elapsed=${elapsed}s)"
+    fi
+}
+
+
+#---- mainline
+
+# Options.
+opt_timeout=
+timeout_str=none
+opt_quiet=
+while getopts "hqt:" opt
+do
+    case "$opt" in
+        h)
+            usage
+            exit 0
+            ;;
+        q)
+            opt_quiet=1
+            ;;
+        t)
+            opt_timeout=$(( $OPTARG ))
+            if [[ "$opt_timeout" != "$OPTARG" ]]; then
+                fatal "timeout arg '$OPTARG' is not a number"
+            fi
+            timeout_str="${opt_timeout}s"
+            ;;
+        *)
+            usage
+            exit 1
+            ;;
+    esac
+done
+shift $(($OPTIND - 1))
+
+# Get the Job UUID from arg or stdin.
+JOB_UUID=$1
+if [[ -z "$JOB_UUID" ]]; then
+    # Expect JSON API response with "job_uuid" key on stdin.
+    INPUT=$(cat /dev/stdin)
+    echo "$INPUT"
+    JOB_UUID=$(echo "$INPUT" | json -H job_uuid)
+    [ -z "$opt_quiet" ] && echo ""
+fi
+if [[ -z "$JOB_UUID" ]]; then
+    fatal "no <job-uuid> argument or JSON stdin with 'job_uuid'"
+fi
+
+wait_for_job $JOB_UUID
