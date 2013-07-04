@@ -1,1 +1,3 @@
-../node_modules/imgapi-cli/bin/joyent-imgadm
+#!/bin/bash
+TOP=$(cd $(dirname $0)/../ >/dev/null; pwd)
+$TOP/build/node/bin/node $TOP/node_modules/imgapi-cli/bin/joyent-imgadm "$@"
