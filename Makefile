@@ -16,7 +16,7 @@ JSSTYLE_FILES	 = $(JS_FILES)
 JSSTYLE_FLAGS	 = -f tools/jsstyle.conf
 RONNJS		 = $(NODE) ./node_modules/.bin/ronn
 
-NODE_PREBUILT_VERSION=v0.8.23
+NODE_PREBUILT_VERSION=v0.8.25
 ifeq ($(shell uname -s),SunOS)
 	NODE_PREBUILT_CC_VERSION=4.6.2
 	NODE_PREBUILT_TAG=zone
