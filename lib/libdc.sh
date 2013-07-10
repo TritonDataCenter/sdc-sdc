@@ -25,7 +25,7 @@ function fatal() {
 
 AMON_URL=
 function amon() {
-    path=$1
+    local path=$1
     shift
     if [[ -z "$AMON_URL" ]]; then
         AMON_URL="http://$(json -f $CONFIG amon_domain)"
@@ -37,7 +37,7 @@ function amon() {
 
 AMON_RELAY_URL=
 function amonrelay() {
-    path=$1
+    local path=$1
     shift
     if [[ -z "$AMON_RELAY_URL" ]]; then
         AMON_RELAY_URL="http://$(json -f $CONFIG admin_ip):4307"
@@ -47,9 +47,35 @@ function amonrelay() {
     return 0
 }
 
+CLOUDAPI_URL=
+CLOUDAPI_SDC_KEY_ID=
+function cloudapi() {
+    local path=$1
+    shift
+    if [[ -z "$CLOUDAPI_URL" ]]; then
+        CLOUDAPI_URL="https://$(json -f $CONFIG cloudapi_domain)"
+    fi
+    if [[ -z "$CLOUDAPI_SDC_KEY_ID" ]]; then
+        CLOUDAPI_SDC_KEY_ID="$(json -f $CONFIG sdc_key_id)"
+    fi
+
+    # Sign with the old http-signature scheme.
+    local now=$(date -u "+%a, %d %h %Y %H:%M:%S GMT")
+    local signature=$(echo "$now" | tr -d '\n' | \
+        openssl dgst -sha256 -sign $HOME/.ssh/sdc.id_rsa | \
+        openssl enc -e -a | tr -d '\n')
+    local authz="Authorization: Signature keyId=\"/admin/keys/$CLOUDAPI_SDC_KEY_ID\",algorithm=\"rsa-sha256\" $signature"
+    local version="Api-Version:~7.0"
+
+    (curl ${CURL_OPTS} -k -H "$version" -H "$authz" -H "Date: $now" \
+        --url "${CLOUDAPI_URL}${path}" "$@") || return $?
+    echo ""  # sometimes the result is not terminated with a newline
+    return 0
+}
+
 CNAPI_URL=
 function cnapi() {
-    path=$1
+    local path=$1
     shift
     if [[ -z "$CNAPI_URL" ]]; then
         CNAPI_URL="http://$(json -f $CONFIG cnapi_domain)"
@@ -61,7 +87,7 @@ function cnapi() {
 
 NAPI_URL=
 function napi() {
-    path=$1
+    local path=$1
     shift
     if [[ -z "$NAPI_URL" ]]; then
         NAPI_URL="http://$(json -f $CONFIG napi_domain)"
@@ -73,7 +99,7 @@ function napi() {
 
 DAPI_URL=
 function dapi() {
-    path=$1
+    local path=$1
     shift
     if [[ -z "$DAPI_URL" ]]; then
         DAPI_URL="http://$(json -f $CONFIG dapi_domain)"
@@ -85,7 +111,7 @@ function dapi() {
 
 FWAPI_URL=
 function fwapi() {
-    path=$1
+    local path=$1
     shift
     if [[ -z "$FWAPI_URL" ]]; then
         FWAPI_URL="http://$(json -f $CONFIG fwapi_domain)"
@@ -97,7 +123,7 @@ function fwapi() {
 
 PAPI_URL=
 function papi() {
-    path=$1
+    local path=$1
     shift
     if [[ -z "$PAPI_URL" ]]; then
         PAPI_URL="http://$(json -f $CONFIG papi_domain)"
@@ -109,7 +135,7 @@ function papi() {
 
 SAPI_URL=
 function sapi() {
-    path=$1
+    local path=$1
     shift
     if [[ -z "$SAPI_URL" ]]; then
         SAPI_URL="http://$(json -f $CONFIG sapi_domain)"
@@ -121,7 +147,7 @@ function sapi() {
 
 WORKFLOW_URL=
 function workflow() {
-    path=$1
+    local path=$1
     shift
     if [[ -z "$WORKFLOW_URL" ]]; then
         WORKFLOW_URL="http://$(json -f $CONFIG workflow_domain)"
@@ -133,7 +159,7 @@ function workflow() {
 
 VMAPI_URL=
 function vmapi() {
-    path=$1
+    local path=$1
     shift
     if [[ -z "$VMAPI_URL" ]]; then
         VMAPI_URL="http://$(json -f $CONFIG vmapi_domain)"

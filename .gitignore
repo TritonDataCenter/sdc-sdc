@@ -4,3 +4,4 @@
 docs/*.json
 docs/*.html
 /man/**/*.roff
+/etc/config.json

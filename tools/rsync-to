@@ -33,3 +33,9 @@ rsync -av ${TOP}/ \
     --exclude /doc/ \
     --exclude /tools/ \
     --exclude /tmp/
+
+# Update the local manifests if necessary.
+ssh ${NODE} "zlogin ${SDC_ZONE} \
+    '/opt/smartdc/config-agent/build/node/bin/node \
+    /opt/smartdc/config-agent/agent.js -s' | bunyan"
+ssh ${NODE} svcadm -z ${SDC_ZONE} restart config-agent
