@@ -463,7 +463,7 @@ function main()
         }, function (cb) {
             // dump the output
             if (output_type === 'json') {
-                console.dir(problems);
+                console.log(JSON.stringify(problems));
             } else {
                 tabulate(problems, {
                     columns: 'vm_uuid,vm_brand,property,actual,expected',
