@@ -329,7 +329,7 @@ function checkVMs(vmapi, pkgs, callback)
 
                 // KVM 'ram' should match pkg's max_physical, that's what the
                 // customer sees (MiB)
-                if (Number(pkg.max_physical_memory) !== vm.ram) {
+                if (Number(pkg.max_physical_memory) !== Number(vm.ram)) {
                     logProblem(vm, pkg, 'ram', Number(pkg.max_physical_memory),
                         Number(vm.ram));
                 }
