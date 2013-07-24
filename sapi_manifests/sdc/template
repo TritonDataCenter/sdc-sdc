@@ -9,6 +9,7 @@
     "imgapi_domain": "{{{imgapi_domain}}}",
     "napi_domain": "{{{napi_domain}}}",
     "papi_domain": "{{{papi_domain}}}",
+    "rabbitmq": "{{{rabbitmq}}}",
     "sapi_domain": "{{{sapi_domain}}}",
     "sdc_key_id": "{{{SDC_KEY_ID}}}",
     "ufds_domain": "{{{ufds_domain}}}",

@@ -17,7 +17,8 @@
         "async": "0.2.9",
         "read": "1.0.4",
         "verror": "1.3.6",
-        "extsprintf": "1.0.2"
+        "extsprintf": "1.0.2",
+        "amqp": "git://github.com/postwait/node-amqp.git#7becb031a3517a22490addc46654e807bce5f37e"
     },
     "devDependencies": {
         "jshint": "2.1.4",
