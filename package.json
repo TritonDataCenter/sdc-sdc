@@ -5,7 +5,7 @@
     "author": "Joyent (joyent.com)",
     "private": true,
     "dependencies": {
-        "sdc-clients": "git+ssh://git@git.joyent.com:node-sdc-clients.git#6b0a1be",
+        "sdc-clients": "git+ssh://git@git.joyent.com:node-sdc-clients.git#6722dee",
         "smartdc": "git+ssh://git@github.com:joyent/node-smartdc.git#51970ef4",
         "imgapi-cli": "git+ssh://git@git.joyent.com:imgapi-cli.git#904b7ff",
         "bunyan": "0.21.4",
