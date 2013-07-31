@@ -7,7 +7,7 @@
  * TODO:
  * - sdc-useradm update <login|uuid> <field>=<value>
  * - sdc-useradm passwd <login|uuid> # if necessary
- * - search [FIELD=VALUE]
+ * - sdc-useradm search [FIELD=VALUE]
  * - groups
  * - group NAME     # list members of the group
  * - group-add,add-to-group USER GROUP-NAME   # XXX don't like subcmd name
@@ -20,7 +20,8 @@ var VERSION = '1.0.0';
 
 var p = console.log;
 var fs = require('fs');
-var util = require('util');
+var util = require('util'),
+    format = util.format;
 
 var assert = require('assert-plus');
 var async = require('async');
@@ -32,6 +33,7 @@ var read = require('read');
 var sdcClients = require('sdc-clients'),
     UFDS = sdcClients.UFDS;
 var sprintf = require('extsprintf').sprintf;
+var filters = require('ldapjs').filters;
 
 var common = require('../lib/common'),
     objMerge = common.objMerge;
@@ -406,21 +408,117 @@ CLI.prototype.do_search = function (subcmd, opts, args, callback) {
         return callback(new errors.UsageError('no search term(s) given'));
     }
 
-    // TODO: Don't support 'foo=bar' yet.
-    var term = args[0];
+    // Build the ldapjs filter for the given search args.
+    var SEARCH_TYPE_FROM_FIELD = { // The allowed search fields.
+        login: 'str',
+        uuid: 'str',
+        email: 'str',
+        cn: 'str',
+        sn: 'str',
+        givenName: 'str',
+        created_at: 'str',
+        updated_at: 'str',
+        pwdendtime: 'str',
+        approved_for_provisioning: 'bool',
+        registered_developer: 'bool'
+    };
+    var ldapFilter = null;
+    var ldapFilter = new filters.AndFilter();
+    ldapFilter.addFilter(new filters.EqualityFilter(
+        {attribute: 'objectclass', value: 'sdcperson'}));
+    var term; // used for relevance handling below
+    for (var i = 0; i < args.length; i++) {
+        var arg = args[i];
+        var opParser = /^(\w+)\s*(=|>=|<=|!=|>|<|==)\s*(.*?)$/;
+        var parsed = opParser.exec(arg);
+        if (!parsed) {
+            if (!term) {
+                term = arg;
+            }
+            // Just a bare search term: match against login, uuid, cn and email.
+            var or = new filters.OrFilter();
+            or.addFilter(new filters.SubstringFilter(
+                {attribute: 'login', initial: '', any: [arg]}));
+            or.addFilter(new filters.EqualityFilter(
+                {attribute: 'uuid', value: arg}));
+            or.addFilter(new filters.SubstringFilter(
+                {attribute: 'cn', initial: '', any: [arg]}));
+            or.addFilter(new filters.SubstringFilter(
+                {attribute: 'email', initial: '', any: [arg]}));
+            ldapFilter.addFilter(or);
+            continue;
+        }
+        var field = parsed[1];
+        var op = parsed[2];
+        var value = parsed[3];
+        var parent = ldapFilter;
+        var Filter;
+        switch (op) {
+        case '=':
+            Filter = filters.EqualityFilter;
+            break;
+        case '>=':
+            Filter = filters.GreaterThanEqualsFilter;
+            break;
+        case '<=':
+            Filter = filters.LessThanEqualsFilter;
+            break;
+        case '!=':
+            Filter = filters.EqualityFilter;
+            parent = new filters.NotFilter();
+            ldapFilter.addFilter(parent);
+            break;
+        case '==':
+            throw new Error('"==" operator not supported, use "="');
+            break;
+        case '<':
+            throw new Error('"<" operator not supported, use "<="');
+            break;
+        case '>':
+            throw new Error('">" operator not supported, use ">="');
+            break;
+        }
+        switch (SEARCH_TYPE_FROM_FIELD[field]) {
+        case 'str':
+            // Note: Not being careful about escaped asterisks here.
+            var starIdx = value.indexOf('*');
+            if (starIdx === -1) {
+                parent.addFilter(new Filter(
+                        {attribute: field, value: value}));
+            } else {
+                // Note: Really want negative lookbehind assertions to skip
+                // escaped asterisks. E.g. /(?<!\\)\*+/
+                var parts = value.split(/\*+/);
+                parent.addFilter(new filters.SubstringFilter({
+                    attribute: field,
+                    initial: parts[0],
+                    any: parts.slice(1, -1),
+                    final: parts[parts.length-1]
+                }));
+            }
+            break;
+        case 'array':
+            for (var j = 0; j < value.length; j++) {
+                parent.addFilter(new Filter(
+                    {attribute: field, value: value[j]}));
+            }
+            break;
+        case 'bool':
+            var boolValue = boolFromString(value, undefined, field);
+            parent.addFilter(new filters.EqualityFilter(
+                {attribute: field, value: boolValue.toString()}));
+            break;
+        default:
+            throw new Error(sprintf('unknown filter field: "%s"', field));
+        }
+    }
+
+    log.debug({ldapFilter: ldapFilter.toString()}, 'ldap filter');
     var base = 'ou=users, o=smartdc';
     var searchOpts = {
         scope: 'one',
-        filter: sprintf(
-            '(&(objectclass=sdcperson)(|'
-                + '(login=*%s*)'
-                + '(uuid=%s)'
-                + '(cn=*%s*)'
-                + '(email=*%s*)'
-                + '))',
-            term, term, term, term)
+        filter: ldapFilter.toString()
     };
-
     this.getLocalUfdsClient(function (cErr, client) {
         if (cErr)
             return callback(cErr);
@@ -440,7 +538,12 @@ CLI.prototype.do_search = function (subcmd, opts, args, callback) {
                     e.created = e.created_time.slice(0, 10);
                     e.updated_time = (new Date(Number(e.updated_at))).toISOString();
                     e.updated = e.updated_time.slice(0, 10);
-                    if (e.login === term || e.uuid === term
+                    // Note: Relevance handling was added when search only
+                    // supported a single 'term' arg. Now we have more so this
+                    // relevance calculation should be beefed up.
+                    if (!term) {
+                        e.relevance = 1;
+                    } else if (e.login === term || e.uuid === term
                         || e.cn === term || e.email === term) {
                         e.relevance = 1;
                     } else {
@@ -457,7 +560,7 @@ CLI.prototype.do_search = function (subcmd, opts, args, callback) {
                 // lazy.
                 tabulate(entries, {
                     skipHeader: opts.H,
-                    columns: opts.long ? 'uuid,login,cn,email,created' : opts.o,
+                    columns: opts.long ? 'uuid,login,cn,email,created_time' : opts.o,
                     sort: opts.s,
                     validFields: 'relevance,uuid,login,cn,email,created,created_time,created_at,sn,cn,givenname,updated,updated_time,updated_at,pwdchangedtime,pwdendtime'
                 });
@@ -508,12 +611,24 @@ CLI.prototype.do_search.help = (
     'Search users.\n'
     + '\n'
     + 'Usage:\n'
-    + '     {{name}} search [<options>] <term>\n'
+    + '    {{name}} search [<options>] <terms...>\n'
     + '\n'
     + '{{options}}\n'
-    + 'The search term does a (case-sensitive) match of login (substring),\n'
-    + 'uuid, cn (substring) and email (substring). Results are limited by\n'
-    + 'UFDS to 1000?'
+    + 'The search term is either a plain string -- which does a\n'
+    + '(case-sensitive) match of login (substring), uuid, cn (substring) and\n'
+    + 'email (substring) -- or a field-scoped comparison of the form\n'
+    + '<field><op><value> -- e.g. "login=admin". Supported operators are:\n'
+    + '\n'
+    + '    foo=bar\n'
+    + '    foo!=bar\n'
+    + '    foo>=123\n'
+    + '    foo<=bar\n'
+    + '\n'
+    + 'Substring matching is supported as well:\n'
+    + '\n'
+    + '    foo=*bar*\n'
+    + '\n'
+    + 'Results are limited by UFDS to 1000?'
 );
 
 

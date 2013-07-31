@@ -28,6 +28,7 @@ rsync -av ${TOP}/ \
     $extraOpts \
     --include "test/*.zfs.bz2" \
     --exclude "*.zfs.bz2" \
+    --exclude etc/config.json \
     --exclude .git/ \
     --exclude /deps/ \
     --exclude /doc/ \

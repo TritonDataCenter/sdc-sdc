@@ -1,7 +1,7 @@
 {
     "name": "sdc",
     "description": "SmartDataCenter 'sdc' zone to hold ops/admin tools",
-    "version": "1.1.0",
+    "version": "1.1.1",
     "author": "Joyent (joyent.com)",
     "private": true,
     "dependencies": {
@@ -10,6 +10,7 @@
         "imgapi-cli": "git+ssh://git@git.joyent.com:imgapi-cli.git#904b7ff",
         "bunyan": "0.21.4",
         "assert-plus": "0.1.4",
+        "ldapjs": "0.6.3",
         "mkdirp": "0.3.5",
         "node-uuid": "1.4.0",
         "cmdln": "1.2.2",

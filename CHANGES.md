@@ -1,5 +1,9 @@
 # sdc (SDC ops core zone) Changelog
 
+## 1.1.1
+
+- TOOLS-273: sdc-useradm search FIELD=VALUE ...
+
 ## 1.1.0
 
 - `sdc-cloudapi` and sdc service setup to create an "sdc key" on the admin user
