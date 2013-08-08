@@ -65,7 +65,7 @@ function cloudapi() {
         openssl dgst -sha256 -sign $HOME/.ssh/sdc.id_rsa | \
         openssl enc -e -a | tr -d '\n')
     local authz="Authorization: Signature keyId=\"/admin/keys/$CLOUDAPI_SDC_KEY_ID\",algorithm=\"rsa-sha256\" $signature"
-    local version="Api-Version:~7.0"
+    local version="X-Api-Version:~7.0"
 
     (curl ${CURL_OPTS} -k -H "$version" -H "$authz" -H "Date: $now" \
         --url "${CLOUDAPI_URL}${path}" "$@") || return $?
