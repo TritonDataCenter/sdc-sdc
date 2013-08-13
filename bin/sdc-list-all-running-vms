@@ -1,0 +1,46 @@
+#!/bin/bash
+#
+# List all running vms. Yo, this is heavy! Don't run this frequently
+# in production.
+#
+# Usage:
+#       sdc-list-all-running-vms
+#
+
+if [[ -n "$TRACE" ]]; then
+    export PS4='[\D{%FT%TZ}] ${BASH_SOURCE}:${LINENO}: ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
+    set -o xtrace
+fi
+set -o errexit
+set -o pipefail
+
+TOP=$(cd $(dirname $0)/../; pwd)
+JSON=$TOP/node_modules/.bin/json
+
+
+if [[ -z "$I_KNOW_THIS_IS_HEAVY_AND_I_JUST_DO_NOT_CARE" ]]; then
+    echo '*** WARNING: This is a heavy operation. '
+    echo '*** WARNING: Do not run this frequently in production!'
+    echo '*** WARNING: Hit Enter to continue.'
+    read
+fi
+
+
+num_vms=$(sdc-vmapi /vms?state=running -X HEAD -i | grep x-joyent-resource-count | tr '\r\n' '\n' | awk '{print $2}')
+echo "Retrieving $num_vms VMs from VMAPI" >&2
+
+limit=500
+chunks=/var/tmp/all-running-vms.chunks-$$
+echo '' >$chunks
+n=0
+while [[ $n -lt $num_vms ]]; do
+        echo "  sdc-vmapi /vms?state=running&offset=$n&limit=$limit" >&2
+        sdc-vmapi /vms?state=running\&offset=$n\&limit=$limit \
+                | $JSON -H -e 'this.customer_metadata=undefined;' >>$chunks
+        n=$(( $n + $limit ))
+done
+
+$JSON -f $chunks -g >/var/tmp/all-running-vms.json-$$
+
+cat /var/tmp/all-running-vms.json-$$
+rm /var/tmp/all-running-vms.json-$$
