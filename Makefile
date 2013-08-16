@@ -72,6 +72,7 @@ release: all docs man
 		$(TOP)/README.md \
 		$(TOP)/CHANGES.md \
 		$(TOP)/test \
+		$(TOP)/tools \
 		$(RELTMPDIR)/root/opt/smartdc/$(NAME)
 	mkdir -p $(RELTMPDIR)/root/opt/smartdc/$(NAME)/man
 	for f in $$(cd man && find . -type f -name "*.roff"); do \

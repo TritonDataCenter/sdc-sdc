@@ -1,0 +1,33 @@
+#!/bin/bash
+#
+# Update the sdc-* scripts that exist on the GZ with the ones at bin/
+#
+
+if [ "$TRACE" != "" ]; then
+    export PS4='[\D{%FT%TZ}] ${BASH_SOURCE}:${LINENO}: ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
+    set -o xtrace
+fi
+set -o errexit
+set -o pipefail
+
+TOP=$(cd $(dirname $0)/../ >/dev/null; pwd)
+TEMPLATE=${TOP}/tools/.sdc-call-this-in-sdc-zone
+template_sha=$(digest -a sha1 $TEMPLATE)
+
+echo "Upgrading 'sdc' scripts in the global zone..."
+
+for file in $(find ${TOP}/bin -type f -name "sdc-*" -exec basename {} \;)
+do
+    if [[ ! -f "/opt/smartdc/bin/$file" ]]; then
+        echo "- $file does not exist in the GZ, skipping"
+    continue
+    fi
+
+    gz_sha=$(digest -a sha1 /opt/smartdc/bin/${file})
+    if [[ $gz_sha != $template_sha ]]; then
+        echo "* Upgrading $file with new template"
+        cp $TEMPLATE /opt/smartdc/bin/$file
+    fi
+done
+
+echo "---> Done."
