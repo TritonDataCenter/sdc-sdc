@@ -19,8 +19,7 @@ echo "Upgrading 'sdc' scripts in the global zone..."
 for file in $(find ${TOP}/bin -type f -name "sdc-*" -exec basename {} \;)
 do
     if [[ ! -f "/opt/smartdc/bin/$file" ]]; then
-        echo "- $file does not exist in the GZ, skipping"
-    continue
+        continue
     fi
 
     gz_sha=$(digest -a sha1 /opt/smartdc/bin/${file})
