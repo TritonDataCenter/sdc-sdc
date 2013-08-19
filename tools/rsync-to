@@ -32,7 +32,6 @@ rsync -av ${TOP}/ \
     --exclude .git/ \
     --exclude /deps/ \
     --exclude /doc/ \
-    --exclude /tools/ \
     --exclude /tmp/
 
 # Update the local manifests if necessary.

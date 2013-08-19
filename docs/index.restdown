@@ -64,3 +64,69 @@ TODO: document appropriate of:
     sdc-heartbeatsnoop       sdc-rabbitstat           sdc-zfs-io-throttle.d
     sdc-image-sync           sdc-restore
     sdc-role
+
+
+# Uploading SDC service API data to Manta
+
+The DC's 'sdc' zone (there should be only one) handles taking hourly dumps
+of most of the SDC API's models and uploading those to Manta. Here is how
+that works (see TOOLS-278 for background):
+
+- An hourly cron job (at the top of the hour) dumps the output of the various
+  APIs to "/var/log/sdc-svc-data/*.json":
+
+        0 * * * * /opt/smartdc/sdc/tools/dump-sdc-svc-data.sh >>/var/log/dump-sdc-svc-data.log 2>&1
+
+  That script will drop dump files more than a week old to ensure these don't
+  grow to consume all space.
+
+- At 10 minutes after the hour, a separate cron job uploads those dumps to Manta
+  **if the DC is configured with a Manta to use**:
+
+        10 * * * * /opt/smartdc/sdc/tools/upload-sdc-svc-data.sh >>/var/log/upload-sdc-svc-data.log 2>&1
+
+- These script's log files are monitored with an Amon log-scan alarm for
+  'fatal error'
+
+
+
+# Uploading SDC log data to Manta
+
+Not yet implemented. See TOOLS-278 and HEAD-1365 for details.
+
+
+
+# Operators Guide
+
+## HOWTO: Configure a Manta for SDC use
+
+Given a Manta to use, SDC will upload hourly API data dumps, log files, etc.
+This requires two pieces:
+
+1. An SSH key for all relevant parts of SDC to use.
+2. A Manta location (base MANTA_URL and MANTA_USER) to use.
+
+Step 1 is handled automatically the first time the 'sdc' zone is setup. A
+new SSH key is created and added to the metadata of the 'sdc' *application*
+in SAPI. For example:
+
+    [root@headnode (coal) ~]# sdc-sapi /applications?name=sdc | json -H 0.metadata | json -j SDC_PRIVATE_KEY SDC_PUBLIC_KEY SDC_KEY_ID
+    {
+      "SDC_PRIVATE_KEY": "-----BEGIN RSA PRIVATE KEY-----\nMII...",
+      "SDC_PUBLIC_KEY": "ssh-rsa AAAAB3NzaC...",
+      "SDC_KEY_ID": "a6:87:6f:3e:7f:fb:96:ea:64:63:85:a2:e2:0f:26:86"
+    }
+
+Step 2 must manually be set by:
+
+(a) setting the "SDC_MANTA_URL" and "SDC_MANTA_USER" metadata on the 'sdc'
+    *application*; and
+(b) ensuring this Manta user has the "SDC_PUBLIC_KEY" (e.g. via the portal)
+
+Step (a) can be done as in the following example (here I am using my own
+Manta user area for COAL dev testing):
+
+    sapiadm update $(sdc-sapi /applications?name=sdc | json -H 0.uuid) \
+        metadata.SDC_MANTA_URL=https://us-east.manta.joyent.com
+    sapiadm update $(sdc-sapi /applications?name=sdc | json -H 0.uuid) \
+        metadata.SDC_MANTA_USER=trentm

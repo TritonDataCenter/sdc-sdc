@@ -1,0 +1,3 @@
+export MANTA_USER={{{SDC_MANTA_USER}}}
+export MANTA_URL={{{SDC_MANTA_URL}}}
+export MANTA_KEY_ID={{{SDC_KEY_ID}}}

@@ -1,0 +1,105 @@
+#!/usr/bin/bash
+# vi: expandtab sw=4 ts=4
+#
+# Install Amon probes for the 'sdc' zone.
+#
+
+if [[ -n "$TRACE" ]]; then
+    export PS4='${BASH_SOURCE}:${LINENO}: ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
+    set -o xtrace
+fi
+set -o errexit
+
+
+#---- globals, config
+
+TOP=$(cd $(dirname $0)/../; pwd)
+CONFIG=$TOP/etc/config.json
+JSON=$TOP/node_modules/.bin/json
+
+res_status=
+res_body=
+
+
+
+#---- functions
+
+function fatal {
+    echo "$(basename $0): error: $1"
+    exit 1
+}
+
+# Call the amon master.
+function amon() {
+    local res=$(sdc-amon "$@")
+    res_status=$(echo "$res" | head -1 | awk '{print $2}')
+    res_body=$(echo "$res" | json -Hq)
+}
+
+function putprobe() {
+    local account=$1
+    local payload=$2
+    local pname=$(echo "$payload" | json name)
+    if [[ -z "$pname" ]]; then
+        fatal "No 'name' for probe: $payload"
+    fi
+    amon /pub/$account/probes
+    local probe_uuid=$(echo "$res_body" | json -H -c "name == '$pname'" -a uuid)
+    if [[ "$res_status" != "200" ]]; then
+        fatal "Error looking for probe '$pname': $res_status $res_body"
+    elif [[ -n "$probe_uuid" ]]; then
+        echo "Probe '$pname' already exists: $probe_uuid"
+    else
+        echo "Create probe '$pname'."
+        amon /pub/$account/probes -X POST -f --data "$payload"
+    fi
+}
+
+
+
+#---- mainline
+
+zonename=$(zonename)
+zonealias=$(mdata-get sdc:alias)
+account=$($JSON -f $CONFIG ufds_admin_uuid)
+
+# Sanity check that amon-master is up.
+amon /ping -f || fatal "amon-master ping failed: $res_status $res_body"
+
+# Probe: Monitor FATALs in the imgapi service log.
+# TODO: It is silly to have three probes for this. Amon should support
+# rolling these up.
+# Monitor for 'fatal error' in the dump-sdc-svc-data.sh script.
+putprobe $account "{
+    \"skipauthz\": true,
+    \"name\": \"dump-sdc-svc-data fatal error\",
+    \"type\": \"log-scan\",
+    \"agent\": \"$zonename\",
+    \"contacts\": [\"email\"],
+    \"config\": {
+        \"path\": \"/var/log/dump-sdc-svc-data.log\",
+        \"match\": {
+            \"pattern\": \"fatal error\",
+            \"matchWord\": true,
+            \"type\": \"substring\"
+        }
+    }
+}"
+
+# Monitor for 'fatal error' in the dump-sdc-svc-data.sh script.
+putprobe $account "{
+    \"skipauthz\": true,
+    \"name\": \"upload-sdc-svc-data fatal error\",
+    \"type\": \"log-scan\",
+    \"agent\": \"$zonename\",
+    \"contacts\": [\"email\"],
+    \"config\": {
+        \"path\": \"/var/log/upload-sdc-svc-data.log\",
+        \"match\": {
+            \"pattern\": \"fatal error\",
+            \"matchWord\": true,
+            \"type\": \"substring\"
+        }
+    }
+}"
+

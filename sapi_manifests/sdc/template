@@ -12,6 +12,8 @@
     "rabbitmq": "{{{rabbitmq}}}",
     "sapi_domain": "{{{sapi_domain}}}",
     "sdc_key_id": "{{{SDC_KEY_ID}}}",
+    "ufds_admin_login": "{{{ufds_admin_login}}}",
+    "ufds_admin_uuid": "{{{ufds_admin_uuid}}}",
     "ufds_domain": "{{{ufds_domain}}}",
     "ufds_is_master": {{{ufds_is_master}}},
     "ufds_ldap_root_dn": "{{{ufds_ldap_root_dn}}}",
