@@ -98,10 +98,10 @@ Not yet implemented. See TOOLS-278 and HEAD-1365 for details.
 
 # Operators Guide
 
-## HOWTO: Configure a Manta for SDC use
+## HOWTO: Configure SDC to use a Manta
 
-Given a Manta to use, SDC will upload hourly API data dumps, log files, etc.
-This requires two pieces:
+Given a Manta to use, SDC will upload hourly API data dumps, log files (NYI),
+etc. This requires two pieces:
 
 1. An SSH key for all relevant parts of SDC to use.
 2. A Manta location (base MANTA_URL and MANTA_USER) to use.
