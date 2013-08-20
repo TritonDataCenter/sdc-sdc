@@ -67,10 +67,10 @@ echo "Purge dumps older than a week."
 for path in $(ls $DUMPDIR/*-*.json 2>/dev/null)
 do
     f=$(basename $path)
-    dumptime=$(echo $f | cut -d- -f 3 | cut -d. -f 1)
+    dumptime=$(echo $f | cut -d- -f 2 | cut -d. -f 1)
     # 604800 is a week of seconds
     if [[ $dumptime -lt $(( $START - 604800 )) ]]; then
-        echo "Purging more-than-week-old dump file '$path'"
+        echo "Purging more-than-week-old ($dumptime < $START - 604800) dump file '$path'"
         rm -f $path
     fi
 done
