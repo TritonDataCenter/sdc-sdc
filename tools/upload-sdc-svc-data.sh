@@ -2,11 +2,11 @@
 #
 # Upload SDC service data in "/var/log/sdc-svc-data/..." to manta.
 # Files there are of the form:
-#       $service-$model-$utcdate.json
-#       imgapi-images-20130818T021707Z.json
+#       $thing-$timestamp.json
+#       imgapi_images-1376953200.json
 # which get uploaded to manta as:
-#       $SDC_MANTA_URL/$SDC_MANTA_USER/stor/sdc/$service/$dcname/YYYY/MM/DD/HH/$model-$utcdate.json
-#       https://us-east.manta.joyent.com/admin/stor/sdc/imgapi/$dcname/2013/08/18/02/images-20130818T021707Z.json
+#       $SDC_MANTA_URL/$SDC_MANTA_USER/stor/sdc/$thing/$dcname/YYYY/MM/DD/HH/$basename.json
+#       https://us-east.manta.joyent.com/admin/stor/sdc/imgapi_images/$dcname/2013/08/18/02/images_images-1376953200.json
 #
 # Note: Earlier discussion was that the service's VM UUID would be in the
 # basename. Currently this data is being gathered via whatever IP is provided
@@ -72,19 +72,18 @@ fi
 echo "MANTA_URL: $MANTA_URL"
 
 # From:
-#   $service-$model-$timestamp.json
+#   $thing-$timestamp.json
 # to:
-#   /$SDC_MANTA_USER/stor/sdc/$service/$dcname/YYYY/MM/DD/HH/$model-$timestamp.json
+#   /$SDC_MANTA_USER/stor/sdc/$thing/$dcname/YYYY/MM/DD/HH/$thing-$timestamp.json
 dcname=$($JSON -f /opt/smartdc/sdc/etc/config.json datacenter_name)
-for path in $(ls $DUMPDIR/*-*-*.json)
+for path in $(ls $DUMPDIR/*-*.json)
 do
     echo "consider '$path'"
     f=$(basename $path)
-    service=$(echo $f | cut -d- -f 1)
-    model=$(echo $f | cut -d- -f 2)
-    dumptime=$(echo $f | cut -d- -f 3 | cut -d. -f 1)
+    thing=$(echo $f | cut -d- -f 1)
+    dumptime=$(echo $f | cut -d- -f 2 | cut -d. -f 1)
     timepath=$(date -d "@$dumptime" "+%Y/%m/%d/%H")
-    mpath="/$MANTA_USER/stor/sdc/$service/$dcname/$timepath/$model-$dumptime.json"
+    mpath="/$MANTA_USER/stor/sdc/$thing/$dcname/$timepath/$thing-$dumptime.json"
     echo "upload to '$mpath'"
     mmkdir -p $(dirname $mpath)
     mput -H "Content-Type: application/json" -f $path $mpath

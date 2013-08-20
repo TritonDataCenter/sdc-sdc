@@ -64,7 +64,7 @@ TIMESTAMP=$(date -u "+%s")
 mkdir -p /var/log/sdc-svc-data
 
 echo "Purge dumps older than a week."
-for path in $(ls $DUMPDIR/*-*-*.json 2>/dev/null)
+for path in $(ls $DUMPDIR/*-*.json 2>/dev/null)
 do
     f=$(basename $path)
     dumptime=$(echo $f | cut -d- -f 3 | cut -d. -f 1)
@@ -76,37 +76,38 @@ do
 done
 
 echo "Dump IMGAPI images"
-sdc-imgapi /images?state=all >$DUMPDIR/imgapi-images-$TIMESTAMP.json
+sdc-imgapi /images?state=all >$DUMPDIR/imgapi_images-$TIMESTAMP.json
 
 # PII cert, drop customer_metadata and internal_metadat
 echo "Dump VMAPI vms"
 sdc-vmapi /vms?state=active \
     | $JSON -e 'this.customer_metadata=undefined; this.internal_metadata=undefined;' \
-    >$DUMPDIR/vmapi-vms-$TIMESTAMP.json
+    >$DUMPDIR/vmapi_vms-$TIMESTAMP.json
 
 echo "Dump CNAPI servers"
-sdc-cnapi /servers?extras=all >$DUMPDIR/cnapi-servers-$TIMESTAMP.json
+sdc-cnapi /servers?extras=all >$DUMPDIR/cnapi_servers-$TIMESTAMP.json
 
 # TODO: not sure about dumping all Amon alarms. This endpoint was never intended
 # for prod use.
 echo "Dump Amon alarms"
-sdc-amon /alarms >$DUMPDIR/amon-alarms-$TIMESTAMP.json
+sdc-amon /alarms >$DUMPDIR/amon_alarms-$TIMESTAMP.json
 
 echo "Dump NAPI nic_tags, nics, networks, network_pools"
-sdc-napi /nic_tags >$DUMPDIR/napi-nic_tags-$TIMESTAMP.json
-sdc-napi /nics >$DUMPDIR/napi-nics-$TIMESTAMP.json
-sdc-napi /networks >$DUMPDIR/napi-networks-$TIMESTAMP.json
-sdc-napi /network_pools >$DUMPDIR/napi-network_pools-$TIMESTAMP.json
+sdc-napi /nic_tags >$DUMPDIR/napi_nic_tags-$TIMESTAMP.json
+# TODO: Disabled right now b/c RobG said this might be too heavy in prod.
+#sdc-napi /nics >$DUMPDIR/napi_nics-$TIMESTAMP.json
+sdc-napi /networks >$DUMPDIR/napi_networks-$TIMESTAMP.json
+sdc-napi /network_pools >$DUMPDIR/napi_network_pools-$TIMESTAMP.json
 
 echo "Dump SAPI applications, services, instances"
-sdc-sapi /applications >$DUMPDIR/sapi-applications-$TIMESTAMP.json
-sdc-sapi /services >$DUMPDIR/sapi-services-$TIMESTAMP.json
-sdc-sapi /instances >$DUMPDIR/sapi-instances-$TIMESTAMP.json
+sdc-sapi /applications >$DUMPDIR/sapi_applications-$TIMESTAMP.json
+sdc-sapi /services >$DUMPDIR/sapi_services-$TIMESTAMP.json
+sdc-sapi /instances >$DUMPDIR/sapi_instances-$TIMESTAMP.json
 
 echo "Dump Workflow workflows, jobs"
-sdc-workflow /workflows >$DUMPDIR/workflow-workflows-$TIMESTAMP.json
+sdc-workflow /workflows >$DUMPDIR/workflow_workflows-$TIMESTAMP.json
 # TODO: Disabled right now pending discussion on timeouts here in heavy usage.
-#sdc-workflow /jobs >$DUMPDIR/workflow-jobs-$TIMESTAMP.json
+#sdc-workflow /jobs >$DUMPDIR/workflow_jobs-$TIMESTAMP.json
 
 ls -al $DUMPDIR/*$TIMESTAMP*
 
