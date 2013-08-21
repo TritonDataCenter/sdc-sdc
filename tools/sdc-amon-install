@@ -69,15 +69,15 @@ amon /ping -f || fatal "amon-master ping failed: $res_status $res_body"
 # Probe: Monitor FATALs in the imgapi service log.
 # TODO: It is silly to have three probes for this. Amon should support
 # rolling these up.
-# Monitor for 'fatal error' in the dump-sdc-svc-data.sh script.
+# Monitor for 'fatal error' in the dump-sdc-data.sh script.
 putprobe $account "{
     \"skipauthz\": true,
-    \"name\": \"dump-sdc-svc-data fatal error\",
+    \"name\": \"dump-sdc-data fatal error\",
     \"type\": \"log-scan\",
     \"agent\": \"$zonename\",
     \"contacts\": [\"email\"],
     \"config\": {
-        \"path\": \"/var/log/dump-sdc-svc-data.log\",
+        \"path\": \"/var/log/dump-sdc-data.log\",
         \"match\": {
             \"pattern\": \"fatal error\",
             \"matchWord\": true,
@@ -86,15 +86,15 @@ putprobe $account "{
     }
 }"
 
-# Monitor for 'fatal error' in the dump-sdc-svc-data.sh script.
+# Monitor for 'fatal error' in the dump-sdc-data.sh script.
 putprobe $account "{
     \"skipauthz\": true,
-    \"name\": \"upload-sdc-svc-data fatal error\",
+    \"name\": \"upload-sdc-data fatal error\",
     \"type\": \"log-scan\",
     \"agent\": \"$zonename\",
     \"contacts\": [\"email\"],
     \"config\": {
-        \"path\": \"/var/log/upload-sdc-svc-data.log\",
+        \"path\": \"/var/log/upload-sdc-data.log\",
         \"match\": {
             \"pattern\": \"fatal error\",
             \"matchWord\": true,

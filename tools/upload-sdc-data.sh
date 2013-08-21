@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Upload SDC service data in "/var/log/sdc-svc-data/..." to manta.
+# Upload SDC service data in "/var/log/sdc-data/..." to manta.
 # Files there are of the form:
 #       $thing-$timestamp.json
 #       imgapi_images-1376953200.json
@@ -15,7 +15,7 @@
 # of the N servers for each service once we have HA?)
 #
 # Files are added to the dump dir by a separate cron running
-# 'dump-sdc-svc-data.sh'.
+# 'dump-sdc-data.sh'.
 #
 
 if [[ -n "$TRACE" ]]; then
@@ -35,7 +35,7 @@ TOP=$(cd $(dirname $0)/../; pwd)
 CONFIG=$TOP/etc/config.json
 JSON=$TOP/node_modules/.bin/json
 
-DUMPDIR=/var/log/sdc-svc-data
+DUMPDIR=/var/log/sdc-data
 
 [[ -f /root/.sdc_mantaprofile ]] && source /root/.sdc_mantaprofile
 

@@ -73,9 +73,9 @@ of most of the SDC API's models and uploading those to Manta. Here is how
 that works (see TOOLS-278 for background):
 
 - An hourly cron job (at the top of the hour) dumps the output of the various
-  APIs to "/var/log/sdc-svc-data/*.json":
+  APIs to "/var/log/sdc-data/*.json":
 
-        0 * * * * /opt/smartdc/sdc/tools/dump-sdc-svc-data.sh >>/var/log/dump-sdc-svc-data.log 2>&1
+        0 * * * * /opt/smartdc/sdc/tools/dump-sdc-data.sh >>/var/log/dump-sdc-data.log 2>&1
 
   That script will drop dump files more than a week old to ensure these don't
   grow to consume all space.
@@ -83,7 +83,7 @@ that works (see TOOLS-278 for background):
 - At 10 minutes after the hour, a separate cron job uploads those dumps to Manta
   **if the DC is configured with a Manta to use**:
 
-        10 * * * * /opt/smartdc/sdc/tools/upload-sdc-svc-data.sh >>/var/log/upload-sdc-svc-data.log 2>&1
+        10 * * * * /opt/smartdc/sdc/tools/upload-sdc-data.sh >>/var/log/upload-sdc-data.log 2>&1
 
 - These script's log files are monitored with an Amon log-scan alarm for
   'fatal error'
@@ -138,5 +138,3 @@ for COAL by running the following from your Mac:
 
     # set-sdc-key.sh HEADNODE PRIV-KEY-FILE
     <sdc.git-clone>/tools/set-sdc-key.sh coal ~/.ssh/automation.id_rsa
-
-

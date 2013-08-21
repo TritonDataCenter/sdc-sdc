@@ -1,14 +1,14 @@
 #!/bin/bash
 #
-# Dump data from SDC services to "/var/log/sdc-svc-data/..."
+# Dump data from SDC services to "/var/log/sdc-data/..."
 #
 # The intention is that this is run at the top of the hour. Then a separate
-# cronjob running 'upload-sdc-svc-data.sh' uploads all those to Manta. The
+# cronjob running 'upload-sdc-data.sh' uploads all those to Manta. The
 # separation is to separate failure modes. Each script will log and an Amon
 # probe will watch for 'fatal error' in those logs.
 #
 # Uploading to Manta only happens if the 'sdc' application is configured with
-# a SDC_MANTA_URL. To avoid endless filling of /var/log/sdc-svc-data, dumps
+# a SDC_MANTA_URL. To avoid endless filling of /var/log/sdc-data, dumps
 # older than a week will be removed.
 #
 # TODO: add other services; ensure not too heavy on them (e.g. full dump of VMs)
@@ -31,7 +31,7 @@ TOP=$(cd $(dirname $0)/../; pwd)
 CONFIG=$TOP/etc/config.json
 JSON=$TOP/node_modules/.bin/json
 
-DUMPDIR=/var/log/sdc-svc-data
+DUMPDIR=/var/log/sdc-data
 
 
 
@@ -61,7 +61,7 @@ START=$(date +%s)
 echo "$0 started at $(date -u '+%Y-%m-%dT%H:%M:%S')"
 
 TIMESTAMP=$(date -u "+%s")
-mkdir -p /var/log/sdc-svc-data
+mkdir -p /var/log/sdc-data
 
 echo "Purge dumps older than a week."
 for path in $(ls $DUMPDIR/*-*.json 2>/dev/null)
