@@ -48,7 +48,10 @@ pubkey=$privkey.pub
 [[ -f "$pubkey" ]] || fatal "'$pubkey' does not exist"
 keyid=$(ssh-keygen -l -f $pubkey | awk '{print $2}' | tr -d '\n')
 
-cat <<EOF | ssh -T coal
+scp $pubkey $headnode:/var/tmp/sdckey.id_rsa.pub
+cat <<EOF | ssh -T $headnode
+set -o errexit
+
 PATH=/opt/smartdc/bin:\$PATH
 sdcapp=\$(sdc-sapi /applications?name=sdc | json -H 0.uuid)
 echo '{
@@ -58,6 +61,11 @@ echo '{
         "SDC_KEY_ID": "$keyid"
     }
 }' | sapiadm update \$sdcapp
+
+ufds_admin_uuid=\$(sdc-sapi /applications?name=sdc | json -H 0.metadata.ufds_admin_uuid)
+sdczone=\$(vmadm lookup -1 alias=sdc0)
+mv /var/tmp/sdckey.id_rsa.pub /zones/\$sdczone/root/var/tmp/
+sdc sdc-useradm add-key \$ufds_admin_uuid /var/tmp/sdckey.id_rsa.pub
 EOF
 
 echo "New key set on the 'sdc' app in the '$headnode' SAPI."
