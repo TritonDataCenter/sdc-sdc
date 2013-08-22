@@ -105,6 +105,7 @@ etc. This requires two pieces:
 
 1. An SSH key for all relevant parts of SDC to use.
 2. A Manta location (base MANTA_URL and MANTA_USER) to use.
+3. If not already, the 'sdc' zone needs an external NIC.
 
 **Step 1 is handled automatically** the first time the 'sdc' zone is setup. A
 new SSH key is created and added to the metadata of the 'sdc' *application*
@@ -136,5 +137,14 @@ you used to the user database being used by Manta... or you could set the
 SDC key to be one that you already know exists there. The latter can be done
 for COAL by running the following from your Mac:
 
-    # set-sdc-key.sh HEADNODE PRIV-KEY-FILE
+    # ./tools/set-sdc-key.sh HEADNODE PRIV-KEY-FILE
     <sdc.git-clone>/tools/set-sdc-key.sh coal ~/.ssh/automation.id_rsa
+
+**Step 3 can be done with as follows**, run from the headnode GZ:
+
+    sdc-vmapi /vms/$(vmadm lookup -1 alias=sdc0)?action=add_nics -X POST -d@- <<EOP | sdc sdc-waitforjob
+    {
+        "networks": [{"uuid": "$(sdc-napi /networks?name=external | json -H 0.uuid)"}]
+    }
+    EOP
+    sleep 10  # wait for the sdc zone to reboot
