@@ -33,7 +33,7 @@ EOF
     exit 1
 fi
 
-CMD_FMT="/opt/smartdc/sdc/bin/sdc-oneachnode -n %s -j \"%s %s\""
+CMD_FMT="sdc-oneachnode -n %s -j \"%s %s\""
 GREP_CMD=$(printf "/usr/bin/grep -h %s" $req_id)
 
 vmapi "/vms?state=running&tags.smartdc_type=core" >/tmp/vms.$$ 2>&1
