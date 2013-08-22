@@ -103,6 +103,7 @@ echo "Dump SAPI applications, services, instances"
 sdc-sapi /applications >$DUMPDIR/sapi_applications-$TIMESTAMP.json
 sdc-sapi /services >$DUMPDIR/sapi_services-$TIMESTAMP.json
 sdc-sapi /instances >$DUMPDIR/sapi_instances-$TIMESTAMP.json
+sdc-sapi /manifests >$DUMPDIR/sapi_manifests-$TIMESTAMP.json
 
 echo "Dump Workflow workflows, jobs"
 sdc-workflow /workflows >$DUMPDIR/workflow_workflows-$TIMESTAMP.json
