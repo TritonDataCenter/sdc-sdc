@@ -42,9 +42,10 @@ administrator tool naming tradition).
 In addition there are a number of other tools not directly associated with
 an API in the DC:
 
-||**Description**||**Tool**||
-||Joyent Images (images.joyent.com)||joyent-imgadm||
-||SDC Updates (updates.joyent.com)||updates-imgadm||
+||**Tool**||**Description**||
+||joyent-imgadm||Joyent Images (images.joyent.com)||
+||updates-imgadm||SDC Updates (updates.joyent.com)||
+||sdc-req||Search for a request UUID on all the SDC application logs||
 
 
 TODO: document appropriate of:
