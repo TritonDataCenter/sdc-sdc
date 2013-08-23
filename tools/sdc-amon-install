@@ -15,7 +15,6 @@ set -o errexit
 
 TOP=$(cd $(dirname $0)/../; pwd)
 CONFIG=$TOP/etc/config.json
-JSON=$TOP/node_modules/.bin/json
 
 res_status=
 res_body=
@@ -61,7 +60,7 @@ function putprobe() {
 
 zonename=$(zonename)
 zonealias=$(mdata-get sdc:alias)
-account=$($JSON -f $CONFIG ufds_admin_uuid)
+account=$(json -f $CONFIG ufds_admin_uuid)
 
 # Sanity check that amon-master is up.
 amon /ping -f || fatal "amon-master ping failed: $res_status $res_body"
