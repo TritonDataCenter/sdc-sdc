@@ -263,9 +263,7 @@ CLI.prototype.init = function (opts, args, callback) {
 CLI.prototype._getUfdsClient = function (options, callback) {
     var client = new UFDS(options);
 
-    // Fatal error. Let this propagate.
-    //client.once('error', function (err) {});
-
+    client.once('error', callback);
     client.once('connect', function () {
         client.removeAllListeners('error');
         client.on('error', function (err) {
@@ -288,7 +286,12 @@ CLI.prototype.getLocalUfdsClient = function (callback) {
         bindDN: 'cn=root',
         bindPassword: 'secret',
         log: log.child({ufds: 'local'}, true),
-        url: 'ldaps://' + config.ufds_domain
+        url: 'ldaps://' + config.ufds_domain,
+        connectTimeout: 15000,
+        retry: {
+            maxDelay: 10000,
+            retries: 2
+        }
     };
     self._getUfdsClient(options, function (err, client) {
         self._localUfdsClient = client;
@@ -308,13 +311,58 @@ CLI.prototype.getMasterUfdsClient = function (callback) {
         bindDN: 'cn=root',
         bindPassword: 'secret',
         log: log.child({ufds: 'master'}, true),
-        url: 'ldaps://' + config.ufds_remote_ip
+        url: 'ldaps://' + config.ufds_remote_ip,
+        connectTimeout: 10000,
+        retry: {
+            maxDelay: 10000,
+            retries: 2
+        }
     };
     self._getUfdsClient(options, function (err, client) {
         self._masterUfdsClient = client;
         callback(err, client);
     });
 };
+
+
+CLI.prototype.do_ping = function (subcmd, opts, args, callback) {
+    if (opts.help) {
+        this.do_help('help', {}, [subcmd], callback);
+        return;
+    } else if (args.length !== 0) {
+        return callback(new errors.UsageError(sprintf(
+            'incorrect number of arguments: "%s"', args.join(' '))));
+    }
+    var getUfdsClient = (opts.master
+        ? this.getMasterUfdsClient.bind(this)
+        : this.getLocalUfdsClient.bind(this))
+    getUfdsClient(function (cErr, client) {
+        if (cErr)
+            return callback(cErr);
+        console.log('pong');
+        callback();
+    });
+};
+CLI.prototype.do_ping.options = [
+    {
+        names: ['help', 'h'],
+        type: 'bool',
+        help: 'Show this help.'
+    },
+    {
+        names: ['master', 'm'],
+        type: 'bool',
+        help: 'Ping the master UFDS server.'
+    }
+];
+CLI.prototype.do_ping.help = (
+    'Ping the UFDS server.\n'
+    + '\n'
+    + 'Usage:\n'
+    + '     {{name}} ping [<options>]\n'
+    + '\n'
+    + '{{options}}\n'
+);
 
 
 CLI.prototype.do_get = function (subcmd, opts, args, callback) {
