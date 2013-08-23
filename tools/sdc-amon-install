@@ -13,6 +13,8 @@ set -o errexit
 
 #---- globals, config
 
+PATH=/opt/smartdc/sdc/bin:/opt/smartdc/sdc/build/node/bin:/opt/local/bin:/opt/local/sbin:/usr/bin:/usr/sbin
+
 TOP=$(cd $(dirname $0)/../; pwd)
 CONFIG=$TOP/etc/config.json
 
