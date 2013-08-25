@@ -50,17 +50,19 @@ keyid=$(ssh-keygen -l -f $pubkey | awk '{print $2}' | tr -d '\n')
 
 scp $pubkey $headnode:/var/tmp/sdckey.id_rsa.pub
 cat <<EOF | ssh -T $headnode
+set -o xtrace
 set -o errexit
 
 PATH=/opt/smartdc/bin:\$PATH
 sdcapp=\$(sdc-sapi /applications?name=sdc | json -H 0.uuid)
+# Put the JSON on a single line to workaround pre-SAPI-168 SAPIs.
 echo '{
     "metadata": {
         "SDC_PRIVATE_KEY": $(node -e "var fs=require('fs'); console.log(JSON.stringify(fs.readFileSync('$privkey', 'utf8')))"),
         "SDC_PUBLIC_KEY": "$(cat $pubkey)",
         "SDC_KEY_ID": "$keyid"
     }
-}' | sapiadm update \$sdcapp
+}' | json -o json-0 | sapiadm update \$sdcapp
 
 ufds_admin_uuid=\$(sdc-sapi /applications?name=sdc | json -H 0.metadata.ufds_admin_uuid)
 sdczone=\$(vmadm lookup -1 alias=sdc0)
