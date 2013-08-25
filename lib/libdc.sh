@@ -58,13 +58,17 @@ function cloudapi() {
     if [[ -z "$CLOUDAPI_SDC_KEY_ID" ]]; then
         CLOUDAPI_SDC_KEY_ID="$(json -f $CONFIG sdc_key_id)"
     fi
+    local cuser=$CLOUDAPI_USER
+    if [[ -z "$cuser" ]]; then
+        cuser=admin
+    fi
 
     # Sign with the old http-signature scheme.
     local now=$(date -u "+%a, %d %h %Y %H:%M:%S GMT")
     local signature=$(echo "$now" | tr -d '\n' | \
         openssl dgst -sha256 -sign $HOME/.ssh/sdc.id_rsa | \
         openssl enc -e -a | tr -d '\n')
-    local authz="Authorization: Signature keyId=\"/admin/keys/$CLOUDAPI_SDC_KEY_ID\",algorithm=\"rsa-sha256\" $signature"
+    local authz="Authorization: Signature keyId=\"/$cuser/keys/$CLOUDAPI_SDC_KEY_ID\",algorithm=\"rsa-sha256\" $signature"
     local version="X-Api-Version:~7.0"
 
     (curl ${CURL_OPTS} -k -H "$version" -H "$authz" -H "Date: $now" \
