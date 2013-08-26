@@ -582,10 +582,21 @@ CLI.prototype.do_search = function (subcmd, opts, args, callback) {
             } else {
                 for (var i = 0; i < entries.length; i++) {
                     var e = entries[i];
-                    e.created_time = (new Date(Number(e.created_at))).toISOString();
-                    e.created = e.created_time.slice(0, 10);
-                    e.updated_time = (new Date(Number(e.updated_at))).toISOString();
-                    e.updated = e.updated_time.slice(0, 10);
+                    if (e.created_at) {
+                        // Examples in us-beta-4 of *multiple* created_at values on
+                        // some sdcPerson entries.
+                        if (Array.isArray(e.created_at)) {
+                            // Let's take the earlier one. This is a gray area.
+                            e.created_at = e.create_at.map(
+                                function (item) { return Number(item) }).sort()[0];
+                        }
+                        e.created_time = (new Date(Number(e.created_at))).toISOString();
+                        e.created = e.created_time.slice(0, 10);
+                    }
+                    if (e.updated_at) {
+                        e.updated_time = (new Date(Number(e.updated_at))).toISOString();
+                        e.updated = e.updated_time.slice(0, 10);
+                    }
                     // Note: Relevance handling was added when search only
                     // supported a single 'term' arg. Now we have more so this
                     // relevance calculation should be beefed up.
@@ -847,6 +858,13 @@ CLI.prototype.do_create = function (subcmd, opts, args, callback) {
                     data.sn = data.cn.slice(idx).trim();
                     data.givenName = data.cn.slice(0, idx).trim();
                 }
+            }
+            var now = Date.now();
+            if (!data.created_at) {
+                data.created_at = now;
+            }
+            if (!data.updated_at) {
+                data.updated_at = now;
             }
             next();
         },
