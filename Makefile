@@ -39,7 +39,7 @@ RELTMPDIR       := /tmp/$(STAMP)
 # Targets
 #
 .PHONY: all
-all: | $(NPM_EXEC) node_modules/bunyan/package.json
+all: | $(NPM_EXEC) node_modules/bunyan/package.json sdc-scripts
 
 node_modules/bunyan/package.json: | $(NPM_EXEC)
 	$(NPM) install
@@ -79,6 +79,10 @@ release: all docs man
 		mkdir -p $(RELTMPDIR)/root/opt/smartdc/$(NAME)/man/$$(dirname $$f); \
 		cp man/$$f $(RELTMPDIR)/root/opt/smartdc/$(NAME)/man/$$(dirname $$f)/$$(basename $$f .roff); \
 	done
+	mkdir -p $(RELTMPDIR)/root/opt/smartdc/sdc-boot/scripts
+	cp $(TOP)/sdc-boot/*.sh $(RELTMPDIR)/root/opt/smartdc/sdc-boot/
+	cp $(TOP)/deps/sdc-scripts/*.sh \
+	    $(RELTMPDIR)/root/opt/smartdc/sdc-boot/scripts/
 	mkdir -p $(RELTMPDIR)/root/opt/smartdc/$(NAME)/build
 	cp -r \
 		$(TOP)/build/node \
