@@ -79,10 +79,9 @@ release: all docs man
 		mkdir -p $(RELTMPDIR)/root/opt/smartdc/$(NAME)/man/$$(dirname $$f); \
 		cp man/$$f $(RELTMPDIR)/root/opt/smartdc/$(NAME)/man/$$(dirname $$f)/$$(basename $$f .roff); \
 	done
-	mkdir -p $(RELTMPDIR)/root/opt/smartdc/sdc-boot/scripts
-	cp $(TOP)/sdc-boot/*.sh $(RELTMPDIR)/root/opt/smartdc/sdc-boot/
-	cp $(TOP)/deps/sdc-scripts/*.sh \
-	    $(RELTMPDIR)/root/opt/smartdc/sdc-boot/scripts/
+	mkdir -p $(RELTMPDIR)/root/opt/smartdc/sdc-boot
+	cp -R $(TOP)/deps/sdc-scripts/* $(RELTMPDIR)/root/opt/smartdc/sdc-boot/
+	cp -R $(TOP)/sdc-boot/* $(RELTMPDIR)/root/opt/smartdc/sdc-boot/
 	mkdir -p $(RELTMPDIR)/root/opt/smartdc/$(NAME)/build
 	cp -r \
 		$(TOP)/build/node \
@@ -116,3 +115,5 @@ else
 	include ./tools/mk/Makefile.node.targ
 endif
 include ./tools/mk/Makefile.targ
+
+sdc-scripts: deps/sdc_scripts/.git
