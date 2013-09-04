@@ -8,7 +8,7 @@
         "sdc-clients": "git+ssh://git@git.joyent.com:node-sdc-clients.git#5ee3bc3",
         "smartdc": "git+ssh://git@github.com:joyent/node-smartdc.git#51970ef4",
         "manta": "git+ssh://git@github.com:joyent/node-manta.git#b277acf",
-        "imgapi-cli": "git+ssh://git@git.joyent.com:imgapi-cli.git#4648856",
+        "imgapi-cli": "git+ssh://git@git.joyent.com:imgapi-cli.git#5659992",
         "bunyan": "0.21.4",
         "assert-plus": "0.1.4",
         "ldapjs": "0.6.3",
