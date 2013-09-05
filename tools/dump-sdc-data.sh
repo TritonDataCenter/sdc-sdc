@@ -109,7 +109,13 @@ sdc-sapi /manifests >$DUMPDIR/sapi_manifests-$TIMESTAMP.json
 echo "Dump Workflow workflows, jobs"
 sdc-workflow /workflows >$DUMPDIR/workflow_workflows-$TIMESTAMP.json
 # TODO: Disabled right now pending discussion on timeouts here in heavy usage.
-#sdc-workflow /jobs >$DUMPDIR/workflow_jobs-$TIMESTAMP.json
+# Right now we dump recent jobs (jobs created in the past 2 hours)
+now=$TIMESTAMP
+ago=$(date -u "+%s" -d -2hour)
+# javascript expects milliseconds
+now=$((now * 1000))
+ago=$((ago * 1000))
+sdc-workflow "/jobs?since=${ago}&until=${now}" >$DUMPDIR/workflow_recent_jobs-$TIMESTAMP.json
 
 ls -al $DUMPDIR/*$TIMESTAMP*
 
