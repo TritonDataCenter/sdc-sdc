@@ -80,7 +80,8 @@ sdc-imgapi /images?state=all >$DUMPDIR/imgapi_images-$TIMESTAMP.json
 
 # PII cert, drop customer_metadata and internal_metadat
 echo "Dump VMAPI vms"
-sdc-vmapi /vms?state=active \
+count=$(sdc-vmapi /vms?state=active -X HEAD | grep 'x-joyent-resource-count' | cut -d ' ' -f2 | tr -d '\r\n')
+sdc-vmapi "/vms?state=active&limit=$count" \
     | $JSON -e 'this.customer_metadata=undefined; this.internal_metadata=undefined;' \
     >$DUMPDIR/vmapi_vms-$TIMESTAMP.json
 
