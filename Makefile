@@ -79,9 +79,9 @@ release: all docs man
 		mkdir -p $(RELTMPDIR)/root/opt/smartdc/$(NAME)/man/$$(dirname $$f); \
 		cp man/$$f $(RELTMPDIR)/root/opt/smartdc/$(NAME)/man/$$(dirname $$f)/$$(basename $$f .roff); \
 	done
-	mkdir -p $(RELTMPDIR)/root/opt/smartdc/sdc-boot
-	cp -R $(TOP)/deps/sdc-scripts/* $(RELTMPDIR)/root/opt/smartdc/sdc-boot/
-	cp -R $(TOP)/sdc-boot/* $(RELTMPDIR)/root/opt/smartdc/sdc-boot/
+	mkdir -p $(RELTMPDIR)/root/opt/smartdc/boot
+	cp -R $(TOP)/deps/sdc-scripts/* $(RELTMPDIR)/root/opt/smartdc/boot/
+	cp -R $(TOP)/boot/* $(RELTMPDIR)/root/opt/smartdc/boot/
 	mkdir -p $(RELTMPDIR)/root/opt/smartdc/$(NAME)/build
 	cp -r \
 		$(TOP)/build/node \
