@@ -18,7 +18,7 @@
  * - limits
  */
 
-var VERSION = '1.0.0';
+var VERSION = '1.0.1';
 
 var p = console.log;
 var fs = require('fs');
@@ -38,7 +38,8 @@ var sprintf = require('extsprintf').sprintf;
 var filters = require('ldapjs').filters;
 
 var common = require('../lib/common'),
-    objMerge = common.objMerge;
+    objMerge = common.objMerge,
+    objCopy = common.objCopy;
 var errors = require('../lib/errors');
 
 
@@ -196,30 +197,32 @@ function printLdifField(field, value) {
 }
 
 /**
- * In-place change of type for sdcPerson data loaded from UFDS.
+ * Return a sdcPerson "object" from the given raw UFDS data, i.e. massage
+ * types appropriately.
  */
-function sdcPersonFromUfds(user) {
-    delete user.controls;
-    user.registered_developer = boolFromString(
-        user.registered_developer,
+function sdcPersonFromUfds(raw) {
+    var sdcPerson = objCopy(raw);
+    delete sdcPerson.controls;
+    sdcPerson.registered_developer = boolFromString(
+        sdcPerson.registered_developer,
         undefined, 'registered_developer');
-    user.approved_for_provisioning = boolFromString(
-        user.approved_for_provisioning,
+    sdcPerson.approved_for_provisioning = boolFromString(
+        sdcPerson.approved_for_provisioning,
         undefined, 'approved_for_provisioning');
     ['pwdchangedtime',
      'pwdaccountlockedtime',
      'pwdfailuretime',
      'pwdendtime'].forEach(function (field) {
-        if (Array.isArray(user[field])) {
-            for (var i = 0; i < user[field].length; i++) {
-                user[field][i] = Number(user[field][i]);
+        if (Array.isArray(sdcPerson[field])) {
+            for (var i = 0; i < sdcPerson[field].length; i++) {
+                sdcPerson[field][i] = Number(sdcPerson[field][i]);
             }
-        } else if (typeof (user[field]) === 'string') {
-            user[field] = Number(user[field]);
+        } else if (typeof (sdcPerson[field]) === 'string') {
+            sdcPerson[field] = Number(sdcPerson[field]);
         }
     });
     ['created_at', 'updated_at'].forEach(function (field) {
-        user[field] = Number(user[field]);
+        sdcPerson[field] = Number(sdcPerson[field]);
     });
 }
 
@@ -576,8 +579,14 @@ CLI.prototype.do_search = function (subcmd, opts, args, callback) {
             if (err)
                 return callback(err);
 
+            var sdcPersons = [];
             for (var i = 0; i < entries.length; i++) {
-                sdcPersonFromUfds(entries[i]);
+                try {
+                    sdcPersons.push(sdcPersonFromUfds(entries[i]));
+                } catch (e) {
+                    console.warn('skipping sdcPerson with invalid raw UFDS '
+                        + 'data: %s (raw data: %j)', e, entries[i]);
+                }
             }
             if (opts.json) {
                 p(JSON.stringify(entries, null, 2));
@@ -585,17 +594,25 @@ CLI.prototype.do_search = function (subcmd, opts, args, callback) {
                 for (var i = 0; i < entries.length; i++) {
                     var e = entries[i];
                     if (e.created_at) {
-                        // Examples in us-beta-4 of *multiple* created_at values on
-                        // some sdcPerson entries.
+                        // Examples in us-beta-4 of *multiple* created_at values
+                        // on some sdcPerson entries.
                         if (Array.isArray(e.created_at)) {
                             // Let's take the earlier one. This is a gray area.
-                            e.created_at = e.create_at.map(
+                            e.created_at = e.created_at.map(
                                 function (item) { return Number(item) }).sort()[0];
                         }
                         e.created_time = (new Date(Number(e.created_at))).toISOString();
                         e.created = e.created_time.slice(0, 10);
                     }
                     if (e.updated_at) {
+                        // Examples in us-beta-4 of *multiple* updated_at values
+                        // on some sdcPerson entries.
+                        if (Array.isArray(e.updated_at)) {
+                            // Let's take the later one.
+                            e.updated_at = e.updated_at.map(
+                                function (item) { return Number(item) }
+                                ).sort().slice(-1)[0];
+                        }
                         e.updated_time = (new Date(Number(e.updated_at))).toISOString();
                         e.updated = e.updated_time.slice(0, 10);
                     }
