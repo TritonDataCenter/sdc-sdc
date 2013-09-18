@@ -5,6 +5,8 @@
  * Work with SDC users (objectclass=sdcPerson in UFDS).
  *
  * TODO:
+ * - sdc-useradm get --master   # option to look in the master, in case
+ *   have bogus local diffs, e.g. when replicator is down
  * - sdc-useradm update <login|uuid> <field>=<value>
  * - sdc-useradm passwd <login|uuid> # if necessary
  * - sdc-useradm search [FIELD=VALUE]
