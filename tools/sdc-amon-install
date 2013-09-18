@@ -67,18 +67,14 @@ account=$(json -f $CONFIG ufds_admin_uuid)
 # Sanity check that amon-master is up.
 amon /ping -f || fatal "amon-master ping failed: $res_status $res_body"
 
-# Probe: Monitor FATALs in the imgapi service log.
-# TODO: It is silly to have three probes for this. Amon should support
-# rolling these up.
-# Monitor for 'fatal error' in the dump-sdc-data.sh script.
 putprobe $account "{
     \"skipauthz\": true,
-    \"name\": \"dump-sdc-data fatal error\",
+    \"name\": \"dump-minutely-sdc-data fatal error\",
     \"type\": \"log-scan\",
     \"agent\": \"$zonename\",
     \"contacts\": [\"email\"],
     \"config\": {
-        \"path\": \"/var/log/dump-sdc-data.log\",
+        \"path\": \"/var/log/dump-minutely-sdc-data.log\",
         \"match\": {
             \"pattern\": \"fatal error\",
             \"matchWord\": true,
@@ -87,7 +83,22 @@ putprobe $account "{
     }
 }"
 
-# Monitor for 'fatal error' in the dump-sdc-data.sh script.
+putprobe $account "{
+    \"skipauthz\": true,
+    \"name\": \"dump-hourly-sdc-data fatal error\",
+    \"type\": \"log-scan\",
+    \"agent\": \"$zonename\",
+    \"contacts\": [\"email\"],
+    \"config\": {
+        \"path\": \"/var/log/dump-hourly-sdc-data.log\",
+        \"match\": {
+            \"pattern\": \"fatal error\",
+            \"matchWord\": true,
+            \"type\": \"substring\"
+        }
+    }
+}"
+
 putprobe $account "{
     \"skipauthz\": true,
     \"name\": \"upload-sdc-data fatal error\",

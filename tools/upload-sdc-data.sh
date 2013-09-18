@@ -15,7 +15,7 @@
 # of the N servers for each service once we have HA?)
 #
 # Files are added to the dump dir by a separate cron running
-# 'dump-sdc-data.sh'.
+# 'dump-*-sdc-data.sh'.
 #
 
 if [[ -n "$TRACE" ]]; then
@@ -75,19 +75,27 @@ echo "MANTA_URL: $MANTA_URL"
 #   $thing-$timestamp.json
 # to:
 #   /$SDC_MANTA_USER/stor/sdc/$thing/$dcname/YYYY/MM/DD/HH/$thing-$timestamp.json
+currhourpath=$(date -d "@$(date -u "+%s")" "+%Y/%m/%d/%H")
 dcname=$($JSON -f /opt/smartdc/sdc/etc/config.json datacenter_name)
-for path in $(ls $DUMPDIR/*-*.json)
+for path in $(ls $DUMPDIR/*-*.*)
 do
     echo "consider '$path'"
     f=$(basename $path)
     thing=$(echo $f | cut -d- -f 1)
     dumptime=$(echo $f | cut -d- -f 2 | cut -d. -f 1)
+    dumpext=$(echo $f | cut -d- -f 2 | cut -d. -f 2)
     timepath=$(date -d "@$dumptime" "+%Y/%m/%d/%H")
-    mpath="/$MANTA_USER/stor/sdc/$thing/$dcname/$timepath/$thing-$dumptime.json"
+    mpath="/$MANTA_USER/stor/sdc/$thing/$dcname/$timepath/$thing-$dumptime.$dumpext"
     echo "upload to '$mpath'"
     mmkdir -p $(dirname $mpath)
     mput -H "Content-Type: application/json" -f $path $mpath
-    rm $path
+    # *Don't* want to delete the last one if it is a "updated more than once
+    # per hour" dump file. We could either hardcode that list or have an
+    # indicator in the "$thing". We'll use the latter: if '$thing' ends with
+    # "_minutely".
+    if [[ "${thing:(-9)}" != "_minutely" || "$currhourpath" != "$timepath" ]]; then
+        rm $path
+    fi
 done
 
 END=$(date +%s)
