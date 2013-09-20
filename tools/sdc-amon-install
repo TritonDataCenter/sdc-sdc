@@ -69,14 +69,14 @@ amon /ping -f || fatal "amon-master ping failed: $res_status $res_body"
 
 putprobe $account "{
     \"skipauthz\": true,
-    \"name\": \"dump-minutely-sdc-data fatal error\",
+    \"name\": \"dump-minutely-sdc-data error\",
     \"type\": \"log-scan\",
     \"agent\": \"$zonename\",
     \"contacts\": [\"email\"],
     \"config\": {
         \"path\": \"/var/log/dump-minutely-sdc-data.log\",
         \"match\": {
-            \"pattern\": \"fatal error\",
+            \"pattern\": \"error\",
             \"matchWord\": true,
             \"type\": \"substring\"
         }
@@ -85,14 +85,14 @@ putprobe $account "{
 
 putprobe $account "{
     \"skipauthz\": true,
-    \"name\": \"dump-hourly-sdc-data fatal error\",
+    \"name\": \"dump-hourly-sdc-data error\",
     \"type\": \"log-scan\",
     \"agent\": \"$zonename\",
     \"contacts\": [\"email\"],
     \"config\": {
         \"path\": \"/var/log/dump-hourly-sdc-data.log\",
         \"match\": {
-            \"pattern\": \"fatal error\",
+            \"pattern\": \"error\",
             \"matchWord\": true,
             \"type\": \"substring\"
         }
@@ -101,14 +101,14 @@ putprobe $account "{
 
 putprobe $account "{
     \"skipauthz\": true,
-    \"name\": \"upload-sdc-data fatal error\",
+    \"name\": \"upload-sdc-data error\",
     \"type\": \"log-scan\",
     \"agent\": \"$zonename\",
     \"contacts\": [\"email\"],
     \"config\": {
         \"path\": \"/var/log/upload-sdc-data.log\",
         \"match\": {
-            \"pattern\": \"fatal error\",
+            \"pattern\": \"error\",
             \"matchWord\": true,
             \"type\": \"substring\"
         }
