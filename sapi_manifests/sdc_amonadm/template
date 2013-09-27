@@ -1,0 +1,14 @@
+{
+    "application": "sdc",
+    "user": "{{{ufds_admin_login}}}",
+    "role_key": "smartdc_role",
+    "amon": {
+        "url": "http://{{{amon_domain}}}"
+    },
+    "sapi": {
+        "url": "http://{{{sapi_domain}}}"
+    },
+    "vmapi": {
+        "url": "http://{{{vmapi_domain}}}"
+    }
+}
