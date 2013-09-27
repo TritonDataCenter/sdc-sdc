@@ -116,4 +116,4 @@ else
 endif
 include ./tools/mk/Makefile.targ
 
-sdc-scripts: deps/sdc_scripts/.git
+sdc-scripts: deps/sdc-scripts/.git
