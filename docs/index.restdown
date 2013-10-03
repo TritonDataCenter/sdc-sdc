@@ -34,7 +34,7 @@ administrator tool naming tradition).
 ||Image API (IMGAPI)||sdc-imgapi||sdc-imgadm||
 ||Network API (NAPI)||sdc-napi||sdc-network||
 ||Virtual Machine API (VMAPI)||sdc-vmapi||sdc-vmadm (NYI: TOOLS-307)||
-||Workflow API||sdc-workflow||sdc-wfadm (NYI: need a ticket)||
+||Workflow API||sdc-workflow||sdc-wfadm (NYI: TOOLS-308)||
 ||UFDS||sdc-ldap||--||
 ||Service API (SAPI)||sdc-sapi||sapiadm (*)||
 ||x||x||x||
