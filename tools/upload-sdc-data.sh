@@ -2,7 +2,7 @@
 #
 # Upload SDC service data in "/var/log/sdc-data/..." to manta.
 # Files there are of the form:
-#       $thing-$timestamp.json
+#       $thing-$timestamp.$ext
 #       imgapi_images-1376953200.json
 # which get uploaded to manta as:
 #       $SDC_MANTA_URL/$SDC_MANTA_USER/stor/sdc/$thing/$dcname/YYYY/MM/DD/HH/$basename.json
@@ -72,9 +72,9 @@ fi
 echo "MANTA_URL: $MANTA_URL"
 
 # From:
-#   $thing-$timestamp.json
+#   $thing-$timestamp.$ext
 # to:
-#   /$SDC_MANTA_USER/stor/sdc/$thing/$dcname/YYYY/MM/DD/HH/$thing-$timestamp.json
+#   /$SDC_MANTA_USER/stor/sdc/$thing/$dcname/YYYY/MM/DD/HH/$thing-$timestamp.$ext
 currhourpath=$(date -d "@$(date -u "+%s")" "+%Y/%m/%d/%H")
 dcname=$($JSON -f /opt/smartdc/sdc/etc/config.json datacenter_name)
 for path in $(ls $DUMPDIR/*-*.*)
