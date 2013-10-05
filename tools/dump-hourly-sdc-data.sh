@@ -90,6 +90,18 @@ else
     [ $? -ne 0 ] && echo "$0: error: Dumping VMAPI VMs failed" >&2
 fi
 
+echo "Dump vmadm VM info on all CNs"
+sdc-oneachnode -j 'vmadm lookup -j' \
+    | json -aj -e '
+        this.cn = this.sysinfo.UUID;
+        try {
+            this.vms = JSON.parse(this.result.stdout);
+        } catch (ex) {
+            this.stdout = this.result.stdout
+        }' cn vms stdout \
+    >$DUMPDIR/vmadm_vms-$TIMESTAMP.json
+[ $? -ne 0 ] && echo "$0: error: Getting vmadm VM info via sdc-oneachnode" >&2
+
 echo "Dump CNAPI servers"
 sdc-cnapi /servers?extras=all >$DUMPDIR/cnapi_servers-$TIMESTAMP.json
 [ $? -ne 0 ] && echo "$0: error: Dumping CNAPI servers failed" >&2
