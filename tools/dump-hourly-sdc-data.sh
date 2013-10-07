@@ -113,7 +113,7 @@ sdc-amon /alarms >$DUMPDIR/amon_alarms-$TIMESTAMP.json
 [ $? -ne 0 ] && echo "$0: error: Dumping Amon alarms failed" >&2
 
 echo "Dump packages"
-sdc-ldap search objectclass=sdcpackage >$DUMPDIR/packages-$TIMESTAMP.ldif
+sdc-ufds search objectclass=sdcpackage | json -g >$DUMPDIR/packages-$TIMESTAMP.json
 [ $? -ne 0 ] && echo "$0: error: Dumping packages from UFDS failed" >&2
 
 echo "Dump NAPI nic_tags, nics, networks, network_pools"
