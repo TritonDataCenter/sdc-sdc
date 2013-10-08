@@ -638,7 +638,7 @@ CLI.prototype.do_search = function (subcmd, opts, args, callback) {
                 // lazy.
                 tabulate(entries, {
                     skipHeader: opts.H,
-                    columns: opts.long ? 'uuid,login,cn,email,created_time' : opts.o,
+                    columns: opts.long ? 'uuid,login,cn,email,company,created_time' : opts.o,
                     sort: opts.s,
                     validFields: 'relevance,uuid,login,cn,email,created,created_time,created_at,sn,cn,givenname,updated,updated_time,updated_at,pwdchangedtime,pwdendtime'
                 });
@@ -682,7 +682,7 @@ CLI.prototype.do_search.options = [
         names: ['long', 'l'],
         type: 'bool',
         help: 'Longer table output. Shortcut for '
-            + '"-o uuid,login,cn,email,created_time".'
+            + '"-o uuid,login,cn,email,company,created_time".'
     }
 ];
 CLI.prototype.do_search.help = (
