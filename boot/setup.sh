@@ -13,7 +13,7 @@ PATH=/opt/local/bin:/opt/local/sbin:/usr/bin:/usr/sbin
 role=sdc
 app_name=$role
 
-CONFIG_AGENT_LOCAL_MANIFESTS_DIRS=/opt/smartdc/$role
+CONFIG_AGENT_LOCAL_MANIFESTS_DIRS="/opt/smartdc/$role /opt/smartdc/hermes"
 
 # Include common utility functions (then run the boilerplate)
 source /opt/smartdc/boot/lib/util.sh
@@ -48,6 +48,8 @@ logadm -w sdc-data -C 3 -c -s 1m '/var/log/*-sdc-data.log'
 
 # Install Amon probes for the sdc zone.
 TRACE=1 /opt/smartdc/sdc/tools/sdc-amon-install
+
+/usr/sbin/svccfg import /opt/smartdc/hermes/smf/hermes.xml
 
 # All done, run boilerplate end-of-setup
 sdc_setup_complete

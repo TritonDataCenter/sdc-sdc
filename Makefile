@@ -56,8 +56,12 @@ man:
 			--date $(shell git log -1 --date=short --pretty=format:'%cd' $$f) $(shell date +%Y); \
 	done
 
+.PHONY: hermes
+hermes:
+	cd deps/hermes && make install DESTDIR=$(TOP)/build/hermes
+
 .PHONY: release
-release: all docs man
+release: all docs man hermes
 	@echo "Building $(RELEASE_TARBALL)"
 	mkdir -p $(RELTMPDIR)/root/opt/smartdc/$(NAME)
 	mkdir -p $(RELTMPDIR)/site
@@ -87,12 +91,8 @@ release: all docs man
 		$(TOP)/build/node \
 		$(TOP)/build/docs \
 		$(RELTMPDIR)/root/opt/smartdc/$(NAME)/build
-	# TODO
-	#mkdir -p $(RELTMPDIR)/root/var/svc
-	#cp -r \
-	#	$(TOP)/sdc/setup \
-	#	$(TOP)/sdc/configure \
-	#	$(RELTMPDIR)/root/var/svc
+	cp -r $(TOP)/build/hermes/opt/smartdc/hermes \
+		$(RELTMPDIR)/root/opt/smartdc/hermes
 	(cd $(RELTMPDIR) && $(TAR) -jcf $(TOP)/$(RELEASE_TARBALL) root site)
 	@rm -rf $(RELTMPDIR)
 
@@ -106,6 +106,15 @@ publish: release
 	cp $(TOP)/$(RELEASE_TARBALL) $(BITS_DIR)/$(NAME)/$(RELEASE_TARBALL)
 
 DISTCLEAN_FILES += node_modules
+
+.PHONY: clean
+distclean::
+	cd deps/hermes && make clean
+
+.PHONY: distclean
+distclean::
+	cd deps/hermes && make clobber
+
 
 
 include ./tools/mk/Makefile.deps
