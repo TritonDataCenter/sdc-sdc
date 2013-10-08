@@ -49,7 +49,7 @@ logadm -w sdc-data -C 3 -c -s 1m '/var/log/*-sdc-data.log'
 # Install Amon probes for the sdc zone.
 TRACE=1 /opt/smartdc/sdc/tools/sdc-amon-install
 
-/usr/sbin/svccfg import /opt/smartdc/hermes/smf/hermes.xml
+#/usr/sbin/svccfg import /opt/smartdc/hermes/smf/hermes.xml
 
 # All done, run boilerplate end-of-setup
 sdc_setup_complete
