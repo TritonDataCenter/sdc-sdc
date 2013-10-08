@@ -125,8 +125,8 @@ function tabulate(items, options) {
             var a_cmp = Number(a[field]);
             var b_cmp = Number(b[field]);
             if (isNaN(a_cmp) || isNaN(b_cmp)) {
-                a_cmp = a[field];
-                b_cmp = b[field];
+                a_cmp = a[field] || '';
+                b_cmp = b[field] || '';
             }
             if (a_cmp < b_cmp) {
                 return (invert ? 1 : -1);
