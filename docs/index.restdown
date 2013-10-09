@@ -102,8 +102,8 @@ Not yet implemented. See TOOLS-278 and HEAD-1365 for details.
 
 ## HOWTO: Configure SDC to use a Manta
 
-Given a Manta to use, SDC will upload hourly API data dumps, log files (NYI),
-etc. This requires two pieces:
+Given a Manta to use, SDC will upload hourly API data dumps, log files,
+etc. This requires three pieces:
 
 1. An SSH key for all relevant parts of SDC to use.
 2. A Manta location (base MANTA_URL and MANTA_USER) to use.
@@ -139,8 +139,11 @@ you used to the user database being used by Manta... or you could set the
 SDC key to be one that you already know exists there. The latter can be done
 for COAL by running the following from your Mac:
 
-    # ./tools/set-sdc-key.sh HEADNODE PRIV-KEY-FILE
-    <sdc.git-clone>/tools/set-sdc-key.sh coal ~/.ssh/automation.id_rsa
+    # Usage:
+    #   ./tools/set-sdc-key.sh HEADNODE PRIV-KEY-FILE
+    # For example:
+    cd <sdc.git-clone>
+    ./tools/set-sdc-key.sh coal ~/.ssh/automation.id_rsa
 
 **Step 3 can be done with as follows**, run from the headnode GZ:
 

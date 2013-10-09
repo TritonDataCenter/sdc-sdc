@@ -86,9 +86,19 @@ do
     dumpext=$(echo $f | cut -d- -f 2 | cut -d. -f 2)
     timepath=$(date -d "@$dumptime" "+%Y/%m/%d/%H")
     mpath="/$MANTA_USER/stor/sdc/$thing/$dcname/$timepath/$thing-$dumptime.$dumpext"
+
     echo "upload to '$mpath'"
     mmkdir -p $(dirname $mpath)
-    mput -H "Content-Type: application/json" -f $path $mpath
+
+    content_type="text/plain"
+    if [[ "$dumpext" == "json" ]]; then
+        content_type="application/json"
+    fi
+    if [[ -n "$content_type" ]]; then
+        ct_opt="-H \"Content-Type: $content_type\""
+    fi
+    mput -H "Content-Type: $content_type" -f $path $mpath
+
     # *Don't* want to delete the last one if it is a "updated more than once
     # per hour" dump file. We could either hardcode that list or have an
     # indicator in the "$thing". We'll use the latter: if '$thing' ends with

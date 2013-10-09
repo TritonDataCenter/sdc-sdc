@@ -93,6 +93,9 @@ release: all docs man hermes
 		$(RELTMPDIR)/root/opt/smartdc/$(NAME)/build
 	cp -r $(TOP)/build/hermes/opt/smartdc/hermes \
 		$(RELTMPDIR)/root/opt/smartdc/hermes
+	mkdir -p $(RELTMPDIR)/root/opt/smartdc/hermes/etc
+	cp -r $(TOP)/deps/hermes/etc/logsets.json \
+		$(RELTMPDIR)/root/opt/smartdc/hermes/etc
 	(cd $(RELTMPDIR) && $(TAR) -jcf $(TOP)/$(RELEASE_TARBALL) root site)
 	@rm -rf $(RELTMPDIR)
 
