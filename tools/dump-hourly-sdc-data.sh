@@ -91,7 +91,12 @@ else
 fi
 
 echo "Dump vmadm VM info on all CNs"
-sdc-oneachnode -j 'vmadm lookup -j' \
+sdc-oneachnode -j '
+        if [[ -d /opt/smartdc/agents/lib ]]; then
+            vmadm lookup -j;
+        else
+            echo "no vmadm lookup -j on 6.5";
+        fi' \
     | json -aj -e '
         this.cn = this.sysinfo.UUID;
         try {
