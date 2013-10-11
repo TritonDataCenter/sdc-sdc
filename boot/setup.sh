@@ -43,13 +43,20 @@ crontab $crontab
 [[ $? -eq 0 ]] || fatal "Unable import crontab"
 rm -f $crontab
 
-# Log rotation for those sdc-data scripts.
-logadm -w sdc-data -C 3 -c -s 1m '/var/log/*-sdc-data.log'
-
 # Install Amon probes for the sdc zone.
 TRACE=1 /opt/smartdc/sdc/tools/sdc-amon-install
 
 /usr/sbin/svccfg import /opt/smartdc/hermes/smf/hermes.xml
+
+
+# Log rotation.
+sdc_log_rotation_add amon-agent /var/svc/log/*amon-agent*.log 1g
+sdc_log_rotation_add config-agent /var/svc/log/*config-agent*.log 1g
+sdc_log_rotation_add hermes /var/svc/log/*hermes*.log 1g
+# Don't really need these 3 to go up to manta right now.
+logadm -w sdc-data -C 3 -c -s 1m '/var/log/*-sdc-data.log'
+sdc_log_rotation_setup_end
+
 
 # All done, run boilerplate end-of-setup
 sdc_setup_complete
