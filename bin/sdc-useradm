@@ -640,7 +640,7 @@ CLI.prototype.do_search = function (subcmd, opts, args, callback) {
                     skipHeader: opts.H,
                     columns: opts.long ? 'uuid,login,cn,email,company,created_time' : opts.o,
                     sort: opts.s,
-                    validFields: 'relevance,uuid,login,cn,email,created,created_time,created_at,sn,cn,givenname,updated,updated_time,updated_at,pwdchangedtime,pwdendtime'
+                    validFields: 'relevance,uuid,login,cn,email,company,created,created_time,created_at,sn,cn,givenname,updated,updated_time,updated_at,pwdchangedtime,pwdendtime'
                 });
             }
 
