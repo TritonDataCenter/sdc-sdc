@@ -5,10 +5,7 @@
  * Work with SDC VMs
  *
  * TODO
- * - list should accept tags
  * - list should accept wildcards and operators for dates (alias=fss*, date>x)
- * - sdc-vmadm update, sdc-vmadm reprovision, sdc-vmadm add-nics|remove-nics
- * - sdc-vmadm create-snapshot, sdc-vmadm delete-snapshot, sdc-vmadm rollback
  */
 
 var VERSION = '1.0.1';
@@ -268,14 +265,14 @@ CLI.prototype.do_list = function (subcmd, opts, args, callback) {
 
     for (var i = 0; i < args.length; i++) {
         var arg = args[i];
-        var opParser = /^(\w+)\s*(=|==)\s*(.*?)$/;
+        var opParser = /^(.*?)\s*(=|==)\s*(.*?)$/;
         var parsed = opParser.exec(arg);
         if (!parsed) {
             continue;
         }
         var field = parsed[1];
         var value = parsed[3];
-        if (!SEARCHABLE_FIELDS[field]) {
+        if (!field.match(/tag\.(.*)/) && !SEARCHABLE_FIELDS[field]) {
             throw new Error(sprintf('unknown filter field: "%s"', field));
         }
         if (field === 'ram') {
@@ -557,6 +554,301 @@ CLI.prototype.do_create.help = (
 );
 
 
+CLI.prototype.do_update = function (subcmd, opts, args, callback) {
+    var self = this;
+    var vmapi = self.vmapi;
+
+    if (opts.help) {
+        this.do_help('help', {}, [subcmd], callback);
+        return;
+    } else if (args.length === 0) {
+        return callback(new errors.UsageError('expecting VM UUID'));
+    }
+    var uuid = args[0];
+    args.shift();
+
+    var data = {};
+    var client;
+    async.series([
+        function dataFromStdin(next) {
+            if (opts.i || opts.f || args.length > 0) {
+                return next();
+            }
+            var stdin = '';
+            process.stdin.resume();
+            process.stdin.on('data', function (chunk) {
+                stdin += chunk;
+            });
+            process.stdin.on('end', function () {
+                try {
+                    objMerge(data, JSON.parse(stdin));
+                    next();
+                } catch (ex) {
+                    next(new errors.UsageError(
+                        sprintf('invalid JSON data on stdin: %s', ex)));
+                }
+            });
+        },
+        function dataFromFile(next) {
+            if (!opts.f) {
+                return next();
+            } else if (opts.i) {
+                return next(new errors.UsageError(
+                    'cannot use both "-i" and "-f" options'));
+            } else if (args.length > 0) {
+                return next(new errors.UsageError(
+                    'cannot specify args and the "-f" option'));
+            }
+            fs.readFile(opts.f, function (rErr, content) {
+                try {
+                    objMerge(data, JSON.parse(content));
+                    next();
+                } catch (ex) {
+                    next(new errors.UsageError(
+                        sprintf('invalid JSON data in "%s": %s', opts.f, ex)));
+                }
+            });
+        },
+        function dataFromArgs(next) {
+            if (args.length === 0) {
+                return next();
+            }
+            for (var i = 0; i < args.length; i++) {
+                var arg = args[i];
+                var idx = arg.indexOf('=');
+                if (idx === -1) {
+                    return next(new errors.UsageError(sprintf(
+                        'invalid field arg "%s": must match ' +
+                        '"<field>=<value>"', arg)));
+                }
+                var field = arg.slice(0, idx);
+                var value = arg.slice(idx + 1);
+                try {
+                    value = JSON.parse(value);
+                } catch (e) {}
+                data[field] = value;
+            }
+            next();
+        },
+        function updateVm(next) {
+            data.uuid = uuid;
+            vmapi.updateVm(data, function (err, job) {
+                if (err) {
+                    return next(new errors.APIError(err));
+                }
+                p('Update job %s for VM %s created', job['job_uuid'],
+                    job['vm_uuid']);
+                next();
+            });
+        }
+    ], callback);
+};
+CLI.prototype.do_update.options = [
+    {
+        names: ['help', 'h'],
+        type: 'bool',
+        help: 'Show this help.'
+    },
+    {
+        name: 'f',
+        type: 'string',
+        help: 'JSON file with user data.'
+    }
+];
+CLI.prototype.do_update.help = (
+    'Update a VM.\n' +
+    '\n' +
+    'Usage:\n' +
+    '  ...stdin... | {{name}} update <uuid>      # 1. data as JSON on stdin\n' +
+    '  {{name}} update <uuid> -f foo.json        # 2. data in JSON file\n' +
+    '  {{name}} update <uuid> <field>=<value>... # 3. all fields as args\n' +
+    '\n' +
+    '{{options}}\n'
+);
+
+
+CLI.prototype.do_add_nics = function (subcmd, opts, args, callback) {
+    var self = this;
+    var vmapi = self.vmapi;
+
+    if (opts.help) {
+        this.do_help('help', {}, [subcmd], callback);
+        return;
+    } else if (args.length === 0) {
+        return callback(new errors.UsageError('expecting VM UUID'));
+    }
+    var uuid = args[0];
+    args.shift();
+
+    var data = {};
+    var client;
+    async.series([
+        function dataFromStdin(next) {
+            if (opts.i || opts.f || args.length > 0) {
+                return next();
+            }
+            var stdin = '';
+            process.stdin.resume();
+            process.stdin.on('data', function (chunk) {
+                stdin += chunk;
+            });
+            process.stdin.on('end', function () {
+                try {
+                    objMerge(data, JSON.parse(stdin));
+                    next();
+                } catch (ex) {
+                    next(new errors.UsageError(
+                        sprintf('invalid JSON data on stdin: %s', ex)));
+                }
+            });
+        },
+        function dataFromFile(next) {
+            if (!opts.f) {
+                return next();
+            } else if (opts.i) {
+                return next(new errors.UsageError(
+                    'cannot use both "-i" and "-f" options'));
+            } else if (args.length > 0) {
+                return next(new errors.UsageError(
+                    'cannot specify args and the "-f" option'));
+            }
+            fs.readFile(opts.f, function (rErr, content) {
+                try {
+                    objMerge(data, JSON.parse(content));
+                    next();
+                } catch (ex) {
+                    next(new errors.UsageError(
+                        sprintf('invalid JSON data in "%s": %s', opts.f, ex)));
+                }
+            });
+        },
+        function addNics(next) {
+            data.uuid = uuid;
+            vmapi.addNics(data, function (err, job) {
+                if (err) {
+                    return next(new errors.APIError(err));
+                }
+                p('AddNics job %s for VM %s created', job['job_uuid'],
+                    job['vm_uuid']);
+                next();
+            });
+        }
+    ], callback);
+};
+CLI.prototype.do_add_nics.options = [
+    {
+        names: ['help', 'h'],
+        type: 'bool',
+        help: 'Show this help.'
+    },
+    {
+        name: 'f',
+        type: 'string',
+        help: 'JSON file with user data.'
+    }
+];
+CLI.prototype.do_add_nics.help = (
+    'Add NICs to a VM.\n' +
+    '\n' +
+    'Usage:\n' +
+    '   ...stdin... | {{name}} add-nics <uuid>   # 1. data as JSON on stdin\n' +
+    '   {{name}} add-nics <uuid> -f foo.json     # 2. data in JSON file\n' +
+    '\n' +
+    '{{options}}\n'
+);
+
+
+CLI.prototype.do_remove_nics = function (subcmd, opts, args, callback) {
+    var self = this;
+    var vmapi = self.vmapi;
+
+    if (opts.help) {
+        this.do_help('help', {}, [subcmd], callback);
+        return;
+    } else if (args.length === 0) {
+        return callback(new errors.UsageError('expecting VM UUID'));
+    }
+    var uuid = args[0];
+    args.shift();
+
+    var data = {};
+    var client;
+    async.series([
+        function dataFromStdin(next) {
+            if (opts.i || opts.f || args.length > 0) {
+                return next();
+            }
+            var stdin = '';
+            process.stdin.resume();
+            process.stdin.on('data', function (chunk) {
+                stdin += chunk;
+            });
+            process.stdin.on('end', function () {
+                try {
+                    objMerge(data, JSON.parse(stdin));
+                    next();
+                } catch (ex) {
+                    next(new errors.UsageError(
+                        sprintf('invalid JSON data on stdin: %s', ex)));
+                }
+            });
+        },
+        function dataFromFile(next) {
+            if (!opts.f) {
+                return next();
+            } else if (opts.i) {
+                return next(new errors.UsageError(
+                    'cannot use both "-i" and "-f" options'));
+            } else if (args.length > 0) {
+                return next(new errors.UsageError(
+                    'cannot specify args and the "-f" option'));
+            }
+            fs.readFile(opts.f, function (rErr, content) {
+                try {
+                    objMerge(data, JSON.parse(content));
+                    next();
+                } catch (ex) {
+                    next(new errors.UsageError(
+                        sprintf('invalid JSON data in "%s": %s', opts.f, ex)));
+                }
+            });
+        },
+        function removeNics(next) {
+            data.uuid = uuid;
+            vmapi.removeNics(data, function (err, job) {
+                if (err) {
+                    return next(new errors.APIError(err));
+                }
+                p('RemoveNics job %s for VM %s created', job['job_uuid'],
+                    job['vm_uuid']);
+                next();
+            });
+        }
+    ], callback);
+};
+CLI.prototype.do_remove_nics.options = [
+    {
+        names: ['help', 'h'],
+        type: 'bool',
+        help: 'Show this help.'
+    },
+    {
+        name: 'f',
+        type: 'string',
+        help: 'JSON file with user data.'
+    }
+];
+CLI.prototype.do_remove_nics.help = (
+    'Remove NICs from a VM.\n' +
+    '\n' +
+    'Usage:\n' +
+    ' ...stdin... | {{name}} remove-nics <uuid>  # 1. data as JSON on stdin\n' +
+    ' {{name}} remove-nics <uuid> -f foo.json    # 2. data in JSON file\n' +
+    '\n' +
+    '{{options}}\n'
+);
+
+
 CLI.prototype.do_stop = function (subcmd, opts, args, callback) {
     if (opts.help) {
         this.do_help('help', {}, [subcmd], callback);
@@ -654,6 +946,150 @@ CLI.prototype.do_reboot.help = (
     '\n' +
     'Usage:\n' +
     '     {{name}} reboot [<options>] <uuid>\n' +
+    '\n' +
+    '{{options}}\n'
+);
+
+
+CLI.prototype.do_reprovision = function (subcmd, opts, args, callback) {
+    if (opts.help) {
+        this.do_help('help', {}, [subcmd], callback);
+        return;
+    } else if (args.length !== 2) {
+        return callback(new errors.UsageError(sprintf(
+            'incorrect number of arguments: "%s"', args.join(' '))));
+    }
+    var uuid = args[0];
+    var imageUuid = args[1];
+
+    this.vmapi.reprovisionVm({ uuid: uuid, image_uuid: imageUuid },
+      function (err, job) {
+        if (err) {
+            return callback(new errors.APIError(err));
+        }
+        p('Reprovision job %s for VM %s created', job['job_uuid'],
+            job['vm_uuid']);
+        return callback();
+    });
+};
+CLI.prototype.do_reprovision.options = [
+    {
+        names: ['help', 'h'],
+        type: 'bool',
+        help: 'Show this help.'
+    }
+];
+CLI.prototype.do_reprovision.help = (
+    'Reprovision a VM.\n' +
+    '\n' +
+    'Usage:\n' +
+    '     {{name}} reprovision [<options>] <uuid> <image_uuid>\n' +
+    '\n' +
+    '{{options}}\n'
+);
+
+
+CLI.prototype.do_snapshot = function (subcmd, opts, args, callback) {
+    if (opts.help) {
+        this.do_help('help', {}, [subcmd], callback);
+        return;
+    } else if (args.length === 0 || args.length > 2) {
+        return callback(new errors.UsageError(sprintf(
+            'incorrect number of arguments: "%s"', args.join(' '))));
+    }
+    var params = { uuid: args[0] };
+    if (args[1]) {
+        params.name = args[1];
+    }
+    this.vmapi.snapshotVm(params, function (err, job) {
+        if (err) {
+            return callback(new errors.APIError(err));
+        }
+        p('Snapshot job %s for VM %s created', job['job_uuid'], job['vm_uuid']);
+        return callback();
+    });
+};
+CLI.prototype.do_snapshot.options = [
+    {
+        names: ['help', 'h'],
+        type: 'bool',
+        help: 'Show this help.'
+    }
+];
+CLI.prototype.do_snapshot.help = (
+    'Snapshot a VM.\n' +
+    '\n' +
+    'Usage:\n' +
+    '     {{name}} snapshot [<options>] <uuid> [<name>]\n' +
+    '\n' +
+    '{{options}}\n'
+);
+
+
+CLI.prototype.do_rollback = function (subcmd, opts, args, callback) {
+    if (opts.help) {
+        this.do_help('help', {}, [subcmd], callback);
+        return;
+    } else if (args.length !== 2) {
+        return callback(new errors.UsageError(sprintf(
+            'incorrect number of arguments: "%s"', args.join(' '))));
+    }
+    var params = { uuid: args[0], name: args[1] };
+    this.vmapi.rollbackVm(params, function (err, job) {
+        if (err) {
+            return callback(new errors.APIError(err));
+        }
+        p('Rollback job %s for VM %s created', job['job_uuid'], job['vm_uuid']);
+        return callback();
+    });
+};
+CLI.prototype.do_rollback.options = [
+    {
+        names: ['help', 'h'],
+        type: 'bool',
+        help: 'Show this help.'
+    }
+];
+CLI.prototype.do_rollback.help = (
+    'Rollback a VM.\n' +
+    '\n' +
+    'Usage:\n' +
+    '     {{name}} rollback [<options>] <uuid> <name>\n' +
+    '\n' +
+    '{{options}}\n'
+);
+
+
+CLI.prototype.do_delete_snapshot = function (subcmd, opts, args, callback) {
+    if (opts.help) {
+        this.do_help('help', {}, [subcmd], callback);
+        return;
+    } else if (args.length !== 2) {
+        return callback(new errors.UsageError(sprintf(
+            'incorrect number of arguments: "%s"', args.join(' '))));
+    }
+    var params = { uuid: args[0], name: args[1] };
+    this.vmapi.deleteSnapshot(params, function (err, job) {
+        if (err) {
+            return callback(new errors.APIError(err));
+        }
+        p('Delete snapshot job %s for VM %s created', job['job_uuid'],
+            job['vm_uuid']);
+        return callback();
+    });
+};
+CLI.prototype.do_delete_snapshot.options = [
+    {
+        names: ['help', 'h'],
+        type: 'bool',
+        help: 'Show this help.'
+    }
+];
+CLI.prototype.do_delete_snapshot.help = (
+    'Delete a snapshot from VM.\n' +
+    '\n' +
+    'Usage:\n' +
+    '     {{name}} delete-snapshot [<options>] <uuid> <name>\n' +
     '\n' +
     '{{options}}\n'
 );
