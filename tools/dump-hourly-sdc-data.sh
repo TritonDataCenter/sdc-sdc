@@ -144,7 +144,6 @@ sdc-sapi /manifests >$DUMPDIR/sapi_manifests-$TIMESTAMP.json
 echo "Dump Workflow workflows, jobs"
 sdc-workflow /workflows >$DUMPDIR/workflow_workflows-$TIMESTAMP.json
 [ $? -ne 0 ] && echo "$0: error: Dumping WFAPI workflows failed" >&2
-# TODO: Disabled right now pending discussion on timeouts here in heavy usage.
 # Right now we dump recent jobs (jobs created in the past 2 hours)
 now=$TIMESTAMP
 ago=$(date -u "+%s" -d -2hour)

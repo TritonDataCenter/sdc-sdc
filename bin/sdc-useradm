@@ -867,6 +867,10 @@ CLI.prototype.do_create = function (subcmd, opts, args, callback) {
             }, next);
         },
         function ensureFields(next) {
+            if (data.memberof) {
+                return next(new errors.UsageError(
+                    'cannot set "memberof" in user creation'));
+            }
             data.objectclass = 'sdcperson';
             if (!data.uuid) {
                 data.uuid = genUuid();
