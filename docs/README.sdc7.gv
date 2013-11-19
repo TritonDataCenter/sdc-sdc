@@ -1,0 +1,9 @@
+The sdc7.gv file is a graphvis source file. You can run something like:
+
+   dot -Tpng sdc7.gv > sdc7.gv.png
+
+to generate a png file from this source file. Feel free to add better formatting
+options to this file if you figure them out.
+
+Also note that I've not yet represented the calls from workflow jobs to other
+APIs here.
