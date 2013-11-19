@@ -8,6 +8,7 @@ digraph {
         adminui -> imgapi;
         adminui -> moray;
         adminui -> napi;
+        adminui -> redis;
         adminui -> sapi;
         adminui -> ufds;
         adminui -> vmapi;
@@ -62,19 +63,13 @@ digraph {
         dhcpagent -> dhcpd;
         heartbeater -> rabbitmq;
         heartbeater -> vmadm;
-        imgadm -> zfs;
-        imgadm -> zpool;
+        imgadm -> imgapi;
         provisioner -> rabbitmq;
         provisioner -> vmadm;
         pxe -> dhcpd;
         pxegrub -> assets;
         tftp -> dhcpd;
         ur -> rabbitmq;
-        vmadm -> imgadm;
-        vmadm -> svccfg;
-        vmadm -> zfs;
-        vmadm -> zoneadm;
-        vmadm -> zonecfg;
-        vmadm -> zoneevent;
+        vmadm;
     }
 }
