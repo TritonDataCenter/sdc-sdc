@@ -46,12 +46,24 @@ fi
 
 server_vms=$(json -HA -e "this[0].vms = {}; for (var i = 0; i < this.length; i++) {
     if (this[0].vms[this[i].server_uuid] === undefined) this[0].vms[this[i].server_uuid] = [];
-    this[0].vms[this[i].server_uuid].push(this[i].uuid);
-}" [0].vms < /tmp/vms.$$)
+    this[0].vms[this[i].server_uuid].push({role: this[i].tags.smartdc_role, uuid: this[i].uuid});
+}" 0.vms < /tmp/vms.$$)
 
 for server_uuid in $(echo "${server_vms}" | json -ka); do
-    logs=$(echo "${server_vms}" | json -e "this.string = this['$server_uuid'].map(function(uuid) {
-        return '/zones/' + uuid + '/root/var/svc/log/*smartdc*.log';
+    logs=$(echo "${server_vms}" | json -e "this.string = this['$server_uuid'].map(function(info) {
+        var zoneLogs = [];
+        if (info.role === 'moray') {
+            zoneLogs.push('/zones/' + info.uuid + '/root/var/log/moray.log');
+        } else if (info.role === 'cloudapi') {
+            zoneLogs.push('/zones/' + info.uuid + '/root/var/log/cloudapi.log');
+        } else {
+            zoneLogs.push('/zones/' + info.uuid + '/root/var/svc/log/*smartdc*.log');
+        }
+        if (['manatee', 'assets'].indexOf(info.role) === -1) {
+            // Currently no stock SDC log rotations in assets and manatee.
+            zoneLogs.push('/zones/' + info.uuid + '/root/var/log/sdc/upload/*.log');
+        }
+        return zoneLogs.join(' ');
     }).join(' ');" string)
 
     set +o errexit
