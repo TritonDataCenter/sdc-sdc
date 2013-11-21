@@ -46,7 +46,7 @@ rm -f $crontab
 /usr/sbin/svccfg import /opt/smartdc/hermes/smf/hermes.xml
 
 # Install AMON probes for every SDC role
-/opt/smartdc/sdc/bin/sdc-amonadm
+/opt/smartdc/sdc/bin/sdc-amonadm update
 
 # Log rotation.
 sdc_log_rotation_add amon-agent /var/svc/log/*amon-agent*.log 1g
