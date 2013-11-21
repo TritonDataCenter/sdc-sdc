@@ -43,11 +43,10 @@ crontab $crontab
 [[ $? -eq 0 ]] || fatal "Unable import crontab"
 rm -f $crontab
 
-# Install Amon probes for the sdc zone.
-TRACE=1 /opt/smartdc/sdc/tools/sdc-amon-install
-
 /usr/sbin/svccfg import /opt/smartdc/hermes/smf/hermes.xml
 
+# Install AMON probes for every SDC role
+/opt/smartdc/sdc/bin/sdc-amonadm
 
 # Log rotation.
 sdc_log_rotation_add amon-agent /var/svc/log/*amon-agent*.log 1g
