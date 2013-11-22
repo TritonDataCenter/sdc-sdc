@@ -39,6 +39,7 @@ echo '' >>$crontab
 echo '* * * * * /opt/smartdc/sdc/tools/dump-minutely-sdc-data.sh >>/var/log/dump-minutely-sdc-data.log 2>&1' >>$crontab
 echo '0 * * * * /opt/smartdc/sdc/tools/dump-hourly-sdc-data.sh >>/var/log/dump-hourly-sdc-data.log 2>&1' >>$crontab
 echo '10 * * * * /opt/smartdc/sdc/tools/upload-sdc-data.sh >>/var/log/upload-sdc-data.log 2>&1' >>$crontab
+echo '0 * * * * /opt/smartdc/sdc/bin/sdc-amonadm update >>/var/log/update-probes-hourly.log 2>&1' >>$crontab
 crontab $crontab
 [[ $? -eq 0 ]] || fatal "Unable import crontab"
 rm -f $crontab
