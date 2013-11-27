@@ -32,7 +32,7 @@ else
 endif
 
 RELEASE_TARBALL	:= $(NAME)-pkg-$(STAMP).tar.bz2
-RELTMPDIR       := /tmp/$(STAMP)
+RELSTAGEDIR       := /tmp/$(STAMP)
 
 
 
@@ -64,10 +64,10 @@ hermes:
 .PHONY: release
 release: all docs man hermes
 	@echo "Building $(RELEASE_TARBALL)"
-	mkdir -p $(RELTMPDIR)/root/opt/smartdc/$(NAME)
-	mkdir -p $(RELTMPDIR)/site
-	touch $(RELTMPDIR)/site/.do-not-delete-me
-	mkdir -p $(RELTMPDIR)/root
+	mkdir -p $(RELSTAGEDIR)/root/opt/smartdc/$(NAME)
+	mkdir -p $(RELSTAGEDIR)/site
+	touch $(RELSTAGEDIR)/site/.do-not-delete-me
+	mkdir -p $(RELSTAGEDIR)/root
 	cp -r \
 		$(TOP)/bin \
 		$(TOP)/lib \
@@ -78,27 +78,27 @@ release: all docs man hermes
 		$(TOP)/CHANGES.md \
 		$(TOP)/test \
 		$(TOP)/tools \
-		$(RELTMPDIR)/root/opt/smartdc/$(NAME)
-	mkdir -p $(RELTMPDIR)/root/opt/smartdc/$(NAME)/man
+		$(RELSTAGEDIR)/root/opt/smartdc/$(NAME)
+	mkdir -p $(RELSTAGEDIR)/root/opt/smartdc/$(NAME)/man
 	for f in $$(cd man && find . -type f -name "*.roff"); do \
-		mkdir -p $(RELTMPDIR)/root/opt/smartdc/$(NAME)/man/$$(dirname $$f); \
-		cp man/$$f $(RELTMPDIR)/root/opt/smartdc/$(NAME)/man/$$(dirname $$f)/$$(basename $$f .roff); \
+		mkdir -p $(RELSTAGEDIR)/root/opt/smartdc/$(NAME)/man/$$(dirname $$f); \
+		cp man/$$f $(RELSTAGEDIR)/root/opt/smartdc/$(NAME)/man/$$(dirname $$f)/$$(basename $$f .roff); \
 	done
-	mkdir -p $(RELTMPDIR)/root/opt/smartdc/boot
-	cp -R $(TOP)/deps/sdc-scripts/* $(RELTMPDIR)/root/opt/smartdc/boot/
-	cp -R $(TOP)/boot/* $(RELTMPDIR)/root/opt/smartdc/boot/
-	mkdir -p $(RELTMPDIR)/root/opt/smartdc/$(NAME)/build
+	mkdir -p $(RELSTAGEDIR)/root/opt/smartdc/boot
+	cp -R $(TOP)/deps/sdc-scripts/* $(RELSTAGEDIR)/root/opt/smartdc/boot/
+	cp -R $(TOP)/boot/* $(RELSTAGEDIR)/root/opt/smartdc/boot/
+	mkdir -p $(RELSTAGEDIR)/root/opt/smartdc/$(NAME)/build
 	cp -r \
 		$(TOP)/build/node \
 		$(TOP)/build/docs \
-		$(RELTMPDIR)/root/opt/smartdc/$(NAME)/build
+		$(RELSTAGEDIR)/root/opt/smartdc/$(NAME)/build
 	cp -r $(TOP)/build/hermes/opt/smartdc/hermes \
-		$(RELTMPDIR)/root/opt/smartdc/hermes
-	mkdir -p $(RELTMPDIR)/root/opt/smartdc/hermes/etc
+		$(RELSTAGEDIR)/root/opt/smartdc/hermes
+	mkdir -p $(RELSTAGEDIR)/root/opt/smartdc/hermes/etc
 	cp -r $(TOP)/deps/hermes/etc/logsets.json \
-		$(RELTMPDIR)/root/opt/smartdc/hermes/etc
-	(cd $(RELTMPDIR) && $(TAR) -jcf $(TOP)/$(RELEASE_TARBALL) root site)
-	@rm -rf $(RELTMPDIR)
+		$(RELSTAGEDIR)/root/opt/smartdc/hermes/etc
+	(cd $(RELSTAGEDIR) && $(TAR) -jcf $(TOP)/$(RELEASE_TARBALL) root site)
+	@rm -rf $(RELSTAGEDIR)
 
 .PHONY: publish
 publish: release
