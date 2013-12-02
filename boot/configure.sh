@@ -11,10 +11,18 @@ set -o errexit
 PATH=/opt/smartdc/sdc/bin:/opt/smartdc/sdc/build/node/bin:/opt/local/bin:/opt/local/sbin:/usr/bin:/usr/sbin
 SAPIADM=/opt/smartdc/config-agent/bin/sapiadm
 
-metadata_path=/var/tmp/metadata.json
-sdc-sapi /configs/$(zonename) | json -H metadata > $metadata_path
-admin_uuid=$(json -f ${metadata_path} ufds_admin_uuid)
-datacenter_name=$(json -f ${metadata_path} datacenter_name)
+function fatal
+{
+    echo "$0: fatal error: $*"
+    exit 1
+}
+
+
+config_path=/opt/smartdc/sdc/etc/config.json
+admin_uuid=$(json -f ${config_path} ufds_admin_uuid)
+[[ -z "$admin_uuid" ]] && fatal "could not determine admin_uuid"
+datacenter_name=$(json -f ${config_path} datacenter_name)
+[[ -z "$datacenter_name" ]] && fatal "could not determine datacenter_name"
 
 
 # Add a '$dcname sdc key' ssh key on the 'admin' user and to ~/.ssh in *every
