@@ -1,5 +1,13 @@
 digraph {
+    rankdir="LR";
+    compound=true;
+    splines=true;
+    sep="+25,25";
+    overlap=scalexy;
+    nodesep=0.6;
+    node [fontsize=11];
     subgraph cluster_0 {
+        rank="same";
         label="Head Node";
         adminui -> amon;
         adminui -> ca;
@@ -54,15 +62,16 @@ digraph {
         vmapi -> rabbitmq;
         vmapi -> redis;
         vmapi -> workflow;
-        workflow -> moray;
+        workflow -> moray [label="node-fast"];
         zookeeper;
     }
     subgraph cluster_1 {
+        rank="same";
         label="Compute Node";
         "amon-relay" -> amon;
         dhcpagent -> dhcpd;
         heartbeater -> rabbitmq;
-        heartbeater -> vmadm;
+        vmadm -> heartbeater;
         imgadm -> imgapi;
         provisioner -> rabbitmq;
         provisioner -> vmadm;
