@@ -84,10 +84,22 @@ count=$(sdc-vmapi /vms?state=active -X HEAD | grep 'x-joyent-resource-count' | c
 if [[ $? != 0 ]]; then
     echo "$0: error: Dumping VMAPI VMs failed. Could not get count of VMs" >&2
 else
-    sdc-vmapi "/vms?state=active&limit=$count" \
-        | $JSON -e 'this.customer_metadata=undefined; this.internal_metadata=undefined;' \
-        >$DUMPDIR/vmapi_vms-$TIMESTAMP.json
-    [ $? -ne 0 ] && echo "$0: error: Dumping VMAPI VMs failed" >&2
+    per_page=1000
+    offset=0
+    num_pages=$(($count / $per_page))
+    if [[ $(($num_pages * $per_page)) < $count ]]; then
+        num_pages=$((num_pages + 1))
+    fi
+    for ((i = 1; i <= $num_pages; i++)); do
+        sdc-vmapi "/vms?state=active&limit=$per_page&offset=$offset" \
+            | $JSON -Hae 'this.customer_metadata=undefined; this.internal_metadata=undefined;' \
+            >>$DUMPDIR/vmapi_vms-$TIMESTAMP.json
+        if [ $? -ne 0  ]; then
+            echo "$0: error: Dumping VMAPI VMs failed" >&2
+            break
+        fi
+        offset=$(($i * $per_page))
+    done
 fi
 
 echo "Dump vmadm VM info on all CNs"
