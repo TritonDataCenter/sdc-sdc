@@ -103,21 +103,30 @@ else
 fi
 
 echo "Dump vmadm VM info on all CNs"
-sdc-oneachnode -j '
-        if [[ -d /opt/smartdc/agents/lib ]]; then
-            vmadm lookup -j;
-        else
-            echo "no vmadm lookup -j on 6.5";
-        fi' \
-    | json -aj -e '
-        this.cn = this.sysinfo.UUID;
-        try {
-            this.vms = JSON.parse(this.result.stdout);
-        } catch (ex) {
-            this.stdout = this.result.stdout
-        }' cn vms stdout \
-    >$DUMPDIR/vmadm_vms-$TIMESTAMP.json
-[ $? -ne 0 ] && echo "$0: error: Getting vmadm VM info via sdc-oneachnode" >&2
+# Run foo command to get list of all CNs, group UUIDs in batches of 50 CNs
+groups=$(sdc-oneachnode -j 'echo "foo"' | json -a "sysinfo.UUID" | xargs -n50 -r)
+num_groups=$(echo "$groups" | wc -l)
+for ((i = 1; i <= $num_groups; i++)); do
+    group=$(echo "$groups" | sed -n ${i}p)
+    sdc-oneachnode -j -n $group '
+            if [[ -d /opt/smartdc/agents/lib ]]; then
+                vmadm lookup -j;
+            else
+                echo "no vmadm lookup -j on 6.5";
+            fi' \
+        | json -aj -e '
+            this.cn = this.sysinfo.UUID;
+            try {
+                this.vms = JSON.parse(this.result.stdout);
+            } catch (ex) {
+                this.stdout = this.result.stdout
+            }' cn vms stdout \
+        >>$DUMPDIR/vmadm_vms-$TIMESTAMP.json
+    if [ $? -ne 0  ]; then
+        echo "$0: error: Getting vmadm VM info via sdc-oneachnode" >&2
+        break
+    fi
+done
 
 echo "Dump CNAPI servers"
 sdc-cnapi /servers?extras=all >$DUMPDIR/cnapi_servers-$TIMESTAMP.json
