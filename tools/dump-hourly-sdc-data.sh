@@ -107,7 +107,7 @@ echo "Dump vmadm VM info on all CNs"
 groups=$(sdc-oneachnode -j 'echo "foo"' | json -a "sysinfo.UUID" | xargs -n50 -r)
 num_groups=$(echo "$groups" | wc -l)
 for ((i = 1; i <= $num_groups; i++)); do
-    group=$(echo "$groups" | sed -n ${i}p)
+    group=$(echo "$groups" | sed -n ${i}p | sed 's/ /,/g')
     sdc-oneachnode -j -n $group '
             if [[ -d /opt/smartdc/agents/lib ]]; then
                 vmadm lookup -j;
