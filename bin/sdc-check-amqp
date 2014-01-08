@@ -1,0 +1,79 @@
+#!/usr/bin/env node
+/*
+ * Copyright (c) 2013 Joyent Inc. All rights reserved.
+ *
+ * Checks if Rabbitmq is online and properly sending messages through
+ */
+
+var path = require('path');
+var assert = require('assert');
+var amqp = require('amqp-plus');
+
+var cp = require('child_process');
+var exec = cp.exec;
+var execFile = cp.execFile;
+var spawn = cp.spawn;
+
+var creds;
+var connection;
+
+process.on('uncaughtException', function (e) {
+    console.error('uncaught exception:' + e.message);
+    console.log(e.stack);
+    process.exit(1);
+});
+
+function amqpConfig() {
+    var config = require('../etc/config.json');
+    // guest:guest:10.99.99.20:5672
+    var values = config.rabbitmq.split(':');
+
+    var rabbit = {
+        login: values[0],
+        password: values[1],
+        host: values[2],
+        port: values[3]
+    };
+    return rabbit;
+}
+
+function onReady() {
+    console.log('Connected ' + creds.host + ':' + creds.port);
+
+    var queue = connection.queue('heartbeat.probe.amon');
+    queue.on('open', function () {
+        console.log('Binded queue to exchange');
+        queue.bind('heartbeat.*');
+        queue.subscribeJSON(onJson);
+    });
+
+    function onJson(message, headers, deliveryInfo) {
+        try {
+            assert.ok(message, 'amqp message');
+            assert.ok(deliveryInfo.routingKey, 'amqp routingKey');
+        } catch (e) {
+            console.error(e.toString());
+            process.exit(1);
+        }
+
+        console.log('AMQP message received');
+        process.exit(0);
+    }
+}
+
+function onClose() {
+    console.log('Connection closed');
+    process.exit(1);
+}
+
+function connect() {
+    creds = amqpConfig();
+    connection = amqp.createConnection(creds, { log: console });
+    connection.on('ready', onReady);
+    connection.on('close', onClose);
+    connection.reconnect();
+}
+
+
+// Connect and wait for a message
+connect();

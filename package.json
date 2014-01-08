@@ -23,6 +23,7 @@
         "verror": "1.3.6",
         "extsprintf": "1.0.2",
         "amqp": "git://github.com/postwait/node-amqp.git#7becb031a3517a22490addc46654e807bce5f37e",
+        "amqp-plus": "git://github.com/orlandov/node-amqp-plus.git#a67f9547c116bf991b974ce5b9cd090c8b222fdb",
         "jsontool": "6.0.0"
     },
     "devDependencies": {
