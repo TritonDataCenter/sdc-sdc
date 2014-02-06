@@ -142,6 +142,18 @@ echo "Dump packages"
 sdc-ufds search objectclass=sdcpackage | json -g >$DUMPDIR/packages-$TIMESTAMP.json
 [ $? -ne 0 ] && echo "$0: error: Dumping packages from UFDS failed" >&2
 
+papi_domain=$(json -f /opt/smartdc/sdc/etc/config.json papi_domain)
+if [[ -n "$papi_domain" ]]; then
+    # We dump as a one-package-per-line json stream. This scales up
+    # to many packages better.
+    echo "Dump PAPI packages"
+    CURL_OPTS="--connect-timeout 10 -sS -H accept:application/json"
+    curl ${CURL_OPTS} --url "http://$papi_domain/packages" \
+        | $JSON -Ha -o jsony-0 \
+        >$DUMPDIR/papi_packages-$TIMESTAMP.json
+    [ $? -ne 0 ] && echo "$0: error: Dumping PAPI packages failed" >&2
+fi
+
 echo "Dump NAPI nic_tags, nics, networks, network_pools"
 sdc-napi /nic_tags >$DUMPDIR/napi_nic_tags-$TIMESTAMP.json
 [ $? -ne 0 ] && echo "$0: error: Dumping NAPI NIC tags failed" >&2
