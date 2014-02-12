@@ -33,5 +33,5 @@ EOF
     exit 1
 fi
 
-papi "$@" | (json -q || true)
+papi "${@/\\\"/\"}" | (json -q || true)
 exit $?

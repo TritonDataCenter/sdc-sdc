@@ -132,7 +132,7 @@ function papi() {
     if [[ -z "$PAPI_URL" ]]; then
         PAPI_URL="http://$(json -f $CONFIG papi_domain)"
     fi
-    (curl ${CURL_OPTS} --url "${PAPI_URL}${path}" "$@") || return $?
+    (curl -g ${CURL_OPTS} --url "${PAPI_URL}${path/\\\"/\"}" "$@") || return $?
     echo ""  # sometimes the result is not terminated with a newline
     return 0
 }
