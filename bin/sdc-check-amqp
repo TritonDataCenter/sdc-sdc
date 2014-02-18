@@ -42,7 +42,7 @@ function onReady() {
 
     var queue = connection.queue('heartbeat.probe.amon');
     queue.on('open', function () {
-        console.log('Binded queue to exchange');
+        console.log('Bound queue to exchange');
         queue.bind('heartbeat.*');
         queue.subscribeJSON(onJson);
     });
@@ -71,7 +71,6 @@ function connect() {
     connection = amqp.createConnection(creds, { log: console });
     connection.on('ready', onReady);
     connection.on('close', onClose);
-    connection.reconnect();
 }
 
 
