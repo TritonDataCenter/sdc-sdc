@@ -138,10 +138,6 @@ echo "Dump Amon alarms"
 sdc-amon /alarms >$DUMPDIR/amon_alarms-$TIMESTAMP.json
 [ $? -ne 0 ] && echo "$0: error: Dumping Amon alarms failed" >&2
 
-echo "Dump packages"
-sdc-ufds search objectclass=sdcpackage | json -g >$DUMPDIR/packages-$TIMESTAMP.json
-[ $? -ne 0 ] && echo "$0: error: Dumping packages from UFDS failed" >&2
-
 papi_domain=$(json -f /opt/smartdc/sdc/etc/config.json papi_domain)
 if [[ -n "$papi_domain" ]]; then
     # We dump as a one-package-per-line json stream. This scales up
