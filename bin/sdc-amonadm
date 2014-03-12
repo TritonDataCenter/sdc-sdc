@@ -1,7 +1,9 @@
 #!/bin/bash
 TOP=$(cd $(dirname $0)/../ >/dev/null; pwd)
 if [[ "$#" == 0 ]]; then
-    $TOP/build/node/bin/node $TOP/node_modules/amonadm/main.js "$@"
+    $TOP/build/node/bin/node $TOP/node_modules/amonadm/main.js
+elif [[ "$#" == 1 ]] && [[ "$1" == "-h" || "$1" == "--help" || "$1" == "help" ]]; then
+	$TOP/build/node/bin/node $TOP/node_modules/amonadm/main.js $1
 else
     $TOP/build/node/bin/node $TOP/node_modules/amonadm/main.js "$@" -f $TOP/etc/amonadm.config.json
 fi
