@@ -103,30 +103,46 @@ else
 fi
 
 echo "Dump vmadm VM info on all CNs"
-# Run foo command to get list of all CNs, group UUIDs in batches of 50 CNs
-groups=$(sdc-oneachnode -j 'echo "foo"' | json -a "sysinfo.UUID" | xargs -n50 -r)
-num_groups=$(echo "$groups" | wc -l)
-for ((i = 1; i <= $num_groups; i++)); do
-    group=$(echo "$groups" | sed -n ${i}p | sed 's/ /,/g')
-    sdc-oneachnode -j -n $group '
-            if [[ -d /opt/smartdc/agents/lib ]]; then
-                vmadm lookup -j;
-            else
-                echo "no vmadm lookup -j on 6.5";
-            fi' \
-        | json -aj -e '
-            this.cn = this.sysinfo.UUID;
-            try {
-                this.vms = JSON.parse(this.result.stdout);
-            } catch (ex) {
-                this.stdout = this.result.stdout
-            }' cn vms stdout \
-        >>$DUMPDIR/vmadm_vms-$TIMESTAMP.json
-    if [ $? -ne 0  ]; then
-        echo "$0: error: Getting vmadm VM info via sdc-oneachnode" >&2
-        break
+# 1. Dump on each CN.
+sdc-oneachnode '
+    if [[ -d /opt/smartdc/agents/lib ]]; then
+        vmadm lookup -j >/var/tmp/vmadm_vms.json;
+    else
+        echo "no vmadm lookup -j on 6.5";
+    fi' >/dev/null
+if [ $? -ne 0  ]; then
+    echo "$0: error: Dumping 'vmadm lookup -j' on nodes" >&2
+    break
+fi
+# 2. Put that file to the headnode.
+PUTDIR=/var/tmp/vmadm_vms.$$
+rm -rf $PUTDIR
+mkdir -p $PUTDIR
+sdc-oneachnode -d $PUTDIR -p /var/tmp/vmadm_vms.json >/dev/null
+if [ $? -ne 0  ]; then
+    echo "$0: error: Getting 'vmadm lookup -j' dumps from nodes" >&2
+fi
+# 3. Massage the data from each expected CN into newline-separated JSON
+#   (one line per VM).
+DUMPFILE=$DUMPDIR/vmadm_vms-$TIMESTAMP.json
+rm -f $DUMPFILE
+nodeerrs=""
+sdc-cnapi /servers?extras=sysinfo \
+                | json -H -c 'this.sysinfo["SDC Version"]' -a uuid \
+                | while read node; do
+    f=$PUTDIR/$node
+    if [[ ! -s $f ]]; then
+        nodeerrs="$nodeerrs $node"
+        continue
     fi
+    json -f $f -e "this.cn=\"$node\"; this.customer_metadata=undefined; this.internal_metadata=undefined" \
+        -a -o jsony-0 >>$DUMPFILE
 done
+if [[ -n "$nodeerrs" ]]; then
+    echo "$0: error: Getting vmadm vms from some nodes: $nodeerrs" >&2
+fi
+rm -rf $PUTDIR
+
 
 echo "Dump CNAPI servers"
 sdc-cnapi /servers?extras=all >$DUMPDIR/cnapi_servers-$TIMESTAMP.json
