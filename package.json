@@ -6,7 +6,7 @@
     "private": true,
     "dependencies": {
         "sdc-clients": "git+ssh://git@git.joyent.com:node-sdc-clients.git#5ee3bc3",
-        "amonadm": "git+ssh://git@git.joyent.com:amonadm.git#2236e28",
+        "amonadm": "git+ssh://git@git.joyent.com:amonadm.git#62796fc",
         "smartdc": "git+ssh://git@github.com:joyent/node-smartdc.git#4308fd9",
         "manta": "git+ssh://git@github.com:joyent/node-manta.git#b277acf",
         "moray": "git+ssh://git@git.joyent.com:node-moray.git#a4c94d4",
