@@ -45,6 +45,7 @@ crontab $crontab
 rm -f $crontab
 
 /usr/sbin/svccfg import /opt/smartdc/hermes/smf/hermes.xml
+/usr/sbin/svccfg import /opt/smartdc/hermes/smf/hermes-proxy.xml
 
 # Install AMON probes for every SDC role
 /opt/smartdc/sdc/bin/sdc-amonadm update
@@ -52,7 +53,8 @@ rm -f $crontab
 # Log rotation.
 sdc_log_rotation_add amon-agent /var/svc/log/*amon-agent*.log 1g
 sdc_log_rotation_add config-agent /var/svc/log/*config-agent*.log 1g
-sdc_log_rotation_add hermes /var/svc/log/*hermes*.log 1g
+sdc_log_rotation_add hermes /var/svc/log/*hermes:default.log 1g
+sdc_log_rotation_add hermes-proxy /var/svc/log/*hermes-proxy:default.log 1g
 # Don't really need these 3 to go up to manta right now.
 logadm -w sdc-data -C 3 -c -s 1m '/var/log/*-sdc-data.log'
 sdc_log_rotation_setup_end
