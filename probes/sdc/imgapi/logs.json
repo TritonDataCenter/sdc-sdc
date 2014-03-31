@@ -1,0 +1,22 @@
+[
+    {
+        "name": "imgapi log fatal",
+        "type": "bunyan-log-scan",
+        "config": {
+            "smfServiceName": "imgapi",
+            "fields": {
+                "level": "fatal"
+            }
+        }
+    },
+    {
+        "name": "imgapi log error",
+        "type": "bunyan-log-scan",
+        "config": {
+            "smfServiceName": "imgapi",
+            "fields": {
+                "level": "error"
+            }
+        }
+    }
+]

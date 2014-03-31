@@ -1,0 +1,12 @@
+[
+    {
+        "name": "duplicate UUID detected",
+        "type": "bunyan-log-scan",
+        "config": {
+            "smfServiceName": "vmapi",
+            "match": {
+                "pattern": "Found duplicate VM UUIDs"
+            }
+        }
+    }
+]

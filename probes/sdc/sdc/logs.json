@@ -1,0 +1,32 @@
+[
+    {
+        "name": "hermes log fatal",
+        "type": "bunyan-log-scan",
+        "config": {
+            "smfServiceName": "hermes",
+            "fields": {
+                "level": "fatal"
+            }
+        }
+    },
+    {
+        "name": "hermes log error",
+        "type": "bunyan-log-scan",
+        "config": {
+            "smfServiceName": "hermes",
+            "fields": {
+                "level": "error"
+            }
+        }
+    },
+    {
+        "name": "hermes log warn",
+        "type": "bunyan-log-scan",
+        "config": {
+            "smfServiceName": "hermes",
+            "fields": {
+                "level": "warn"
+            }
+        }
+    }
+]

@@ -1,0 +1,15 @@
+[
+    {
+        "name": "vmapi nic error",
+        "type": "bunyan-log-scan",
+        "config": {
+            "smfServiceName": "vmapi",
+            "fields": {
+                "level": "error"
+            },
+            "match": {
+                "pattern": "Could not add NIC"
+            }
+        }
+    }
+]

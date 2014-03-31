@@ -1,0 +1,9 @@
+[
+    {
+        "name": "root dataset running low on space",
+        "type": "disk-usage",
+        "config": {
+            "path": "/"
+        }
+    }
+]

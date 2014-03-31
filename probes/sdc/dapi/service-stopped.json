@@ -1,0 +1,12 @@
+[
+    {
+        "name": "dapi service stopped",
+        "type": "log-scan",
+        "config": {
+            "smfServiceName": "dapi",
+            "match": {
+                "pattern": "Stopping because"
+            }
+        }
+    }
+]

@@ -1,0 +1,15 @@
+[
+    {
+        "name": "dump-minutely-sdc-data error",
+        "contacts": ["email"],
+        "type": "log-scan",
+        "config": {
+            "path": "/var/log/dump-minutely-sdc-data.log",
+            "match": {
+                "pattern": "error",
+                "matchWord": true,
+                "type": "substring"
+            }
+        }
+    }
+]

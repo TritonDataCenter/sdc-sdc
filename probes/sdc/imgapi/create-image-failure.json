@@ -1,0 +1,17 @@
+[
+    {
+        "name": "imgapi image creation failure",
+        "type": "bunyan-log-scan",
+        "groupEvents": false,
+        "config": {
+            "smfServiceName": "imgapi",
+            "fields": {
+                "route": "updateimage",
+                "action": "create-from-vm"
+            },
+            "match": {
+                "pattern": "InternalError"
+            }
+        }
+    }
+]

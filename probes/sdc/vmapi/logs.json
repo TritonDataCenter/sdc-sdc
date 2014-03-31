@@ -1,0 +1,22 @@
+[
+    {
+        "name": "vmapi log fatal",
+        "type": "bunyan-log-scan",
+        "config": {
+            "smfServiceName": "vmapi",
+            "fields": {
+                "level": "fatal"
+            }
+        }
+    },
+    {
+        "name": "vmapi log warn",
+        "type": "bunyan-log-scan",
+        "config": {
+            "smfServiceName": "vmapi",
+            "fields": {
+                "level": "warn"
+            }
+        }
+    }
+]

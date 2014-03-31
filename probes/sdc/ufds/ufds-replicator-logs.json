@@ -1,0 +1,32 @@
+[
+    {
+        "name": "ufds-replicator log fatal",
+        "type": "bunyan-log-scan",
+        "config": {
+            "smfServiceName": "ufds-replicator",
+            "fields": {
+                "level": "fatal"
+            }
+        }
+    },
+    {
+        "name": "ufds-replicator log error",
+        "type": "bunyan-log-scan",
+        "config": {
+            "smfServiceName": "ufds-replicator",
+            "fields": {
+                "level": "error"
+            }
+        }
+    },
+    {
+        "name": "ufds-replicator log warn",
+        "type": "bunyan-log-scan",
+        "config": {
+            "smfServiceName": "ufds-replicator",
+            "fields": {
+                "level": "warn"
+            }
+        }
+    }
+]

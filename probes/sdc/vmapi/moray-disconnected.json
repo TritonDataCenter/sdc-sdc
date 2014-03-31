@@ -1,0 +1,15 @@
+[
+    {
+        "name": "vmapi lost connection to moray",
+        "type": "bunyan-log-scan",
+        "config": {
+            "smfServiceName": "vmapi",
+            "fields": {
+                "level": "info"
+            },
+            "match": {
+                "pattern": "client closed"
+            }
+        }
+    }
+]

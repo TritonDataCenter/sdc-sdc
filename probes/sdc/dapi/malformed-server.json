@@ -1,0 +1,12 @@
+[
+    {
+        "name": "dapi saw malformed server object in request",
+        "type": "log-scan",
+        "config": {
+            "smfServiceName": "dapi",
+            "match": {
+                "pattern": "Skipping server in request"
+            }
+        }
+    }
+]

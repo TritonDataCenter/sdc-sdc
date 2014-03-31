@@ -1,0 +1,12 @@
+[
+    {
+        "name": "check-amqp-online",
+        "contacts": ["email"],
+        "type": "cmd",
+        "config": {
+            "cmd": "/opt/smartdc/sdc/bin/sdc-check-amqp",
+            "timeout": 15,
+            "interval": 300
+        }
+    }
+]

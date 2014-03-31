@@ -1,0 +1,15 @@
+[
+    {
+        "name": "dump-hourly-sdc-data error",
+        "contacts": ["email"],
+        "type": "log-scan",
+        "config": {
+            "path": "/var/log/dump-hourly-sdc-data.log",
+            "match": {
+                "pattern": "error",
+                "matchWord": true,
+                "type": "substring"
+            }
+        }
+    }
+]

@@ -1,0 +1,12 @@
+[
+    {
+        "name": "imgapi service stopped",
+        "type": "log-scan",
+        "config": {
+            "smfServiceName": "imgapi",
+            "match": {
+                "pattern": "Stopping because"
+            }
+        }
+    }
+]

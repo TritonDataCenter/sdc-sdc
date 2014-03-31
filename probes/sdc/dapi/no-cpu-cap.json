@@ -1,0 +1,14 @@
+[
+    {
+        "name": "dapi assumed filled server due to missing cpu_cap",
+        "type": "log-scan",
+        "groupEvents": true,
+        "config": {
+            "smfServiceName": "dapi",
+            "match": {
+                "pattern": "Server .{36} VM .{36} has no cpu_cap",
+                "type": "regex"
+            }
+        }
+    }
+]
