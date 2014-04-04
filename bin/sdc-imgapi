@@ -53,7 +53,7 @@ if [[ "${path:(-5)}" == "/file" ]]; then
         IS_GETIMAGEFILE=yes
     fi
 fi
-CURL_ARGS="--connect-timeout 10 -sS"
+CURL_ARGS="-4 --connect-timeout 10 -sS"
 # 'application/json' are wrong for GetImageFile. We also drop '-i'
 # because otherwise the headers get in the way of doing this:
 #       sdc-imgapi /images/$uuid/file -o foo.zfs.bz2

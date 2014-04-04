@@ -10,10 +10,10 @@ TOP=$(cd $(dirname $0)/../ 2>/dev/null; pwd)
 CONFIG=$TOP/etc/config.json
 
 if [[ $1 == "--no-headers" ]]; then
-    CURL_OPTS="--connect-timeout 10 -sS -H accept:application/json"
+    CURL_OPTS="-4 --connect-timeout 10 -sS -H accept:application/json"
     shift
 else
-    CURL_OPTS="--connect-timeout 10 -sS -i -H accept:application/json -H content-type:application/json"
+    CURL_OPTS="-4 --connect-timeout 10 -sS -i -H accept:application/json -H content-type:application/json"
 fi
 
 
