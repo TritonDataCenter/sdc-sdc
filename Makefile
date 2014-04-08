@@ -76,6 +76,7 @@ release: all docs man hermes
 		$(TOP)/sapi_manifests \
 		$(TOP)/README.md \
 		$(TOP)/CHANGES.md \
+		$(TOP)/probes \
 		$(TOP)/test \
 		$(TOP)/tools \
 		$(RELSTAGEDIR)/root/opt/smartdc/$(NAME)
