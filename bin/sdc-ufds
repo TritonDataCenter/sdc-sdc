@@ -68,10 +68,7 @@ fi
 
 ufds_dn=$(echo "$UFDS_CREDENTIALS" | cut -d: -f1)
 ufds_pw=$(echo "$UFDS_CREDENTIALS" | cut -d: -f2)
-
 export ldapjs_opts="--url ldaps://$UFDS_HOST:$UFDS_PORT --binddn ${ufds_dn} --password ${ufds_pw}"
-export ldapjs_opts_masked="--url ldaps://$UFDS_HOST:$UFDS_PORT --binddn ${ufds_dn} --password ***"
-
 
 # Run the command.
 case $command in
