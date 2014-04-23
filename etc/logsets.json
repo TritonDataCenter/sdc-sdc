@@ -118,5 +118,20 @@
       "vmapi",
       "workflow"
     ]
+  },
+  {
+    "name": "sdc_manatee_dumps",
+    "search_dirs": [ "/var/spool/pg_dumps" ],
+    "regex": "^/var/spool/pg_dumps/([0-9]+)/([0-9]+)/([0-9]+)/([0-9]+)/(.+)\\.gz$",
+    "date_string": {
+      "y": "$1", "m": "$2", "d": "$3",
+      "H": "$4"
+    },
+    "manta_path": "/%u/stor/sdc/manatee_backups/%d/#y/#m/#d/#H/$5.gz",
+    "debounce_time": 600,
+    "retain_time": 0,
+    "zones": [
+      "manatee"
+    ]
   }
 ]
