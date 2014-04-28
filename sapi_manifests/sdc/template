@@ -3,7 +3,6 @@
     "amon_domain": "{{{amon_domain}}}",
     "cloudapi_domain": "{{{CLOUDAPI_SERVICE}}}",
     "cnapi_domain": "{{{cnapi_domain}}}",
-    "dapi_domain": "{{{dapi_domain}}}",
     "datacenter_name": "{{{datacenter_name}}}",
     "fwapi_domain": "{{{fwapi_domain}}}",
     "imgapi_domain": "{{{imgapi_domain}}}",

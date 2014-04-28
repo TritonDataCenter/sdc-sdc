@@ -29,7 +29,6 @@ administrator tool naming tradition).
 ||Amon Master API (amon)||sdc-amon||sdc-amonadm||
 ||Amon Relay API (a small debugging-only API)||sdc-amonrelay||(N/A almost no need to call Amon Relay API)||
 ||Compute Node API (CNAPI)||sdc-cnapi||sdc-server||
-||Designation API (DAPI)||sdc-dapi||--||
 ||Firewall API (FWAPI)||sdc-fwapi||sdc-fwadm (NYI: need a ticket)||
 ||Image API (IMGAPI)||sdc-imgapi||sdc-imgadm||
 ||Network API (NAPI)||sdc-napi||sdc-network||

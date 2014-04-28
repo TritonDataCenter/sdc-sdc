@@ -28,7 +28,6 @@ digraph {
         cnapi -> moray;
         cnapi -> rabbitmq;
         cnapi -> workflow;
-        dapi;
         dhcpd -> cnapi;
         dhcpd -> napi;
         fwapi -> moray;
