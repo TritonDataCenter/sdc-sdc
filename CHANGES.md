@@ -1,5 +1,9 @@
 # sdc (SDC ops core zone) Changelog
 
+## 1.1.2
+
+- DAPI-220: remove DAPI zone
+
 ## 1.1.1
 
 - TOOLS-273: sdc-useradm search FIELD=VALUE ...

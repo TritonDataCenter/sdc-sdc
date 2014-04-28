@@ -89,18 +89,6 @@ function napi() {
     return 0
 }
 
-DAPI_URL=
-function dapi() {
-    local path=$1
-    shift
-    if [[ -z "$DAPI_URL" ]]; then
-        DAPI_URL="http://$(json -f $CONFIG dapi_domain)"
-    fi
-    (curl ${CURL_OPTS} --url "${DAPI_URL}${path}" "$@") || return $?
-    echo ""  # sometimes the result is not terminated with a newline
-    return 0
-}
-
 FWAPI_URL=
 function fwapi() {
     local path=$1
