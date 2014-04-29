@@ -3,7 +3,7 @@
         "name": "dapi saw malformed server object in request",
         "type": "log-scan",
         "config": {
-            "smfServiceName": "dapi",
+            "smfServiceName": "cnapi",
             "match": {
                 "pattern": "Skipping server in request"
             }

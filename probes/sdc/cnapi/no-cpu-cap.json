@@ -4,7 +4,7 @@
         "type": "log-scan",
         "groupEvents": true,
         "config": {
-            "smfServiceName": "dapi",
+            "smfServiceName": "cnapi",
             "match": {
                 "pattern": "Server .{36} VM .{36} has no cpu_cap",
                 "type": "regex"
