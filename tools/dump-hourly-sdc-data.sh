@@ -112,7 +112,6 @@ sdc-oneachnode '
     fi' >/dev/null
 if [ $? -ne 0  ]; then
     echo "$0: error: Dumping 'vmadm lookup -j' on nodes" >&2
-    break
 fi
 # 2. Put that file to the headnode.
 PUTDIR=/var/tmp/vmadm_vms.$$
