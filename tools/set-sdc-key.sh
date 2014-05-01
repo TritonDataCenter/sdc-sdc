@@ -22,10 +22,10 @@ set -o pipefail
 
 function usage {
     echo "Usage:"
-    echo "    set-sdc-key.sh HEADNODE PRIVATE-KEY-FILE"
+    echo "    set-sdc-key.sh HEADNODE PRIVATE-KEY-FILE KEY-NAME"
     echo ""
     echo "Example:"
-    echo "    set-sdc-key.sh coal ~/.ssh/id_rsa.automation"
+    echo "    set-sdc-key.sh coal ~/.ssh/id_rsa.automation automation"
 }
 
 function fatal {
@@ -40,9 +40,11 @@ function fatal {
 
 headnode=$1
 privkey=$2
+keyname=$3
 
 [[ -z "$headnode" ]] && fatal "no HEADNODE argument given"
 [[ -z "$privkey" ]] && fatal "no PRIVATE-KEY-FILE argument given"
+[[ -z "$keyname" ]] && fatal "no KEY-NAME argument given"
 [[ -f "$privkey" ]] || fatal "'$privkey' does not exist"
 pubkey=$privkey.pub
 [[ -f "$pubkey" ]] || fatal "'$pubkey' does not exist"
@@ -67,7 +69,9 @@ echo '{
 ufds_admin_uuid=\$(sdc-sapi /applications?name=sdc | json -H 0.metadata.ufds_admin_uuid)
 sdczone=\$(vmadm lookup -1 alias=sdc0)
 mv /var/tmp/sdckey.id_rsa.pub /zones/\$sdczone/root/var/tmp/
-sdc sdc-useradm add-key \$ufds_admin_uuid /var/tmp/sdckey.id_rsa.pub
+# Allow this to fail in case this is a replicated user and it already has
+# a key with this fingerprint.
+sdc sdc-useradm add-key -n "$keyname" \$ufds_admin_uuid /var/tmp/sdckey.id_rsa.pub || true
 EOF
 
 echo "New key set on the 'sdc' app in the '$headnode' SAPI."

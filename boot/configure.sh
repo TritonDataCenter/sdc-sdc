@@ -27,8 +27,9 @@ datacenter_name=$(json -f ${config_path} datacenter_name)
 
 # Add a '$dcname sdc key' ssh key on the 'admin' user and to ~/.ssh in *every
 # SDC core zone* (by adding for manifest on the 'sdc' *application* in SAPI).
-# This will be used for ssh'ing to each sdc zone (e.g. by the 'sdc-req' tool)
-# and for uploading rotated log files to Manta.
+# This will be used for ssh'ing to each sdc zone (e.g. by the 'sdc-req' tool).
+# TODO(trent): Is that last use case still true? Else move the key to the
+#              SDC *service*.
 key_name="$datacenter_name sdc key"
 key=$(sdc-useradm key $admin_uuid "$key_name" || true)
 if [[ -n "$key" ]]; then
