@@ -47,6 +47,22 @@
     ]
   },
   {
+    "name": "sdcadm_logs",
+    "search_dirs": [ "/var/log/sdcadm" ],
+    "regex": "^/var/log/sdcadm/sdcadm_([0-9a-zA-Z-]+)_([0-9]+)-([0-9]+)-([0-9]+)T([0-9]+):([0-9]+):([0-9]+)\\.log$",
+    "manta_path": "/%u/stor/logs/%d/sdcadm/#y/#m/#d/#H/$1.log",
+    "date_string": {
+      "y": "$2", "m": "$3", "d": "$4",
+      "H": "$5", "M": "$6", "S": "$7"
+    },
+    "date_adjustment": "-1H",
+    "debounce_time": 600,
+    "retain_time": 86400,
+    "zones": [
+      "global"
+    ]
+  },
+  {
     "name": "provisioner_task_logs",
     "search_dirs": [ "/var/log/provisioner" ],
     "regex": "^/var/log/provisioner/provisioner_tasks_([0-9a-zA-Z-]+)_([0-9]+)-([0-9]+)-([0-9]+)T([0-9]+):([0-9]+):([0-9]+)\\.log$",
