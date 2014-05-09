@@ -18,6 +18,16 @@ function fatal
 }
 
 
+# Tune TCP so will work better with Manta.
+# '|| true' because this 'ipadm set-prop' is necessary on some platform versions
+# and breaks on older ones.
+ipadm set-prop -t -p max_buf=2097152 tcp || true
+ndd -set /dev/tcp tcp_recv_hiwat 2097152
+ndd -set /dev/tcp tcp_xmit_hiwat 2097152
+ndd -set /dev/tcp tcp_conn_req_max_q 2048
+ndd -set /dev/tcp tcp_conn_req_max_q0 8192
+
+
 config_path=/opt/smartdc/sdc/etc/config.json
 admin_uuid=$(json -f ${config_path} ufds_admin_uuid)
 [[ -z "$admin_uuid" ]] && fatal "could not determine admin_uuid"
