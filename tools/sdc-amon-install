@@ -45,7 +45,7 @@ function putprobe() {
         fatal "No 'name' for probe: $payload"
     fi
     amon /pub/$account/probes
-    local probe_uuid=$(echo "$res_body" | json -H -c "name == '$pname'" -a uuid)
+    local probe_uuid=$(echo "$res_body" | json -H -c "this.name == '$pname'" -a uuid)
     if [[ "$res_status" != "200" ]]; then
         fatal "Error looking for probe '$pname': $res_status $res_body"
     elif [[ -n "$probe_uuid" ]]; then
