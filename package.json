@@ -1,7 +1,7 @@
 {
     "name": "sdc",
     "description": "SmartDataCenter 'sdc' zone to hold ops/admin tools",
-    "version": "1.1.2",
+    "version": "1.2.0",
     "author": "Joyent (joyent.com)",
     "private": true,
     "dependencies": {
@@ -12,19 +12,22 @@
         "moray": "git+ssh://git@git.joyent.com:node-moray.git#a4c94d4",
         "imgapi-cli": "git+ssh://git@git.joyent.com:imgapi-cli.git#3bbcc24",
         "bunyan": "0.21.4",
-        "assert-plus": "0.1.4",
+        "assert-plus": "0.1.5",
         "ldapjs": "git+ssh://git@github.com:mcavage/node-ldapjs.git#f213b3e",
         "mkdirp": "0.3.5",
         "node-uuid": "1.4.0",
         "cmdln": "1.2.2",
-        "dashdash": "1.3.2",
+        "dashdash": "1.6.0",
         "async": "0.2.9",
         "read": "1.0.4",
-        "verror": "1.3.6",
-        "extsprintf": "1.0.2",
+        "verror": "1.4.0",
+        "extsprintf": "1.2.0",
         "amqp": "git://github.com/postwait/node-amqp.git#2a5b1e9d2cd5838991ea378251f186c13ba79f97",
         "amqp-plus": "git://github.com/orlandov/node-amqp-plus.git#02ddfbd",
-        "jsontool": "6.0.0"
+        "jsontool": "6.0.0",
+        "jsprim": "0.5.1",
+        "urclient": "git+ssh://git@github.com:joyent/node-urclient.git#v0.2.0",
+        "vasync": "1.5.0"
     },
     "devDependencies": {
         "jshint": "2.1.4",
