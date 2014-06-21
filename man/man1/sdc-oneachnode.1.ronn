@@ -1,0 +1,212 @@
+# sdc-oneachnode(1) -- Run a command on each node in the Smart Data Center
+
+## SYNOPSIS
+
+`sdc-oneachnode [-a|-c|-n NODE[,NODE,...]] [-t|-T SECONDS]
+               [-g|-p FILE] [-d DIR] [-hjJlvINX]`
+
+## DESCRIPTION
+
+The `sdc-oneachnode` command is used to affect remote control of an arbitrary
+set of servers within this datacenter.  The command is able to:
+
+- discover and list active servers (`-l`, `--listonly`)
+- send a local file to a specified path on a remote server (`-g`, `--get`)
+- receive a remote file from some set of files into a local directory
+  (`-p`, `--put`)
+- remotely execute arbitrary commands and return stdout, stderr and exit status
+
+## OPTIONS
+
+### Target Selection
+
+These options determine which hosts will be included in the set of target
+servers for this `sdc-oneachnode` invocation.  Exactly one of the options in
+this category must be specified for every invocation.
+
+`-a`, `--allnodes`
+
+Discover and select all nodes, including the headnode.  This behaviour was
+historically the default when no target selection flags were specified.
+
+`-c`, `--computeonly`
+
+Discover and select all nodes in the datacenter, except for the headnode.
+
+`-n NODE[,NODE,...]`, `--node=NODE[,NODE,...]`
+
+A single node, or a comma-separated list of nodes, that represents the set of
+nodes on which to operate.  Either hostnames or UUIDs are accepted.  A list
+containing duplicate hostnames, UUIDs, or a pair of hostnames and UUIDs that
+refer to the same server, will be rejected as invalid arguments.
+
+Any servers in the list that cannot be found during discovery will cause the
+tool to exit with a non-zero status prior to sending any requests for execution
+or file transfer.
+
+### File Transfer Options
+
+`-g FILE`, `--get=FILE`
+
+Instructs the remote server(s) to `get` the specified file from the local host.
+The file will be written with its original name into the target directory, as
+specified with `-d` (`--dir`).
+
+`-p FILE`, `--put=FILE`
+
+Instructs the remote server(s) to `put` the specified file in a directory on
+the local host.  Each received file will be written locally, in the directory
+specified with `-d` (`--dir`), using the UUID of the remote server as the
+filename.
+
+`-d DIR`, `--dir=DIR`
+
+If `-g` (`--get`) is specified, this option selects the remote directory in
+which the file to send will be written on the remote server(s).  If `-p`
+(`--put`) is specified, this directory represents the directory on the local
+host where files received from the remote server(s) are written.
+
+`-X`, `--clobber`
+
+By default, `-g` (`--get`) will _not_ overwrite an existing file on the remote
+server.  This flag overrides this behaviour, causing the sent file to replace
+any existing file.
+
+### Formatting Options
+
+`-I`, `--immediate`
+
+By default, responses from remote servers are collected in memory, sorted for
+display, and printed at the end of the run.  This option causes the tool to
+print responses as soon as they arrive, with the side effect that the output is
+unsorted, and the multi-line output mode is used unless the user also specifies
+`-N` (`--oneline`).
+
+`-N`, `--oneline`
+
+By default, responses from executed commands are assembled for printing at the
+end of the run.  If the response from every server would fit on a single line,
+then all responses are printed in a tabular format.  If not, or if the user
+specifies `-I` (`--immediate`), a multi-line expanded output is printed
+instead.  This option allows the user to override the default heuristic and
+coerce responses into a single line; multi-line command output will be reduced
+to the last non-blank line in that output, akin to `tail -1`.
+
+`-j` (`--json`)
+
+Causes the tool to emit a JSON array to stdout in place of the default
+human-readable output style.  The format of this JSON array is described in
+`JSON OUTPUT FORMAT`.
+
+If this flag is combined with `-I` (`--immediate`), each response is output as
+it arrives, as a new-line separated stream of JSON objects, rather than one
+large array.  This format is suitable for processing with the json(1) command,
+using the `-g` and `-a` flags.
+
+`-J` (`--jsonstream`)
+
+This option emits a stream of new-line separated JSON objects, as per the
+combination of `-j` (`--json`) and `-I` (`--immediate`).
+
+## JSON OUTPUT FORMAT
+
+By default, the `sdc-oneachnode` command will output human-readable tabular or
+sectioned, multi-line output.  For programmatic (rather than interactive)
+consumers, JSON output is generally more appropriate.
+
+### List Mode (`-l`, `--listonly`)
+
+Each object has a `"hostname"` and a `"uuid"` property, reflecting the identity
+of the discovered server.  For example:
+
+    {
+        "uuid": "44454c4c-4d00-1036-8042-c2c04f485331",
+        "hostname": "crivvens"
+    }
+
+### Command Execution Mode:
+
+
+## EXIT STATUS
+
+The exit status depends on the class of fault, if any, experienced during
+operation of the tool.
+
+`0`
+
+Success.
+
+`1`
+
+Generic failure.
+
+`2`
+
+An invalid set of options were passed on the command-line.  This can include
+duplicate entries in the `-n` (`--node`) list.
+
+`10`
+
+The discovery phase failed to find the full list of nodes passed to `-n`
+(`--node`).  Execution was aborted prior to sending the request to any remote
+servers.
+
+`20`
+
+The discovery phase completed, but some set of remote servers did not return a
+response within the execution timeout, or actively returned some failure.
+Non-zero exit statuses from executed commands are _not_ considered as a failure
+to execute.
+
+`Note:`
+
+While the exit status may be useful for scripts attempting to determine whether
+the set of nodes they requested was available or not, it is recommended to
+consume output from `--json` (`-j`), or `--jsonstream` (`-J`) for precise
+feedback -- especially if the consumer requires the exit status from each
+executed command.
+
+## EXAMPLES
+
+### Example 1: List all discoverable nodes
+
+Specify the discovery-only mode (`-l`, `--listonly`) and immediate printing
+of responses (`-I`, `--immediate`).  Using the `-a` option causes the discovery
+to list every server, including the headnode.
+
+    # sdc-oneachnode -al --immediate
+    UUID                                  HOSTNAME
+    00000000-0000-0000-0000-0025909585c0  rb
+    44454c4c-4d00-1036-8042-c2c04f485331  crivvens
+
+### Example 2: Distribute SSH authorized_keys
+
+To distribute the `authorized_keys` file from the headnode to all compute
+nodes, we can create the directory:
+
+    # sdc-oneachnode -c 'mkdir -p /root/.ssh'
+
+We can then have each compute node fetch the file from the local node and
+store it in `/root/.ssh`:
+
+    # sdc-oneachnode -c -X \
+          -d /root/.ssh \
+          -g /root/.ssh/authorized_keys
+
+### Example 3: Run commands on a specific list of servers
+
+Run a simple command to count the number of processes on a specific set of servers
+in the datacenter:
+
+    # sdc-oneachnode -n rb,crivvens 'ps -ef | wc -l'
+    HOSTNAME              STATUS
+    crivvens              601
+    rb                    271
+
+## COPYRIGHT
+
+Copyright (c) 2014 Joyent Inc., All rights reserved.
+
+## SEE ALSO
+
+json(1)
