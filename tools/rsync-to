@@ -31,8 +31,13 @@ rsync -av ${TOP}/ \
     --exclude etc/config.json \
     --exclude .git/ \
     --exclude /deps/ \
+    --exclude /boot/ \
     --exclude /doc/ \
     --exclude /tmp/
+
+rsync -av ${TOP}/boot/ \
+    $NODE:/zones/$SDC_ZONE/root/opt/smartdc/boot/ \
+    $extraOpts
 
 # Update the local manifests if necessary.
 ssh ${NODE} "zlogin ${SDC_ZONE} \

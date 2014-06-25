@@ -65,23 +65,28 @@ else
         # Add the keys to the sdc service metadata, which will be used by the
         # actual manifests that write the keys to each 'sdc' zone.
         sdc_app_uuid=$(sdc-sapi /applications?name=sdc | json -H 0.uuid)
-        node -e "
-            var fs = require('fs');
-            var d = {
-                metadata: {
-                    SDC_PRIVATE_KEY: fs.readFileSync('$key_file', 'ascii'),
-                    SDC_PUBLIC_KEY: fs.readFileSync('$key_file.pub', 'ascii'),
-                    SDC_KEY_ID: '$key_fingerprint'
-                }
-            };
-            console.log(JSON.stringify(d,null,2));
-            " >/var/tmp/sdc-key-update.json
-        $SAPIADM update $sdc_app_uuid -f /var/tmp/sdc-key-update.json
+        if [[ -z "$sdc_app_uuid" ]]; then
+            echo "Warning: Could not get sdc app info from SAPI. " \
+                "Skipping '$key_name' setup."
+        else
+            node -e "
+                var fs = require('fs');
+                var d = {
+                    metadata: {
+                        SDC_PRIVATE_KEY: fs.readFileSync('$key_file', 'ascii'),
+                        SDC_PUBLIC_KEY: fs.readFileSync('$key_file.pub', 'ascii'),
+                        SDC_KEY_ID: '$key_fingerprint'
+                    }
+                };
+                console.log(JSON.stringify(d,null,2));
+                " >/var/tmp/sdc-key-update.json
+            $SAPIADM update $sdc_app_uuid -f /var/tmp/sdc-key-update.json
 
-        # Add the key to the admin user.
-        sdc-useradm add-key -n "$key_name" ${admin_uuid} ${key_file}.pub
+            # Add the key to the admin user.
+            sdc-useradm add-key -n "$key_name" ${admin_uuid} ${key_file}.pub
+        fi
 
-        rm $key_file $key_file.pub /var/tmp/sdc-key-update.json
+        rm -f $key_file $key_file.pub /var/tmp/sdc-key-update.json
     fi
 fi
 
