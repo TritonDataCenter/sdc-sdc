@@ -15,6 +15,7 @@ JSL_FILES_NODE	 = $(JS_FILES)
 JSSTYLE_FILES	 = $(JS_FILES)
 JSSTYLE_FLAGS	 = -f tools/jsstyle.conf
 RONNJS		 = $(NODE) ./node_modules/.bin/ronn
+PERCENT		:= %
 
 NODE_PREBUILT_VERSION=v0.8.26
 ifeq ($(shell uname -s),SunOS)
@@ -34,7 +35,20 @@ endif
 RELEASE_TARBALL	:= $(NAME)-pkg-$(STAMP).tar.bz2
 RELSTAGEDIR       := /tmp/$(STAMP)
 
+MAN_PAGES = \
+	man1/sdc-amon.1 \
+	man1/sdc-amonrelay.1 \
+	man1/sdc-dirty-vms.1 \
+	man1/sdc-imgapi.1 \
+	man1/sdc-ldap.1 \
+	man1/sdc-oneachnode.1 \
+	man1/sdc-papi.1 \
+	man1/sdc-sapi.1 \
+	man1/sdc-waitforjob.1
 
+BUILD_MAN_FILES = $(MAN_PAGES:%=build/man/%)
+
+CLEAN_FILES += build/man
 
 #
 # Targets
@@ -50,12 +64,15 @@ force-npm-install:
 	$(NPM) install
 
 .PHONY: man
-man:
-	for f in $(shell find man -name "*.ronn"); do \
-		echo "Ronn'ing $$f"; \
-		$(RONNJS) --roff --build $$f \
-			--date $(shell git log -1 --date=short --pretty=format:'%cd' $$f) $(shell date +%Y); \
-	done
+man: $(BUILD_MAN_FILES)
+
+build/man/%: man/%.ronn
+	mkdir -p $(@D)
+	$(RONNJS) --roff $^ \
+	    --date `git log -1 --date=short --pretty=format:'$(PERCENT)cd' $^` \
+	    `date +$(PERCENT)Y` \
+	    > $@
+	echo >> $@
 
 .PHONY: hermes
 hermes:
@@ -79,12 +96,8 @@ release: all docs man hermes
 		$(TOP)/probes \
 		$(TOP)/test \
 		$(TOP)/tools \
+		$(TOP)/build/man \
 		$(RELSTAGEDIR)/root/opt/smartdc/$(NAME)
-	mkdir -p $(RELSTAGEDIR)/root/opt/smartdc/$(NAME)/man
-	for f in $$(cd man && find . -type f -name "*.roff"); do \
-		mkdir -p $(RELSTAGEDIR)/root/opt/smartdc/$(NAME)/man/$$(dirname $$f); \
-		cp man/$$f $(RELSTAGEDIR)/root/opt/smartdc/$(NAME)/man/$$(dirname $$f)/$$(basename $$f .roff); \
-	done
 	mkdir -p $(RELSTAGEDIR)/root/opt/smartdc/boot
 	cp -R $(TOP)/deps/sdc-scripts/* $(RELSTAGEDIR)/root/opt/smartdc/boot/
 	cp -R $(TOP)/boot/* $(RELSTAGEDIR)/root/opt/smartdc/boot/

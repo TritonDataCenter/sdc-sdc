@@ -104,12 +104,12 @@ fi
 
 echo "Dump vmadm VM info on all CNs"
 # 1. Dump on each CN.
-sdc-oneachnode '
+sdc-oneachnode -a -q '
     if [[ -d /opt/smartdc/agents/lib ]]; then
         vmadm lookup -j >/var/tmp/vmadm_vms.json;
     else
         echo "no vmadm lookup -j on 6.5";
-    fi' >/dev/null
+    fi'
 if [ $? -ne 0  ]; then
     echo "$0: error: Dumping 'vmadm lookup -j' on nodes" >&2
 fi
@@ -117,7 +117,7 @@ fi
 PUTDIR=/var/tmp/vmadm_vms.$$
 rm -rf $PUTDIR
 mkdir -p $PUTDIR
-sdc-oneachnode -d $PUTDIR -p /var/tmp/vmadm_vms.json >/dev/null
+sdc-oneachnode -a -q -d $PUTDIR -p /var/tmp/vmadm_vms.json
 if [ $? -ne 0  ]; then
     echo "$0: error: Getting 'vmadm lookup -j' dumps from nodes" >&2
 fi

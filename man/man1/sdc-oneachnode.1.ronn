@@ -2,12 +2,19 @@
 
 ## SYNOPSIS
 
-`sdc-oneachnode [-a|-c|-n NODE[,NODE,...]] [-t|-T SECONDS]
-               [-g|-p FILE] [-d DIR] [-hjJlvINX]`
+`sdc-oneachnode -a|-c|-n NODE[,NODE,...] [-t|-T SECONDS]
+               [-jJvqIN] 'command'`
+
+`sdc-oneachnode -a|-c|-n NODE[,NODE,...] [-t|-T SECONDS]
+               -g FILE|-p FILE  -d DIR [-X] [-jJvqIN]`
+
+`sdc-oneachnode -a|-c|-n NODE[,NODE,...] [-t SECONDS]
+               -l [jJvqIN]`
+
 
 ## DESCRIPTION
 
-The `sdc-oneachnode` command is used to affect remote control of an arbitrary
+The `sdc-oneachnode` command is used to effect remote control of an arbitrary
 set of servers within this datacenter.  The command is able to:
 
 - discover and list active servers (`-l`, `--listonly`)
@@ -108,13 +115,55 @@ using the `-g` and `-a` flags.
 This option emits a stream of new-line separated JSON objects, as per the
 combination of `-j` (`--json`) and `-I` (`--immediate`).
 
+### Other Options
+
+`-h` (`--help`)
+
+Prints the built-in usage message and help text.
+
+`-l` (`--listonly`)
+
+With this flag, the tool will discover the list of currently reachable servers
+but take no other action.  The output of this mode is either a human-readable
+table of server hostnames and UUIDs, or a JSON-formatted list of the same.
+See also: `-j` (`--json`).
+
+`-t SECONDS` (`--timeout=SECONDS`)
+
+The node discovery timeout, specified in seconds.  If a response to the
+discovery broadcast was not received within this period, discovery is
+considered complete.  Each new discovery response resets the timeout.  The
+default value for this timeout is 4 seconds.
+
+`-T SECONDS` (`--exectimeout=SECONDS`)
+
+The command execution timeout.  If the requested command execution does not
+complete within this time period it is considered failed and reported to the
+user.  This timeout will be exceeded if either the command runs for longer than
+expected, or the remote server fails to respond due to hardware, software or
+network failures.  The default value for this timeout is 60 seconds.
+
+`-q` (`--quiet`)
+
+The tool will be completely silent, emitting no output to `stdout` or `stderr`.
+The exit status of the tool may be used to determine the status of the
+requested operation; see `EXIT STATUS`.
+
+`-v` (`--verbose`)
+
+Causes the output of diagnostic information, with millisecond timestamps, to
+`stderr`.
+
 ## JSON OUTPUT FORMAT
 
 By default, the `sdc-oneachnode` command will output human-readable tabular or
 sectioned, multi-line output.  For programmatic (rather than interactive)
-consumers, JSON output is generally more appropriate.
+consumers, JSON output is generally more appropriate.  Depending on the use of
+the `-I` (`--immediate`) flag, the JSON output will either be a single array
+with each response record, or a new-line separated stream of separate JSON
+objects.
 
-### List Mode (`-l`, `--listonly`)
+### List Mode
 
 Each object has a `"hostname"` and a `"uuid"` property, reflecting the identity
 of the discovered server.  For example:
@@ -124,8 +173,38 @@ of the discovered server.  For example:
         "hostname": "crivvens"
     }
 
-### Command Execution Mode:
+### Command Execution Mode
 
+Each object has a `"hostname"` and a `"uuid"` property, as in `List Mode`.  If
+the request succeeds, a `"result"` object will be provided that contains the
+`"stdout"`, `"stderr"` and `"exit_status"` of the command execution.  For
+example:
+
+    {
+        "uuid": "44454c4c-4d00-1036-8042-c2c04f485331",
+        "hostname": "crivvens",
+        "result": {
+            "exit_status": 5,
+            "stdout": "Tue Jun 24 22:35:52 UTC 2014\n",
+            "stderr": "failure\n"
+        }
+    }
+
+If the request fails, due to an expired execution timeout or some other fault
+condition, an `"error"` object will be provided with a `"message"` that
+described the failure.
+
+    {
+        "uuid": "44454c4c-4d00-1036-8042-c2c04f485331",
+        "hostname": "crivvens",
+        "error": {
+            "message": "timeout for host",
+        }
+    }
+
+Note that if command execution completes, but the requested command exited with
+a non-zero exit status, this is still considered a success.  The consumer of
+the JSON data is expected to interpret the `"result.exit_status"` property.
 
 ## EXIT STATUS
 
@@ -182,12 +261,12 @@ to list every server, including the headnode.
 ### Example 2: Distribute SSH authorized_keys
 
 To distribute the `authorized_keys` file from the headnode to all compute
-nodes, we can create the directory:
+nodes, first create the directory:
 
     # sdc-oneachnode -c 'mkdir -p /root/.ssh'
 
-We can then have each compute node fetch the file from the local node and
-store it in `/root/.ssh`:
+Then, have each compute node fetch the file from the local node and store it in
+`/root/.ssh`:
 
     # sdc-oneachnode -c -X \
           -d /root/.ssh \
