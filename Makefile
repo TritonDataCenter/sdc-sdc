@@ -36,6 +36,7 @@ RELEASE_TARBALL	:= $(NAME)-pkg-$(STAMP).tar.bz2
 RELSTAGEDIR       := /tmp/$(STAMP)
 
 MAN_PAGES = \
+	man1/amqpsnoop.1 \
 	man1/sdc-amon.1 \
 	man1/sdc-amonrelay.1 \
 	man1/sdc-dirty-vms.1 \
