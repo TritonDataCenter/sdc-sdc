@@ -1,0 +1,17 @@
+[
+    {
+        "name": "manatee-stat",
+        "type": "cmd",
+        "config": {
+            "cmd": "export HOME=/root && . /root/.bashrc; topology=$(manatee-stat| json 'sdc'); primary=$(echo $topology | json primary.repl.sync_state); sync=$(echo $topology | json sync.repl.sync_state); if [[ $primary != 'sync']]; then echo fail; exit; fi; if [[ $sync != 'async' ]]; then echo fail; fi",
+            "interval": "60",
+            "threshold": "5",
+            "period": "360",
+            "timeout": "60",
+            "stdoutMatch": {
+                "pattern": "fail",
+                "type": "substring"
+            }
+        }
+    }
+]

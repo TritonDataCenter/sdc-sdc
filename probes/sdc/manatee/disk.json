@@ -1,0 +1,11 @@
+[
+    {
+        "name": "database dataset space running low",
+        "type": "disk-usage",
+        "config": {
+            "path": "/manatee/pg",
+            "threshold": "20%",
+            "interval": 3600
+        }
+    }
+]

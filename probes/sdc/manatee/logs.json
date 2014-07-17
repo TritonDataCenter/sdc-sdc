@@ -1,0 +1,62 @@
+[
+    {
+        "name": "manatee-logscan",
+        "type": "bunyan-log-scan",
+        "config": {
+            "smfServiceName": "manatee-sitter",
+            "fields": {
+                "level": "FATAL"
+            },
+            "threshold": 1,
+            "period": 60
+        }
+    },
+    {
+        "name": "manatee-snapshotter-logscan",
+        "type": "bunyan-log-scan",
+        "config": {
+            "smfServiceName": "manatee-snapshotter",
+            "fields": {
+                "level": "FATAL"
+            },
+            "threshold": 1,
+            "period": 60
+        }
+    },
+    {
+        "name": "manatee-backupserver-logscan",
+        "type": "bunyan-log-scan",
+        "config": {
+            "smfServiceName": "manatee-backupserver",
+            "fields": {
+                "level": "FATAL"
+            },
+            "threshold": 1,
+            "period": 60
+        }
+    },
+    {
+        "name": "registrar-logscan",
+        "type": "bunyan-log-scan",
+        "config": {
+            "smfServiceName": "registrar",
+            "fields": {
+                "level": "FATAL"
+            },
+            "threshold": 1,
+            "period": 60
+        }
+    },
+    {
+        "name": "pg_dump-logscan",
+        "type": "log-scan",
+        "config": {
+            "path": "/var/log/manatee/pg_dump.log",
+            "match": {
+                "pattern": "fatal"
+            },
+            "threshold": 1,
+            "period": 60
+        }
+    }
+]
