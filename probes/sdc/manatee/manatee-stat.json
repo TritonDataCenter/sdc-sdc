@@ -3,7 +3,7 @@
         "name": "manatee-stat",
         "type": "cmd",
         "config": {
-            "cmd": "export HOME=/root && . /root/.bashrc; topology=$(manatee-stat| json 'sdc'); primary=$(echo $topology | json primary.repl.sync_state); sync=$(echo $topology | json sync.repl.sync_state); if [[ $primary != 'sync']]; then echo fail; exit; fi; if [[ $sync != 'async' ]]; then echo fail; fi",
+            "cmd": "export HOME=/root && . /root/.bashrc; shard=$(cat /opt/smartdc/manatee/etc/sitter.json | json shardPath | cut -d '/' -f3); topology=$(manatee-stat| json -D / $shard); if [[ -z $topology ]]; then echo fail && exit; primary=$(echo $topology | json primary.repl.sync_state); sync=$(echo $topology | json sync.repl.sync_state); if [[ $primary != 'sync' ]]; then echo fail && exit 1; fi; if [[ $sync != 'async' ]]; then echo fail; fi",
             "interval": "60",
             "threshold": "5",
             "period": "360",
