@@ -120,7 +120,11 @@ function sapi() {
     if [[ -z "$SAPI_URL" ]]; then
         SAPI_URL="http://$(json -f $CONFIG sapi_domain)"
     fi
-    (curl ${CURL_OPTS} --url "${SAPI_URL}${path}" "$@") || return $?
+    if [[ -z "$SDC_API_VERSION" ]]; then
+        SDC_API_VERSION="*"
+    fi
+    (curl ${CURL_OPTS} -H "accept-version: ${SDC_API_VERSION}" \
+        --url "${SAPI_URL}${path}" "$@") || return $?
     echo ""  # sometimes the result is not terminated with a newline
     return 0
 }
