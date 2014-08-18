@@ -39,13 +39,18 @@ MAN_PAGES = \
 	man1/amqpsnoop.1 \
 	man1/sdc-amon.1 \
 	man1/sdc-amonrelay.1 \
+	man1/sdc-cnapi.1 \
 	man1/sdc-dirty-vms.1 \
+	man1/sdc-fwapi.1 \
 	man1/sdc-imgapi.1 \
 	man1/sdc-ldap.1 \
+	man1/sdc-napi.1 \
 	man1/sdc-oneachnode.1 \
 	man1/sdc-papi.1 \
 	man1/sdc-sapi.1 \
-	man1/sdc-waitforjob.1
+	man1/sdc-vmapi.1 \
+	man1/sdc-waitforjob.1 \
+	man1/sdc-workflow.1
 
 BUILD_MAN_FILES = $(MAN_PAGES:%=build/man/%)
 
