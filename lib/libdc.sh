@@ -30,7 +30,11 @@ function amon() {
     if [[ -z "$AMON_URL" ]]; then
         AMON_URL="http://$(json -f $CONFIG amon_domain)"
     fi
-    (curl ${CURL_OPTS} --url "${AMON_URL}${path}" "$@") || return $?
+    if [[ -z "$SDC_API_VERSION" ]]; then
+        SDC_API_VERSION="*"
+    fi
+    (curl ${CURL_OPTS} -H "accept-version: ${SDC_API_VERSION}" \
+        --url "${AMON_URL}${path}" "$@") || return $?
     echo ""  # sometimes the result is not terminated with a newline
     return 0
 }
@@ -72,7 +76,11 @@ function cnapi() {
     if [[ -z "$CNAPI_URL" ]]; then
         CNAPI_URL="http://$(json -f $CONFIG cnapi_domain)"
     fi
-    (curl ${CURL_OPTS} --url "${CNAPI_URL}${path}" "$@") || return $?
+    if [[ -z "$SDC_API_VERSION" ]]; then
+        SDC_API_VERSION="*"
+    fi
+    (curl ${CURL_OPTS} -H "accept-version: ${SDC_API_VERSION}" \
+        --url "${CNAPI_URL}${path}" "$@") || return $?
     echo ""  # sometimes the result is not terminated with a newline
     return 0
 }
@@ -84,7 +92,11 @@ function napi() {
     if [[ -z "$NAPI_URL" ]]; then
         NAPI_URL="http://$(json -f $CONFIG napi_domain)"
     fi
-    (curl ${CURL_OPTS} --url "${NAPI_URL}${path}" "$@") || return $?
+    if [[ -z "$SDC_API_VERSION" ]]; then
+        SDC_API_VERSION="*"
+    fi
+    (curl ${CURL_OPTS} -H "accept-version: ${SDC_API_VERSION}" \
+        --url "${NAPI_URL}${path}" "$@") || return $?
     echo ""  # sometimes the result is not terminated with a newline
     return 0
 }
@@ -96,7 +108,11 @@ function fwapi() {
     if [[ -z "$FWAPI_URL" ]]; then
         FWAPI_URL="http://$(json -f $CONFIG fwapi_domain)"
     fi
-    (curl ${CURL_OPTS} --url "${FWAPI_URL}${path}" "$@") || return $?
+    if [[ -z "$SDC_API_VERSION" ]]; then
+        SDC_API_VERSION="*"
+    fi
+    (curl ${CURL_OPTS} -H "accept-version: ${SDC_API_VERSION}" \
+        --url "${FWAPI_URL}${path}" "$@") || return $?
     echo ""  # sometimes the result is not terminated with a newline
     return 0
 }
@@ -108,7 +124,11 @@ function papi() {
     if [[ -z "$PAPI_URL" ]]; then
         PAPI_URL="http://$(json -f $CONFIG papi_domain)"
     fi
-    (curl -g ${CURL_OPTS} --url "${PAPI_URL}${path/\\\"/\"}" "$@") || return $?
+    if [[ -z "$SDC_API_VERSION" ]]; then
+        SDC_API_VERSION="*"
+    fi
+    (curl ${CURL_OPTS} -H "accept-version: ${SDC_API_VERSION}" \
+        --url "${PAPI_URL}${path/\\\"/\"}" "$@") || return $?
     echo ""  # sometimes the result is not terminated with a newline
     return 0
 }
@@ -136,7 +156,11 @@ function workflow() {
     if [[ -z "$WORKFLOW_URL" ]]; then
         WORKFLOW_URL="http://$(json -f $CONFIG workflow_domain)"
     fi
-    (curl ${CURL_OPTS} --url "${WORKFLOW_URL}${path}" "$@") || return $?
+    if [[ -z "$SDC_API_VERSION" ]]; then
+        SDC_API_VERSION="*"
+    fi
+    (curl ${CURL_OPTS} -H "accept-version: ${SDC_API_VERSION}" \
+        --url "${WORKFLOW_URL}${path}" "$@") || return $?
     echo ""  # sometimes the result is not terminated with a newline
     return 0
 }
@@ -148,7 +172,11 @@ function vmapi() {
     if [[ -z "$VMAPI_URL" ]]; then
         VMAPI_URL="http://$(json -f $CONFIG vmapi_domain)"
     fi
-    (curl ${CURL_OPTS} --url "${VMAPI_URL}${path}" "$@") || return $?
+    if [[ -z "$SDC_API_VERSION" ]]; then
+        SDC_API_VERSION="*"
+    fi
+    (curl ${CURL_OPTS} -H "accept-version: ${SDC_API_VERSION}" \
+        --url "${VMAPI_URL}${path}" "$@") || return $?
     echo ""  # sometimes the result is not terminated with a newline
     return 0
 }

@@ -1,0 +1,44 @@
+# sdc-vmapi(1) -- call the Smart Data Center VM API (VMAPI)
+
+
+## SYNOPSIS
+
+`sdc-vmapi [--no-headers] PATH [CURL-OPTIONS...]`
+
+
+## DESCRIPTION
+
+This is a light convenience wrapper around `curl` for calling the VM API in this
+Smart Data Center. VMAPI allows clients to get information about VMs on a data
+center.
+
+Formatting of the response is done via the `json` tool.
+
+## ENVIRONMENT VARIABLES
+
+`SDC_API_VERSION`
+    Sets the 'Accept-Version' HTTP header for the request. When omitted the
+    API version will default to '*'. The SDC_API_VERSION variable should be a
+    semver compatible version comparison and clients should only need to specify
+    major versions, as minor and micro version changes will not represent API
+    changes. This means that if 2.0.0 and 2.1.0 are two valid API versions,
+    then clients are guaranteed to receive identical responses. Examples:
+
+        SDC_API_VERSION=*
+        SDC_API_VERSION=~1
+        SDC_API_VERSION=~2
+
+## OPTIONS
+
+Any additional options supported by `curl` may be used after the `PATH`
+argument.
+
+
+## COPYRIGHT
+
+sdc-vmapi Copyright (c) 2013 Joyent Inc., All rights reserved.
+
+
+## SEE ALSO
+
+sdc-cnapi (1), curl (1), json (1)
