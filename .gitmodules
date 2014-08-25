@@ -12,4 +12,4 @@
 	url = git@git.joyent.com:sdc-scripts.git
 [submodule "deps/hermes"]
 	path = deps/hermes
-	url = git@github.com:joyent/hermes.git
+	url = git@github.com:joyent/sdc-hermes.git
