@@ -9,7 +9,7 @@
 	url = git://github.com/trentm/restdown.git
 [submodule "deps/sdc-scripts"]
 	path = deps/sdc-scripts
-	url = git@git.joyent.com:sdc-scripts.git
+	url = git@github.com:joyent/sdc-scripts.git
 [submodule "deps/hermes"]
 	path = deps/hermes
 	url = git@github.com:joyent/sdc-hermes.git
