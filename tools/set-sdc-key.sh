@@ -1,5 +1,15 @@
 #!/bin/bash
 #
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+#
+
+#
+# Copyright (c) 2014, Joyent, Inc.
+#
+
+#
 # Set the SDC ssh key on the given headnode to the given key. Note
 # that this needs to be a passphrase-less key to work.
 #

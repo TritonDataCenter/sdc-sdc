@@ -1,5 +1,15 @@
 #!/bin/bash
 #
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+#
+
+#
+# Copyright (c) 2014, Joyent, Inc.
+#
+
+#
 # Upload SDC service data in "/var/log/sdc-data/..." to manta.
 # Files there are of the form:
 #       $thing-$timestamp.$ext
