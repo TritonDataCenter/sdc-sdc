@@ -8,13 +8,11 @@
     Copyright (c) 2014, Joyent, Inc.
 -->
 
-# a CLI for the IMGAPI
+# sdc-sdc
 
-Repository: <git@git.joyent.com:sdc.git>
-Browsing: <https://mo.joyent.com/sdc>
-Who: Trent Mick
-Docs: <https://mo.joyent.com/docs/sdc>
-Tickets/bugs: <https://devhub.joyent.com/jira/browse/TOOLS>
+This repository is part of the Joyent SmartDataCenter project (SDC).  For
+contribution guidelines, issues, and general documentation, visit the main
+[SDC](http://github.com/joyent/sdc) project page.
 
 
 # Overview
