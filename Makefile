@@ -16,7 +16,7 @@
 # Vars, Tools, Files, Flags
 #
 NAME		:= sdc
-DOC_FILES	 = index.restdown sdc-amon-probes.restdown
+DOC_FILES	 = index.md sdc-amon-probes.md
 JS_FILES	:= $(shell find lib test -name '*.js' | grep -v '/tmp/')
 JSL_CONF_NODE	 = tools/jsl.node.conf
 JSL_FILES_NODE	 = $(JS_FILES)

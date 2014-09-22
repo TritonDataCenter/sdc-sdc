@@ -1,6 +1,6 @@
 ---
 title: SDC tools/ops zone
-markdown2extras: wiki-tables, code-friendly
+markdown2extras: tables, code-friendly
 apisections:
 ---
 <!--
@@ -34,26 +34,28 @@ around `curl`. Examples: sdc-imgapi, sdc-vmapi. (b) A higher-level and
 friendlier CLI tool, often with 'adm' in the name (following the smartos
 administrator tool naming tradition).
 
-||**API**||**Raw API Tool**||**Friendlier "adm" tool**||
-||Amon Master API (amon)||sdc-amon||sdc-amonadm||
-||Amon Relay API (a small debugging-only API)||sdc-amonrelay||(N/A almost no need to call Amon Relay API)||
-||Compute Node API (CNAPI)||sdc-cnapi||sdc-server||
-||Firewall API (FWAPI)||sdc-fwapi||sdc-fwadm (NYI: need a ticket)||
-||Image API (IMGAPI)||sdc-imgapi||sdc-imgadm||
-||Network API (NAPI)||sdc-napi||sdc-network||
-||Virtual Machine API (VMAPI)||sdc-vmapi||sdc-vmadm (NYI: TOOLS-307)||
-||Workflow API||sdc-workflow||sdc-wfadm (NYI: TOOLS-308)||
-||UFDS||sdc-ldap||--||
-||Service API (SAPI)||sdc-sapi||sapiadm (*)||
-||x||x||x||
+| API                                         | Raw API Tool  | Friendlier "adm" tool                       |
+| ------------------------------------------- | ------------- | ------------------------------------------- |
+| Amon Master API (amon)                      | sdc-amon      | sdc-amonadm                                 |
+| Amon Relay API (a small debugging-only API) | sdc-amonrelay | (N/A almost no need to call Amon Relay API) |
+| Compute Node API (CNAPI)                    | sdc-cnapi     | sdc-server                                  |
+| Firewall API (FWAPI)                        | sdc-fwapi     | sdc-fwadm (NYI: need a ticket)              |
+| Image API (IMGAPI)                          | sdc-imgapi    | sdc-imgadm                                  |
+| Network API (NAPI)                          | sdc-napi      | sdc-network                                 |
+| Virtual Machine API (VMAPI)                 | sdc-vmapi     | sdc-vmadm (NYI: TOOLS-307)                  |
+| Workflow API                                | sdc-workflow  | sdc-wfadm (NYI: TOOLS-308)                  |
+| UFDS                                        | sdc-ldap      | --                                          |
+| Service API (SAPI)                          | sdc-sapi      | sapiadm (*)                                 |
+| x                                           | x             | x                                           |
 
 In addition there are a number of other tools not directly associated with
 an API in the DC:
 
-||**Tool**||**Description**||
-||joyent-imgadm||Joyent Images (images.joyent.com)||
-||updates-imgadm||SDC Updates (updates.joyent.com)||
-||sdc-req||Search for a request UUID on all the SDC application logs||
+| Tool           | Description                                               |
+| -------------- | --------------------------------------------------------- |
+| joyent-imgadm  | Joyent Images (images.joyent.com)                         |
+| updates-imgadm | SDC Updates (updates.joyent.com)                          |
+| sdc-req        | Search for a request UUID on all the SDC application logs |
 
 
 TODO: document appropriate of:
