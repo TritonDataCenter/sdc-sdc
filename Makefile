@@ -25,7 +25,7 @@ JSSTYLE_FLAGS	 = -f tools/jsstyle.conf
 RONNJS		 = $(NODE) ./node_modules/.bin/ronn
 PERCENT		:= %
 
-NODE_PREBUILT_VERSION=v0.10.29
+NODE_PREBUILT_VERSION=v0.11.14
 ifeq ($(shell uname -s),SunOS)
 	NODE_PREBUILT_TAG=zone
 	# Allow building on a SmartOS image other than sdc-smartos@1.6.3.
