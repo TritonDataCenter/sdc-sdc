@@ -9,7 +9,7 @@
         "amonadm": "git+ssh://git@github.com:joyent/sdc-amonadm.git#808ae1ff7c",
         "smartdc": "git+ssh://git@github.com:joyent/node-smartdc.git#4308fd9",
         "manta": "git+ssh://git@github.com:joyent/node-manta.git#b277acf",
-        "moray": "git+ssh://git@github.com:joyent/node-moray.git#771b4759f6",
+        "moray": "git+ssh://git@github.com:joyent/node-moray.git#441fd44",
         "imgapi-cli": "git+ssh://git@github.com:joyent/sdc-imgapi-cli.git#db3efc147a",
         "bunyan": "0.21.4",
         "assert-plus": "0.1.5",
