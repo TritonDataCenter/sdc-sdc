@@ -104,7 +104,7 @@ that works (see TOOLS-278 for background):
 
 # Uploading SDC log data to Manta
 
-Not yet implemented. See TOOLS-278 and HEAD-1365 for details.
+TODO: describe how this works and where pieces are uploaded.
 
 
 
