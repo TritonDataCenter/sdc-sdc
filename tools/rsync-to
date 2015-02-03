@@ -39,11 +39,15 @@ rsync -av ${TOP}/ \
     --include "test/*.zfs.bz2" \
     --exclude "*.zfs.bz2" \
     --exclude etc/config.json \
+    --exclude etc/logsets.json \
     --exclude .git/ \
     --exclude /deps/ \
     --exclude /boot/ \
     --exclude /doc/ \
     --exclude /tmp/
+
+rsync -av ${TOP}/etc/logsets.json \
+    $NODE:/zones/$SDC_ZONE/root/opt/smartdc/hermes/etc/logsets.json
 
 rsync -av ${TOP}/boot/ \
     $NODE:/zones/$SDC_ZONE/root/opt/smartdc/boot/ \

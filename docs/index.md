@@ -130,6 +130,36 @@ in SAPI. For example:
       "SDC_KEY_ID": "a6:87:6f:3e:7f:fb:96:ea:64:63:85:a2:e2:0f:26:86"
     }
 
+Note: If you have an alternative key that you want to use, you can replace the
+automatically generated one as follows. First, get the priv and pub key files
+to the headnode GZ, e.g. to "/var/tmp/mykey.id_rsa" and
+"/var/tmp/mykey.id_rsa.pub".
+
+    # Update the 'sdc' SAPI service
+    keypath=/var/tmp/mykey.id_rsa
+    keyid=$(ssh-keygen -l -f "$keypath.pub" | awk '{print $2}')
+    /usr/node/bin/node -e "
+        var fs = require('fs');
+        var d = {
+            metadata: {
+                SDC_PRIVATE_KEY: fs.readFileSync('$keypath', 'ascii'),
+                SDC_PUBLIC_KEY: fs.readFileSync('$keypath.pub', 'ascii'),
+                SDC_KEY_ID: '$keyid'
+            }
+        };
+        console.log(JSON.stringify(d,null,2));
+        " >/var/tmp/sdc-key-update.json
+    sdc_app=$(sdc-sapi /applications?name=sdc | json -Ha uuid)
+    sapiadm update $sdc_app -f /var/tmp/sdc-key-update.json
+
+    # Update the key on the 'admin' user.
+    datacenter_name=$(bash /lib/sdc/config.sh -json | json datacenter_name)
+    sdc-useradm delete-key admin "$datacenter_name sdc key" || true
+    sdc-useradm add-key -n "$datacenter_name sdc key" admin $keypath.pub
+
+(TODO: there should be a 'sdcadm' tool for this.)
+
+
 **Step 2 must manually be set** by:
 
 (a) setting the "SDC_MANTA_URL" and "SDC_MANTA_USER" metadata on the 'sdc'
