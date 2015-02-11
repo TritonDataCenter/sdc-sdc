@@ -189,7 +189,7 @@ for COAL by running the following from your Mac:
 
     sdc-vmapi /vms/$(vmadm lookup -1 alias=sdc0)?action=add_nics -X POST -d@- <<EOP | sdc sdc-waitforjob
     {
-        "networks": [{"uuid": "$(sdc-napi /networks?name=external | json -H 0.uuid)"}]
+        "networks": [{"primary": true, "uuid": "$(sdc-napi /networks?name=external | json -H 0.uuid)"}]
     }
     EOP
     sleep 10  # wait for the sdc zone to reboot
