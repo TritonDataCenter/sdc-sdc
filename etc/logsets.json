@@ -215,6 +215,7 @@
       "cloudapi",
       "cnapi",
       "dhcpd",
+      "docker",
       "fwapi",
       "imgapi",
       "keyapi",
@@ -223,12 +224,12 @@
       "moray",
       "napi",
       "papi",
+      "portolan",
       "rabbitmq",
       "redis",
       "sapi",
       "sdc",
       "ufds",
-      "usageapi",
       "vmapi",
       "workflow"
     ]
