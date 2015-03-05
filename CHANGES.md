@@ -1,5 +1,21 @@
 # sdc (SDC ops core zone) Changelog
 
+## 1.3.0
+
+- Add 'sdc-useradm *-attr' commands:
+
+        sdc-useradm replace-attr <login|uuid> <attr> <value>
+
+        sdc-useradm add-attr <login|uuid> <attr> <value> [<value>...]
+
+        # Delete an attribute with a single value.
+        sdc-useradm delete-attr <login|uuid> <attr>
+        # Delete a specific attribute value from the user.
+        sdc-useradm delete-attr <login|uuid> <attr> <value>
+        # Delete all attribute values from the user.
+        sdc-useradm delete-attr -a <login|uuid> <attr>
+
+
 ## 1.1.2
 
 - DAPI-220: remove DAPI zone
