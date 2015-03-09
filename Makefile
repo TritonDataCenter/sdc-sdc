@@ -5,7 +5,7 @@
 #
 
 #
-# Copyright (c) 2014, Joyent, Inc.
+# Copyright (c) 2015, Joyent, Inc.
 #
 
 #
@@ -37,7 +37,8 @@ include ./tools/mk/Makefile.defs
 ifeq ($(shell uname -s),SunOS)
 	include ./tools/mk/Makefile.node_prebuilt.defs
 else
-	include ./tools/mk/Makefile.node.defs
+	NPM := $(shell which npm)
+	NPM_EXEC=$(NPM)
 endif
 
 RELEASE_TARBALL	:= $(NAME)-pkg-$(STAMP).tar.bz2
@@ -68,13 +69,7 @@ CLEAN_FILES += build/man
 # Targets
 #
 .PHONY: all
-all: | $(NPM_EXEC) node_modules/bunyan/package.json sdc-scripts
-
-node_modules/bunyan/package.json: | $(NPM_EXEC)
-	$(NPM) install
-
-.PHONY: force-npm-install
-force-npm-install:
+all: $(SMF_MANIFESTS) | $(NPM_EXEC) sdc-scripts
 	$(NPM) install
 
 .PHONY: man
@@ -152,8 +147,6 @@ distclean::
 include ./tools/mk/Makefile.deps
 ifeq ($(shell uname -s),SunOS)
 	include ./tools/mk/Makefile.node_prebuilt.targ
-else
-	include ./tools/mk/Makefile.node.targ
 endif
 include ./tools/mk/Makefile.targ
 
