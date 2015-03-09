@@ -27,6 +27,7 @@
         "amqp-plus": "git://github.com/orlandov/node-amqp-plus.git#02ddfbd",
         "json": "9.0.3",
         "jsprim": "0.5.1",
+        "tabula": "1.4.1",
         "urclient": "git+ssh://git@github.com:joyent/node-urclient.git#2b9f739",
         "vasync": "1.5.0"
     },
