@@ -85,7 +85,7 @@ do
 done
 
 echo "Dump IMGAPI images"
-sdc-imgapi /images?state=all >$DUMPDIR/imgapi_images-$TIMESTAMP.json
+sdc-imgadm list -a -j >$DUMPDIR/imgapi_images-$TIMESTAMP.json
 [ $? -ne 0 ] && echo "$0: error: Dumping IMGAPI images failed" >&2
 
 # PII cert, drop customer_metadata and internal_metadat
