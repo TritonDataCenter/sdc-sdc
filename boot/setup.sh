@@ -19,7 +19,7 @@ PATH=/opt/local/bin:/opt/local/sbin:/usr/bin:/usr/sbin
 role=sdc
 app_name=$role
 
-CONFIG_AGENT_LOCAL_MANIFESTS_DIRS="/opt/smartdc/$role /opt/smartdc/hermes"
+CONFIG_AGENT_LOCAL_MANIFESTS_DIRS="/opt/smartdc/$role /opt/smartdc/hermes /opt/smartdc/napi-ufds-watcher"
 
 # Include common utility functions (then run the boilerplate)
 source /opt/smartdc/boot/lib/util.sh
@@ -52,12 +52,14 @@ rm -f $crontab
 
 /usr/sbin/svccfg import /opt/smartdc/hermes/smf/hermes.xml
 /usr/sbin/svccfg import /opt/smartdc/hermes/smf/hermes-proxy.xml
+/usr/sbin/svccfg import /opt/smartdc/napi-ufds-watcher/smf/manifests/napi-ufds-watcher.xml
 
 # Log rotation.
 sdc_log_rotation_add amon-agent /var/svc/log/*amon-agent*.log 1g
 sdc_log_rotation_add config-agent /var/svc/log/*config-agent*.log 1g
 sdc_log_rotation_add hermes /var/svc/log/*hermes:default.log 1g
 sdc_log_rotation_add hermes-proxy /var/svc/log/*hermes-proxy:default.log 1g
+sdc_log_rotation_add napi-ufds-watcher /var/svc/log/*ufds-watcher:default.log 1g
 # Don't really need these 3 to go up to manta right now.
 logadm -w sdc-data -C 3 -c -s 1m '/var/log/*-sdc-data.log'
 sdc_log_rotation_setup_end
