@@ -118,8 +118,7 @@ release: all docs man hermes sdc-napi-ufds-watcher
 	cp -r $(TOP)/build/hermes/opt/smartdc/hermes \
 		$(RELSTAGEDIR)/root/opt/smartdc/hermes
 	mkdir -p $(RELSTAGEDIR)/root/opt/smartdc/hermes/etc
-	mkdir -p $(RELSTAGEDIR)/root/opt/smartdc/napi-ufds-watcher
-	cp -r $(TOP)/deps/sdc-napi-ufds-watcher/* \
+	cp -r $(TOP)/deps/sdc-napi-ufds-watcher/ \
 		$(RELSTAGEDIR)/root/opt/smartdc/napi-ufds-watcher
 	cp $(TOP)/etc/logsets.json \
 		$(RELSTAGEDIR)/root/opt/smartdc/hermes/etc
