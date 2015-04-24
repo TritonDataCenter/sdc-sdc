@@ -13,3 +13,6 @@
 [submodule "deps/hermes"]
 	path = deps/hermes
 	url = git@github.com:joyent/sdc-hermes.git
+[submodule "deps/sdc-napi-ufds-watcher"]
+	path = deps/sdc-napi-ufds-watcher
+	url = git@github.com:joyent/sdc-napi-ufds-watcher.git

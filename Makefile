@@ -69,7 +69,7 @@ CLEAN_FILES += build/man
 # Targets
 #
 .PHONY: all
-all: $(SMF_MANIFESTS) | $(NPM_EXEC) sdc-scripts
+all: $(SMF_MANIFESTS) | $(NPM_EXEC) sdc-scripts sdc-napi-ufds-watcher
 	$(NPM) install
 
 .PHONY: man
@@ -88,7 +88,7 @@ hermes:
 	cd deps/hermes && make install DESTDIR=$(TOP)/build/hermes
 
 .PHONY: release
-release: all docs man hermes
+release: all docs man hermes sdc-napi-ufds-watcher
 	@echo "Building $(RELEASE_TARBALL)"
 	mkdir -p $(RELSTAGEDIR)/root/opt/smartdc/$(NAME)
 	mkdir -p $(RELSTAGEDIR)/site
@@ -118,6 +118,9 @@ release: all docs man hermes
 	cp -r $(TOP)/build/hermes/opt/smartdc/hermes \
 		$(RELSTAGEDIR)/root/opt/smartdc/hermes
 	mkdir -p $(RELSTAGEDIR)/root/opt/smartdc/hermes/etc
+	mkdir -p $(RELSTAGEDIR)/root/opt/smartdc/napi-ufds-watcher
+	cp -r $(TOP)/deps/sdc-napi-ufds-watcher \
+		$(RELSTAGEDIR)/root/opt/smartdc/napi-ufds-watcher
 	cp $(TOP)/etc/logsets.json \
 		$(RELSTAGEDIR)/root/opt/smartdc/hermes/etc
 	(cd $(RELSTAGEDIR) && $(TAR) -jcf $(TOP)/$(RELEASE_TARBALL) root site)
@@ -137,10 +140,12 @@ DISTCLEAN_FILES += node_modules
 .PHONY: clean
 distclean::
 	cd deps/hermes && make clean
+	cd deps/sdc-napi-ufds-watcher && make clean
 
 .PHONY: distclean
 distclean::
 	cd deps/hermes && make clobber
+	cd deps/napi-ufds-watcher && make clean
 
 
 
@@ -151,3 +156,7 @@ endif
 include ./tools/mk/Makefile.targ
 
 sdc-scripts: deps/sdc-scripts/.git
+
+.PHONY: sdc-napi-ufds-watcher
+sdc-napi-ufds-watcher:
+	cd deps/sdc-napi-ufds-watcher && make
