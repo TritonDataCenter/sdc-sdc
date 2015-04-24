@@ -157,6 +157,5 @@ include ./tools/mk/Makefile.targ
 
 sdc-scripts: deps/sdc-scripts/.git
 
-.PHONY: sdc-napi-ufds-watcher
-sdc-napi-ufds-watcher:
+sdc-napi-ufds-watcher: deps/sdc-napi-ufds-watcher/.git
 	cd deps/sdc-napi-ufds-watcher && make
