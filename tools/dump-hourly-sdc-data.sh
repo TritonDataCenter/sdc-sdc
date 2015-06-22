@@ -88,7 +88,26 @@ echo "Dump IMGAPI images"
 sdc-imgadm list -a -j >$DUMPDIR/imgapi_images-$TIMESTAMP.json
 [ $? -ne 0 ] && echo "$0: error: Dumping IMGAPI images failed" >&2
 
-# PII cert, drop customer_metadata and internal_metadat
+# PII cert, drop customer_metadata and internal_metadata (modulo
+# some allowed keys). The following is meant to be used with `json -e ...`.
+sanitizeVmJson='
+    this.customer_metadata = undefined;
+
+    // Allow certain internal_metadata keys.
+    var iAllowedKeys = {
+        "com.joyent:ipnat_owner": true
+    };
+    var iKeys = Object.keys(this.internal_metadata);
+    var iMeta = {};
+    for (var i = 0; i < iKeys.length; i++) {
+        var iKey = iKeys[i];
+        if (iAllowedKeys[iKey]) {
+            iMeta[iKey] = this.internal_metadata[iKey];
+        }
+    }
+    this.internal_metadata = iMeta;'
+
+# Dump VMs according to VMAPI
 echo "Dump VMAPI vms"
 count=$(sdc-vmapi /vms?state=active -X HEAD | grep 'x-joyent-resource-count' | cut -d ' ' -f2 | tr -d '\r\n')
 if [[ $? != 0 ]]; then
@@ -102,7 +121,7 @@ else
     fi
     for ((i = 1; i <= $num_pages; i++)); do
         sdc-vmapi "/vms?state=active&limit=$per_page&offset=$offset" \
-            | $JSON -Hae 'this.customer_metadata=undefined; this.internal_metadata=undefined;' \
+            | $JSON -Hae "$sanitizeVmJson" -o jsony-0 \
             >>$DUMPDIR/vmapi_vms-$TIMESTAMP.json
         if [ $? -ne 0  ]; then
             echo "$0: error: Dumping VMAPI VMs failed" >&2
@@ -137,14 +156,14 @@ DUMPFILE=$DUMPDIR/vmadm_vms-$TIMESTAMP.json
 rm -f $DUMPFILE
 nodeerrs=""
 sdc-cnapi /servers?extras=sysinfo \
-                | json -H -c 'this.sysinfo["SDC Version"]' -a uuid \
+                | $JSON -H -c 'this.sysinfo["SDC Version"]' -a uuid \
                 | while read node; do
     f=$PUTDIR/$node
     if [[ ! -s $f ]]; then
         nodeerrs="$nodeerrs $node"
         continue
     fi
-    json -f $f -e "this.cn=\"$node\"; this.customer_metadata=undefined; this.internal_metadata=undefined" \
+    $JSON -f $f -e "this.cn=\"$node\"" -e "$sanitizeVmJson" \
         -a -o jsony-0 >>$DUMPFILE
 done
 if [[ -n "$nodeerrs" ]]; then
@@ -163,7 +182,7 @@ echo "Dump Amon alarms"
 sdc-amon /alarms >$DUMPDIR/amon_alarms-$TIMESTAMP.json
 [ $? -ne 0 ] && echo "$0: error: Dumping Amon alarms failed" >&2
 
-papi_domain=$(json -f /opt/smartdc/sdc/etc/config.json papi_domain)
+papi_domain=$($JSON -f /opt/smartdc/sdc/etc/config.json papi_domain)
 if [[ -n "$papi_domain" ]]; then
     # We dump as a one-package-per-line json stream. This scales up
     # to many packages better.
