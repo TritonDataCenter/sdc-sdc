@@ -1,29 +1,15 @@
-#!/opt/smartdc/sdc/build/node/bin/node
+#!/opt/smartdc/sdc/build/node/bin/node --abort-on-uncaught-exception
 /*
  * Copyright (c) 2013 Joyent Inc. All rights reserved.
  *
  * Checks if Rabbitmq is online and properly sending messages through
  */
 
-var path = require('path');
 var assert = require('assert');
-var amqp = require('amqp-plus');
+var amqp = require('amqp');
 
-var cp = require('child_process');
-var exec = cp.exec;
-var execFile = cp.execFile;
-var spawn = cp.spawn;
 
-var creds;
-var connection;
-
-process.on('uncaughtException', function (e) {
-    console.error('uncaught exception:' + e.message);
-    console.log(e.stack);
-    process.exit(1);
-});
-
-function amqpConfig() {
+function amqpCreds() {
     var config = require('../etc/config.json');
     // guest:guest:10.99.99.20:5672
     var values = config.rabbitmq.split(':');
@@ -37,42 +23,51 @@ function amqpConfig() {
     return rabbit;
 }
 
-function onReady() {
-    console.log('Connected ' + creds.host + ':' + creds.port);
+var timeout = setTimeout(function () {
+    console.error('sdc-check-amqp error: timed out');
+    process.exit(1);
+}, 5000);
 
-    var queue = connection.queue('heartbeat.probe.amon');
-    queue.on('open', function () {
-        console.log('Bound queue to exchange');
-        queue.bind('heartbeat.*');
-        queue.subscribeJSON(onJson);
-    });
+var conn = amqp.createConnection(amqpCreds(), {
+    defaultExchangeName: 'amq.topic'
+});
 
-    function onJson(message, headers, deliveryInfo) {
-        try {
-            assert.ok(message, 'amqp message');
-            assert.ok(deliveryInfo.routingKey, 'amqp routingKey');
-        } catch (e) {
-            console.error(e.toString());
-            process.exit(1);
+conn.on('close', function () {
+    console.error(
+        'sdc-check-amqp error: AMQP connection closed before we expected');
+    process.exit(1);
+});
+conn.on('error', function (err) {
+    console.error('sdc-check-amqp error: AMQP connection error:', err);
+    process.exit(1);
+});
+
+conn.on('ready', function () {
+    console.log('Connected to AMQP');
+
+    // Create a test queue on which we'll listen.
+    var q = conn.queue(
+        'checkamqp.' + process.pid,
+        {exclusive: true},
+        function queueOpen() {
+            q.bind('amq.topic', 'checkamqp.*', onBound);
+            q.subscribe(onMessage);
+        });
+
+    function onBound() {
+        console.log('Bound to queue');
+        // Send a test message.
+        conn.publish('checkamqp.testing',
+            {id: 'checkamqp', pid: process.pid});
+    }
+
+    function onMessage(message, headers, deliveryInfo, messageObject) {
+        assert.equal(deliveryInfo.routingKey, 'checkamqp.testing');
+        assert.equal(message.pid, process.pid);
+        if (timeout) {
+            clearTimeout(timeout);
         }
-
-        console.log('AMQP message received');
+        console.log('success: received test message');
         process.exit(0);
     }
-}
-
-function onClose() {
-    console.log('Connection closed');
-    process.exit(1);
-}
-
-function connect() {
-    creds = amqpConfig();
-    connection = amqp.createConnection(creds, { log: console });
-    connection.on('ready', onReady);
-    connection.on('close', onClose);
-}
-
-
-// Connect and wait for a message
-connect();
+});

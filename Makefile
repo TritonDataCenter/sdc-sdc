@@ -17,7 +17,7 @@
 #
 NAME		:= sdc
 DOC_FILES	 = index.md sdc-amon-probes.md
-JS_FILES	:= $(shell find lib test -name '*.js' | grep -v '/tmp/')
+JS_FILES	:= $(shell find lib test -name '*.js' | grep -v '/tmp/') bin/sdc-check-amqp
 JSL_CONF_NODE	 = tools/jsl.node.conf
 JSL_FILES_NODE	 = $(JS_FILES)
 JSSTYLE_FILES	 = $(JS_FILES)
