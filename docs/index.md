@@ -37,16 +37,16 @@ administrator tool naming tradition).
 | API                                         | Raw API Tool  | Friendlier "adm" tool                       |
 | ------------------------------------------- | ------------- | ------------------------------------------- |
 | Amon Master API (amon)                      | sdc-amon      | sdc-amonadm                                 |
-| Amon Relay API (a small debugging-only API) | sdc-amonrelay | (N/A almost no need to call Amon Relay API) |
-| Compute Node API (CNAPI)                    | sdc-cnapi     | sdc-server                                  |
+| Amon Relay API (a small debugging-only API) | sdc-amonrelay | (N/A, almost no need to call Amon Relay API) |
+| Compute Node API (CNAPI)                    | sdc-cnapi     | sdc-server (TODO: replace w/ sdc-serveradm? --trent) |
 | Firewall API (FWAPI)                        | sdc-fwapi     | sdc-fwadm (NYI: need a ticket)              |
 | Image API (IMGAPI)                          | sdc-imgapi    | sdc-imgadm                                  |
-| Network API (NAPI)                          | sdc-napi      | sdc-network                                 |
+| Network API (NAPI)                          | sdc-napi      | sdc-network (TODO: replace w/ sdc-netadm? --trent) |
 | Virtual Machine API (VMAPI)                 | sdc-vmapi     | sdc-vmadm (NYI: TOOLS-307)                  |
 | Workflow API                                | sdc-workflow  | sdc-wfadm (NYI: TOOLS-308)                  |
-| UFDS                                        | sdc-ldap      | --                                          |
-| Service API (SAPI)                          | sdc-sapi      | sapiadm (*)                                 |
-| x                                           | x             | x                                           |
+| UFDS                                        | sdc-ldap, sdc-ufds | --                                     |
+| Service API (SAPI)                          | sdc-sapi      | sapiadm (TODO: replace w/ sdc-svcadm? --trent) |
+| Package API (PAPI)                          | sdc-papi      | sdc-pkgadm (NYI)                            |
 
 In addition there are a number of other tools not directly associated with
 an API in the DC:
