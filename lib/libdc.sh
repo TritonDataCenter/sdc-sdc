@@ -6,7 +6,7 @@
 #
 
 #
-# Copyright (c) 2014, Joyent, Inc.
+# Copyright (c) 2015, Joyent, Inc.
 #
 
 #
@@ -185,6 +185,22 @@ function vmapi() {
     fi
     (curl ${CURL_OPTS} -H "accept-version: ${SDC_API_VERSION}" \
         --url "${VMAPI_URL}${path}" "$@") || return $?
+    echo ""  # sometimes the result is not terminated with a newline
+    return 0
+}
+
+MAHI_URL=
+function mahi() {
+    local path=$1
+    shift
+    if [[ -z "$MAHI_URL" ]]; then
+        MAHI_URL="http://$(json -f $CONFIG mahi_domain)"
+    fi
+    if [[ -z "$SDC_API_VERSION" ]]; then
+        SDC_API_VERSION="*"
+    fi
+    (curl ${CURL_OPTS} -H "accept-version: ${SDC_API_VERSION}" \
+        --url "${MAHI_URL}${path}" "$@") || return $?
     echo ""  # sometimes the result is not terminated with a newline
     return 0
 }

@@ -47,6 +47,7 @@ administrator tool naming tradition).
 | UFDS                                        | sdc-ldap, sdc-ufds | --                                     |
 | Service API (SAPI)                          | sdc-sapi      | sapiadm (TODO: replace w/ sdc-svcadm? --trent) |
 | Package API (PAPI)                          | sdc-papi      | sdc-pkgadm (NYI)                            |
+| Auth cache API (MAHI)                       | sdc-mahi      |                                             |
 
 In addition there are a number of other tools not directly associated with
 an API in the DC:

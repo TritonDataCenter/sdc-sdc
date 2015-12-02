@@ -53,6 +53,7 @@ MAN_PAGES = \
 	man1/sdc-fwapi.1 \
 	man1/sdc-imgapi.1 \
 	man1/sdc-ldap.1 \
+	man1/sdc-mahi.1 \
 	man1/sdc-napi.1 \
 	man1/sdc-oneachnode.1 \
 	man1/sdc-papi.1 \
