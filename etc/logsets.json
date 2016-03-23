@@ -214,6 +214,7 @@
       "ca",
       "cloudapi",
       "cnapi",
+      "cns",
       "dhcpd",
       "docker",
       "fwapi",
