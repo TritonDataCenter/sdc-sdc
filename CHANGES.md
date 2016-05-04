@@ -1,5 +1,9 @@
 # sdc (SDC ops core zone) Changelog
 
+## 1.5.0
+
+- TOOLS-1857 Add sdc-volapi command to headnode's GZ
+
 ## 1.4.0
 
 - Manta instances with a large number of load balancer IP addresses are

@@ -6,7 +6,7 @@
 #
 
 #
-# Copyright (c) 2015, Joyent, Inc.
+# Copyright (c) 2017, Joyent, Inc.
 #
 
 #
@@ -205,6 +205,24 @@ function mahi() {
     return 0
 }
 
+VOLAPI_URL=
+function volapi() {
+    local path=$1
+    shift
+    if [[ -z ${VOLAPI_URL} ]]; then
+        VOLAPI_DOMAIN=$(json -f ${CONFIG} volapi_domain)
+        [[ -n ${VOLAPI_DOMAIN} ]] \
+            || fatal "fatal: volapi_domain not defined in config"
+        VOLAPI_URL="http://${VOLAPI_DOMAIN}"
+    fi
+    if [[ -z "$SDC_API_VERSION" ]]; then
+        SDC_API_VERSION="*"
+    fi
+    (curl ${CURL_OPTS} -H "accept-version: ${SDC_API_VERSION}" \
+        --url "${VOLAPI_URL}${path}" "$@") || return $?
+    echo ""  # sometimes the result is not terminated with a newline
+    return 0
+}
 
 # filename passed must have a 'Job-Location: ' header in it.
 watch_job()
