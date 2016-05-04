@@ -1,0 +1,44 @@
+#!/usr/bin/bash
+#
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+#
+
+#
+# Copyright (c) 2014, Joyent, Inc.
+#
+
+#
+# Convenience wrapper for calling VOLAPI.
+#
+
+if [ "$TRACE" != "" ]; then
+    export PS4='[\D{%FT%TZ}] ${BASH_SOURCE}:${LINENO}: ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
+    set -o xtrace
+fi
+set -o errexit
+set -o pipefail
+
+TOP=$(cd $(dirname $0)/../ 2>/dev/null; pwd)
+LIBDC=$TOP/lib/libdc.sh
+if [[ ! -f $LIBDC ]]; then
+    echo "$(basename $0): fatal: unable to find $LIBDC"
+    exit 1
+fi
+source $LIBDC
+
+path=$1
+if [[ -z ${path} ]]; then
+    cat <<EOF
+error: no PATH argument given
+
+Usage:
+        $0 [--no-headers] PATH [EXTRA-CURL-ARGS]
+
+EOF
+    exit 1
+fi
+
+volapi "$@" | (json -q || true)
+exit $?

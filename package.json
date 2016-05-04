@@ -1,7 +1,7 @@
 {
     "name": "sdc",
     "description": "SmartDataCenter 'sdc' zone to hold ops/admin tools",
-    "version": "1.4.0",
+    "version": "1.5.0",
     "author": "Joyent (joyent.com)",
     "private": true,
     "dependencies": {
