@@ -205,6 +205,21 @@ function mahi() {
     return 0
 }
 
+VOLAPI_URL=
+function volapi() {
+    local path=$1
+    shift
+    if [[ -z "$VOLAPI_URL" ]]; then
+        VOLAPI_URL="http://$(json -f $CONFIG volapi_domain)"
+    fi
+    if [[ -z "$SDC_API_VERSION" ]]; then
+        SDC_API_VERSION="*"
+    fi
+    (curl ${CURL_OPTS} -H "accept-version: ${SDC_API_VERSION}" \
+        --url "${VOLAPI_URL}${path}" "$@") || return $?
+    echo ""  # sometimes the result is not terminated with a newline
+    return 0
+}
 
 # filename passed must have a 'Job-Location: ' header in it.
 watch_job()

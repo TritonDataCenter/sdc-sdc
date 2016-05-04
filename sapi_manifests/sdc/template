@@ -22,5 +22,6 @@
     "ufds_ldap_root_pw": "{{{ufds_ldap_root_pw}}}",
     "ufds_remote_ip": "{{{ufds_remote_ip}}}",
     "vmapi_domain": "{{{vmapi_domain}}}",
-    "workflow_domain": "{{{workflow_domain}}}"
+    "workflow_domain": "{{{workflow_domain}}}",
+    "volapi_domain": "{{{volapi_domain}}}"
 }
