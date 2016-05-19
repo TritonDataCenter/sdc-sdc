@@ -10,7 +10,7 @@
         "smartdc": "git+ssh://git@github.com:joyent/node-smartdc.git#4308fd9",
         "manta": "git+ssh://git@github.com:joyent/node-manta.git#b277acf",
         "moray": "git+ssh://git@github.com:joyent/node-moray.git#b84ef0e",
-        "imgapi-cli": "git+https://github.com/joyent/sdc-imgapi-cli.git#183d089",
+        "imgapi-cli": "git+https://github.com/joyent/sdc-imgapi-cli.git#53e736b",
         "bunyan": "1.3.3",
         "assert-plus": "0.1.5",
         "ldapjs": "git+ssh://git@github.com:mcavage/node-ldapjs.git#f213b3e",
