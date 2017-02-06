@@ -1,5 +1,10 @@
 # sdc (SDC ops core zone) Changelog
 
+## 1.4.0
+
+- Manta instances with a large number of load balancer IP addresses are
+  now supported by hermes, the log archival service (TOOLS-1641).
+
 ## 1.3.0
 
 - Add 'sdc-useradm *-attr' commands:
