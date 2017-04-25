@@ -213,6 +213,7 @@
       "binder",
       "ca",
       "cloudapi",
+      "cmon",
       "cnapi",
       "cns",
       "dhcpd",
