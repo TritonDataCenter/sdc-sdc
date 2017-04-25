@@ -6,7 +6,7 @@
 #
 
 #
-# Copyright (c) 2014, Joyent, Inc.
+# Copyright (c) 2017, Joyent, Inc.
 #
 
 #
@@ -70,7 +70,7 @@ START=$(date +%s)
 echo "$0 started at $(date -u '+%Y-%m-%dT%H:%M:%S')"
 
 TIMESTAMP=$(date -u "+%s")
-mkdir -p /var/log/sdc-data
+mkdir -p $DUMPDIR
 
 echo "Purge dumps older than a week."
 for path in $(ls $DUMPDIR/*-*.json 2>/dev/null)
@@ -94,18 +94,20 @@ sanitizeVmJson='
     this.customer_metadata = undefined;
 
     // Allow certain internal_metadata keys.
-    var iAllowedKeys = {
-        "com.joyent:ipnat_owner": true
-    };
-    var iKeys = Object.keys(this.internal_metadata);
-    var iMeta = {};
-    for (var i = 0; i < iKeys.length; i++) {
-        var iKey = iKeys[i];
-        if (iAllowedKeys[iKey]) {
-            iMeta[iKey] = this.internal_metadata[iKey];
+    if (this.internal_metadata) {
+        var iAllowedKeys = {
+            "com.joyent:ipnat_owner": true
+        };
+        var iKeys = Object.keys(this.internal_metadata);
+        var iMeta = {};
+        for (var i = 0; i < iKeys.length; i++) {
+            var iKey = iKeys[i];
+            if (iAllowedKeys[iKey]) {
+                iMeta[iKey] = this.internal_metadata[iKey];
+            }
         }
-    }
-    this.internal_metadata = iMeta;'
+        this.internal_metadata = iMeta;
+    }'
 
 # Dump VMs according to VMAPI
 echo "Dump VMAPI vms"
