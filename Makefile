@@ -25,7 +25,7 @@ JSSTYLE_FLAGS	 = -f tools/jsstyle.conf
 RONNJS		 = $(NODE) ./node_modules/.bin/ronn
 PERCENT		:= %
 
-NODE_PREBUILT_VERSION=v0.10.29
+NODE_PREBUILT_VERSION=v0.10.48
 ifeq ($(shell uname -s),SunOS)
 	NODE_PREBUILT_TAG=zone
 	# This is sdc-minimal-multiarch-lts@15.4.1, compat with
