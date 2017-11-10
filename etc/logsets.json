@@ -213,6 +213,7 @@
       "binder",
       "ca",
       "cloudapi",
+      "cmon",
       "cnapi",
       "cns",
       "dhcpd",
@@ -230,6 +231,7 @@
       "redis",
       "sapi",
       "sdc",
+      "sdcsso",
       "ufds",
       "vmapi",
       "workflow"

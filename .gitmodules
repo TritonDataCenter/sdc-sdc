@@ -1,18 +1,18 @@
 [submodule "deps/javascriptlint"]
 	path = deps/javascriptlint
-	url = git://github.com/davepacheco/javascriptlint.git
+	url = https://github.com/davepacheco/javascriptlint.git
 [submodule "deps/jsstyle"]
 	path = deps/jsstyle
-	url = git://github.com/davepacheco/jsstyle.git
+	url = https://github.com/davepacheco/jsstyle.git
 [submodule "deps/restdown"]
 	path = deps/restdown
-	url = git://github.com/trentm/restdown.git
+	url = https://github.com/trentm/restdown.git
 [submodule "deps/sdc-scripts"]
 	path = deps/sdc-scripts
-	url = git@github.com:joyent/sdc-scripts.git
+	url = https://github.com/joyent/sdc-scripts.git
 [submodule "deps/hermes"]
 	path = deps/hermes
-	url = git@github.com:joyent/sdc-hermes.git
+	url = https://github.com/joyent/sdc-hermes.git
 [submodule "deps/sdc-napi-ufds-watcher"]
 	path = deps/sdc-napi-ufds-watcher
-	url = git@github.com:joyent/sdc-napi-ufds-watcher.git
+	url = https://github.com/joyent/sdc-napi-ufds-watcher.git
