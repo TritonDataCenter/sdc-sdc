@@ -221,7 +221,7 @@ sdc-workflow /workflows >$DUMPDIR/workflow_workflows-$TIMESTAMP.json
 [ $? -ne 0 ] && echo "$0: error: Dumping WFAPI workflows failed" >&2
 # Right now we dump recent jobs (jobs created in the past 2 hours)
 now=$TIMESTAMP
-ago=$(date -u "+%s" -d -2hour)
+ago=$((now - 7200))
 # javascript expects milliseconds
 now=$((now * 1000))
 ago=$((ago * 1000))
