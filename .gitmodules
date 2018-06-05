@@ -16,3 +16,4 @@
 [submodule "deps/sdc-napi-ufds-watcher"]
 	path = deps/sdc-napi-ufds-watcher
 	url = https://github.com/joyent/sdc-napi-ufds-watcher.git
+	branch = try-cs-t-461
