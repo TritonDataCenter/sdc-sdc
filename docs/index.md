@@ -10,7 +10,7 @@ apisections:
 -->
 
 <!--
-    Copyright (c) 2014, Joyent, Inc.
+    Copyright (c) 2018, Joyent, Inc.
 -->
 
 # SDC tools/ops zone
@@ -65,7 +65,7 @@ TODO: document appropriate of:
     sdc-lastcomm
     sdc-backup               sdc-sbcreate
     sdc-login                sdc-sbupload
-    sdc-create-2nd-manatee   sdc-manatee-clear-error  sdc-server
+    sdc-manatee-clear-error  sdc-server
     sdc-create-binder        sdc-manatee-history      sdc-setconsole
     sdc-manatee-stat         sdc-upgrade
     sdc-vm
