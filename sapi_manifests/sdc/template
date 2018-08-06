@@ -11,7 +11,7 @@
     "mahi_domain": "mahi.{{{datacenter_name}}}.{{{dns_domain}}}",
     "napi_domain": "{{{napi_domain}}}",
     "papi_domain": "{{{papi_domain}}}",
-    "rabbitmq": "{{{rabbitmq}}}",
+    "rabbitmq": "guest:guest:{{{rabbitmq_domain}}}:5672",
     "sapi_domain": "{{{sapi_domain}}}",
     "sdc_key_id": "{{{SDC_KEY_ID}}}",
     "ufds_admin_login": "{{{ufds_admin_login}}}",
