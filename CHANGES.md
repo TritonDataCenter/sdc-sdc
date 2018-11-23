@@ -1,5 +1,10 @@
 # sdc (SDC ops core zone) Changelog
 
+## 1.5.1
+
+- MANTA-4030 many images using node 0.10 or 0.12 broken by transitive
+  lru-cache@4.1.4 dep
+
 ## 1.5.0
 
 - TOOLS-1857 Add sdc-volapi command to headnode's GZ
