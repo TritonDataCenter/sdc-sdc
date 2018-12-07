@@ -1,5 +1,10 @@
 # sdc (SDC ops core zone) Changelog
 
+## 1.5.2
+
+- MANTA-4030 Drop pinned lru-cache top-level dep. The release or lru-cache@4.1.5
+  fixes the issue.
+
 ## 1.5.1
 
 - MANTA-4030 many images using node 0.10 or 0.12 broken by transitive
