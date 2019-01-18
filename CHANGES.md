@@ -1,5 +1,9 @@
 # sdc (SDC ops core zone) Changelog
 
+## 1.6.1
+
+- TRITON-1082 hermes-proxy should not run itself out of files and memory
+
 ## 1.6.0
 
 - AGENT-997 update hermes to sdcnode (v6.15.1)
