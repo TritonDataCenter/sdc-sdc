@@ -1,5 +1,9 @@
 # sdc (SDC ops core zone) Changelog
 
+## 1.6.0
+
+- AGENT-997 update hermes to sdcnode (v6.15.1)
+
 ## 1.5.2
 
 - MANTA-4030 Drop pinned lru-cache top-level dep. The release or lru-cache@4.1.5
