@@ -1,5 +1,15 @@
 # sdc (SDC ops core zone) Changelog
 
+## 1.7.0
+
+- TRITON-1076 remove unused data dumps from dump-hourly-sdc-data.sh
+- Dumps that remain (all others were removed):
+    * cnapi_servers-$TIMESTAMP.json
+    * napi_networks-$TIMESTAMP.json
+    * papi_packages-$TIMESTAMP.json
+    * vmadm_vms-$TIMESTAMP.json
+    * vmapi_vms-$TIMESTAMP.json
+
 ## 1.6.1
 
 - TRITON-1082 hermes-proxy should not run itself out of files and memory

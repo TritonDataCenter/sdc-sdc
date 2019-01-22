@@ -80,6 +80,10 @@ TODO: document appropriate of:
 
 # Uploading SDC service API data to Manta
 
+IMPORTANT: This functionality is deprecated and slated for future removal. Do
+not write new tools that depend on these data dumps. Existing tools should be
+changed whenever possible to use other sources of data. See also TRITON-1076.
+
 The DC's 'sdc' zone (there should be only one) handles taking hourly dumps
 of most of the SDC API's models and uploading those to Manta. Here is how
 that works (see TOOLS-278 for background):

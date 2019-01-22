@@ -6,7 +6,7 @@
 #
 
 #
-# Copyright (c) 2017, Joyent, Inc.
+# Copyright (c) 2019, Joyent, Inc.
 #
 
 #
@@ -21,7 +21,7 @@
 # a SDC_MANTA_URL. To avoid endless filling of /var/log/sdc-data, dumps
 # older than a week will be removed.
 #
-# TODO: add other services; ensure not too heavy on them (e.g. full dump of VMs)
+# IMPORTANT: This is being deprecated. Please do not add more dumps.
 #
 
 if [[ -n "$TRACE" ]]; then
@@ -84,31 +84,6 @@ do
     fi
 done
 
-echo "Dump IMGAPI images"
-sdc-imgadm list -a -j >$DUMPDIR/imgapi_images-$TIMESTAMP.json
-[ $? -ne 0 ] && echo "$0: error: Dumping IMGAPI images failed" >&2
-
-# PII cert, drop customer_metadata and internal_metadata (modulo
-# some allowed keys). The following is meant to be used with `json -e ...`.
-sanitizeVmJson='
-    this.customer_metadata = undefined;
-
-    // Allow certain internal_metadata keys.
-    if (this.internal_metadata) {
-        var iAllowedKeys = {
-            "com.joyent:ipnat_owner": true
-        };
-        var iKeys = Object.keys(this.internal_metadata);
-        var iMeta = {};
-        for (var i = 0; i < iKeys.length; i++) {
-            var iKey = iKeys[i];
-            if (iAllowedKeys[iKey]) {
-                iMeta[iKey] = this.internal_metadata[iKey];
-            }
-        }
-        this.internal_metadata = iMeta;
-    }'
-
 # Dump VMs according to VMAPI
 echo "Dump VMAPI vms"
 count=$(sdc-vmapi /vms?state=active -X HEAD | grep 'x-joyent-resource-count' | cut -d ' ' -f2 | tr -d '\r\n')
@@ -133,6 +108,11 @@ else
     done
 fi
 
+#
+# Note: This vmadm_vms dump can be very expensive on larger DCs since it runs at
+# least 2 commands on every single CN in the DC and then does a relatively
+# expensive CNAPI query.
+#
 echo "Dump vmadm VM info on all CNs"
 # 1. Dump on each CN.
 sdc-oneachnode -a -q '
@@ -173,17 +153,11 @@ if [[ -n "$nodeerrs" ]]; then
 fi
 rm -rf $PUTDIR
 
-
 echo "Dump CNAPI servers"
 sdc-cnapi /servers?extras=all >$DUMPDIR/cnapi_servers-$TIMESTAMP.json
 [ $? -ne 0 ] && echo "$0: error: Dumping CNAPI servers failed" >&2
 
-# TODO: not sure about dumping all Amon alarms. This endpoint was never intended
-# for prod use.
-echo "Dump Amon alarms"
-sdc-amon /alarms >$DUMPDIR/amon_alarms-$TIMESTAMP.json
-[ $? -ne 0 ] && echo "$0: error: Dumping Amon alarms failed" >&2
-
+echo "Dump PAPI packages"
 papi_domain=$($JSON -f /opt/smartdc/sdc/etc/config.json papi_domain)
 if [[ -n "$papi_domain" ]]; then
     # We dump as a one-package-per-line json stream. This scales up
@@ -196,37 +170,9 @@ if [[ -n "$papi_domain" ]]; then
     [ $? -ne 0 ] && echo "$0: error: Dumping PAPI packages failed" >&2
 fi
 
-echo "Dump NAPI nic_tags, nics, networks, network_pools"
-sdc-napi /nic_tags >$DUMPDIR/napi_nic_tags-$TIMESTAMP.json
-[ $? -ne 0 ] && echo "$0: error: Dumping NAPI NIC tags failed" >&2
-# TODO: Disabled right now b/c RobG said this might be too heavy in prod.
-#sdc-napi /nics >$DUMPDIR/napi_nics-$TIMESTAMP.json
+echo "Dump NAPI networks"
 sdc-napi /networks >$DUMPDIR/napi_networks-$TIMESTAMP.json
 [ $? -ne 0 ] && echo "$0: error: Dumping NAPI networks failed" >&2
-sdc-napi /network_pools >$DUMPDIR/napi_network_pools-$TIMESTAMP.json
-[ $? -ne 0 ] && echo "$0: error: Dumping NAPI network pools failed" >&2
-
-echo "Dump SAPI applications, services, instances"
-sdc-sapi /applications >$DUMPDIR/sapi_applications-$TIMESTAMP.json
-[ $? -ne 0 ] && echo "$0: error: Dumping SAPI applications failed" >&2
-sdc-sapi /services >$DUMPDIR/sapi_services-$TIMESTAMP.json
-[ $? -ne 0 ] && echo "$0: error: Dumping SAPI services failed" >&2
-sdc-sapi /instances >$DUMPDIR/sapi_instances-$TIMESTAMP.json
-[ $? -ne 0 ] && echo "$0: error: Dumping SAPI instances failed" >&2
-sdc-sapi /manifests >$DUMPDIR/sapi_manifests-$TIMESTAMP.json
-[ $? -ne 0 ] && echo "$0: error: Dumping SAPI manifests failed" >&2
-
-echo "Dump Workflow workflows, jobs"
-sdc-workflow /workflows >$DUMPDIR/workflow_workflows-$TIMESTAMP.json
-[ $? -ne 0 ] && echo "$0: error: Dumping WFAPI workflows failed" >&2
-# Right now we dump recent jobs (jobs created in the past 2 hours)
-now=$TIMESTAMP
-ago=$((now - 7200))
-# javascript expects milliseconds
-now=$((now * 1000))
-ago=$((ago * 1000))
-sdc-workflow "/jobs?since=${ago}&until=${now}" >$DUMPDIR/workflow_recent_jobs-$TIMESTAMP.json
-[ $? -ne 0 ] && echo "$0: error: Dumping WFAPI jobs failed" >&2
 
 ls -al $DUMPDIR/*$TIMESTAMP*
 
