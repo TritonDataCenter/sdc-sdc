@@ -1,12 +1,12 @@
 {
     "name": "sdc",
     "description": "SmartDataCenter 'sdc' zone to hold ops/admin tools",
-    "version": "1.7.0",
+    "version": "1.7.1",
     "author": "Joyent (joyent.com)",
     "private": true,
     "dependencies": {
         "sdc-clients": "8.1.2",
-        "amonadm": "git+https://github.com/joyent/sdc-amonadm.git#fcf2fd8",
+        "amonadm": "git+https://github.com/joyent/sdc-amonadm.git#v1.0.1",
         "smartdc": "git+https://github.com/joyent/node-smartdc.git#4308fd9",
         "manta": "git+https://github.com/joyent/node-manta.git#b277acf",
         "moray": "git+https://github.com/joyent/node-moray.git#b84ef0e",
