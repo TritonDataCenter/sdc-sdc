@@ -38,6 +38,8 @@ if [[ -f /opt/smartdc/bin/json ]]; then
     JSON=/opt/smartdc/bin/json
 fi
 
+MIGRATION_AUTOMATIC=
+
 # ANSI colors and markers, which can be disabled by the '--no-ansi' argument.
 BOLD=$(tput bold)
 GREEN=$(tput setaf 2)
@@ -82,6 +84,7 @@ Sub-commands:
     get VM_UUID                  - show the migration record for this instance
     list [-s STATE] [-n CN] [-l] - list migrations in this DC
     estimate [-n CN] VM_UUID     - estimate how long a migration would take
+    migrate [-n CN] VM_UUID      - full automatic migration for this instance
     begin [-n CN] VM_UUID        - begin a migration for this instance
     sync VM_UUID                 - sync the filesystems of this migration
     switch VM_UUID               - switch control over to the migrated instance
@@ -395,6 +398,10 @@ EOF
         url="${url}&override_server_uuid=${server_uuid}"
     fi
 
+    if [[ -n $MIGRATION_AUTOMATIC ]]; then
+        url="${url}&migration_automatic=true"
+    fi
+
     job_uuid=$(sdc-vmapi "$url" -X POST | $JSON -H job_uuid message)
     if [[ -n $job_uuid && $job_uuid =~ ^\{?[A-F0-9a-f]{8}-[A-F0-9a-f]{4}-[A-F0-9a-f]{4}-[A-F0-9a-f]{4}-[A-F0-9a-f]{12}\}?$ ]]; then
         echo "# Migration begin running in job ${job_uuid}"
@@ -602,6 +609,11 @@ case ${command} in
         ;;
     list)
         migration_list "$@"
+        exit $?
+        ;;
+    migrate)
+        MIGRATION_AUTOMATIC="true"
+        migration_begin "$@"
         exit $?
         ;;
     pause)
