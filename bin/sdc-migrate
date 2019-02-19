@@ -15,6 +15,9 @@
 # This script communicates with VMAPI using curl and formats the migration
 # output response(s) using `json`.
 #
+# By default this script will output colors and unicode characters - use the
+# `--no-ansi` argument to disable that.
+#
 
 if [[ -n "$TRACE" ]]; then
     export PS4='[\D{%FT%TZ}] ${BASH_SOURCE}:${LINENO}: ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
@@ -26,6 +29,13 @@ set -o pipefail
 
 if [[ -z ${CURL_OPTS} ]]; then
     CURL_OPTS="-N -4 --connect-timeout 10 -sS"
+fi
+
+JSON=/usr/bin/json
+# Use a newer version of json when available, is it will be a lot faster than
+# the platform json.
+if [[ -f /opt/smartdc/bin/json ]]; then
+    JSON=/opt/smartdc/bin/json
 fi
 
 # ANSI colors and markers, which can be disabled by the '--no-ansi' argument.
@@ -94,7 +104,7 @@ function migration_get() {
     result=$(sdc-vmapi "/migrations/${vm_uuid}?format=raw")
 
     # Check for vmapi error.
-    message=$(json -H message <<< "$result")
+    message=$($JSON -H message <<< "$result")
     if [[ -n $message ]]; then
         fatal "Error: ${message}"
     fi
@@ -106,7 +116,7 @@ function migration_get() {
 
     # Print the migration details.
     names="source_server_uuid target_server_uuid state created_timestamp runtime automatic error"
-    values=$(json -Ha -d '~' \
+    values=$($JSON -Ha -d '~' \
             -e 'function humanizeMs(ms, precision) { if (typeof (ms) !== "number") { return ms; } var r = []; var l = [["s", 1000], ["m", 60], ["h", 60], ["d", 24], ["w", 7], ["y", 52]]; for (var i=0; i < l.length; i++) { ms = Math.floor(ms / l[i][1]); if (ms === 0) break; r.splice(0, 0, (ms % (l[i+1]||["", ms+1])[1]) + l[i][0]); } return r.slice(0, precision || l.length).join(""); } this.runtime = humanizeMs(this.duration_ms, 1);' \
             $names <<< "${result}")
     IFS='~' read -r $names <<< "${values}"
@@ -136,7 +146,7 @@ function migration_get() {
     printf "Phases       :\n"
     printf "${space}${space}${format}\n" $headers
 
-    progress_fields=$(json -H progress_history <<< "${result}" | json -d '~' -a \
+    progress_fields=$($JSON -H progress_history <<< "${result}" | $JSON -d '~' -a \
             -e 'if (this.error) { this.message = this.error; }' \
             -e 'function humanizeMs(ms, precision) { if (typeof (ms) !== "number") { return ms; } var r = []; var l = [["s", 1000], ["m", 60], ["h", 60], ["d", 24], ["w", 7], ["y", 52]]; for (var i=0; i < l.length; i++) { ms = Math.floor(ms / l[i][1]); if (ms === 0) break; r.splice(0, 0, (ms % (l[i+1]||["", ms+1])[1]) + l[i][0]); } return r.slice(0, precision || l.length).join(""); } this.runtime = humanizeMs(this.duration_ms, 1); this.age = humanizeMs(new Date() - new Date(this.started_timestamp), 1);' \
         phase state age runtime message)
@@ -162,7 +172,7 @@ function migration_get() {
     if [[ $mainstate == "successful" ]]; then
         printf "Migration finished successfully\n"
     elif [[ $mainstate == "failed" || -n ${error} ]]; then
-        # error=$(json -H error <<< "${result}")
+        # error=$($JSON -H error <<< "${result}")
         printf "${RED}Migration error:${NORMAL} %s\n" "${error}"
     else
         printf "Migration ${mainstate}\n"
@@ -252,7 +262,7 @@ EOF
     printf "${format}\n" $headers
 
     # Get migrations and format/output.
-    lines=$(sdc-vmapi "$url" | json -Hga -d '~' \
+    lines=$(sdc-vmapi "$url" | $JSON -Hga -d '~' \
             -e 'function humanizeMs(ms, precision) { if (typeof (ms) !== "number") { return ms; } var r = []; var l = [["s", 1000], ["m", 60], ["h", 60], ["d", 24], ["w", 7], ["y", 52]]; for (var i=0; i < l.length; i++) { ms = Math.floor(ms / l[i][1]); if (ms === 0) break; r.splice(0, 0, (ms % (l[i+1]||["", ms+1])[1]) + l[i][0]); } return r.slice(0, precision || l.length).join(""); } this.runtime = humanizeMs(this.duration_ms, 1); this.age = humanizeMs(new Date() - new Date(this.created_timestamp), 1);' \
             $fields)
     while IFS='~' read -r $fields; do
@@ -332,7 +342,7 @@ EOF
         url="${url}&override_server_uuid=${server_uuid}"
     fi
 
-    sdc-vmapi "$url" -X POST | json -q -H
+    sdc-vmapi "$url" -X POST | $JSON -q -H
 }
 
 
@@ -380,11 +390,12 @@ EOF
     fi
 
     url="/vms/${vm_uuid}?action=migrate&migration_action=begin"
+
     if [[ -n $server_uuid ]]; then
         url="${url}&override_server_uuid=${server_uuid}"
     fi
 
-    job_uuid=$(sdc-vmapi "$url" -X POST | json -H job_uuid message)
+    job_uuid=$(sdc-vmapi "$url" -X POST | $JSON -H job_uuid message)
     if [[ -n $job_uuid && $job_uuid =~ ^\{?[A-F0-9a-f]{8}-[A-F0-9a-f]{4}-[A-F0-9a-f]{4}-[A-F0-9a-f]{4}-[A-F0-9a-f]{12}\}?$ ]]; then
         echo "# Migration begin running in job ${job_uuid}"
         migration_watch "$vm_uuid" "begin"
@@ -401,7 +412,7 @@ function migration_sync() {
 
     local url="/vms/${vm_uuid}?action=migrate&migration_action=sync"
 
-    job_uuid=$(sdc-vmapi "$url" -X POST | json -H job_uuid message)
+    job_uuid=$(sdc-vmapi "$url" -X POST | $JSON -H job_uuid message)
     if [[ -n $job_uuid && $job_uuid =~ ^\{?[A-F0-9a-f]{8}-[A-F0-9a-f]{4}-[A-F0-9a-f]{4}-[A-F0-9a-f]{4}-[A-F0-9a-f]{12}\}?$ ]]; then
         echo "# Migration sync running in job ${job_uuid}"
         migration_watch "$vm_uuid" "sync"
@@ -418,7 +429,7 @@ function migration_switch() {
 
     local url="/vms/${vm_uuid}?action=migrate&migration_action=switch"
 
-    job_uuid=$(sdc-vmapi "$url" -X POST | json -H job_uuid message)
+    job_uuid=$(sdc-vmapi "$url" -X POST | $JSON -H job_uuid message)
     if [[ -n $job_uuid && $job_uuid =~ ^\{?[A-F0-9a-f]{8}-[A-F0-9a-f]{4}-[A-F0-9a-f]{4}-[A-F0-9a-f]{4}-[A-F0-9a-f]{12}\}?$ ]]; then
         echo "# Migration switch running in job ${job_uuid}"
         migration_watch "$vm_uuid" "switch"
@@ -435,7 +446,7 @@ function migration_pause() {
 
     local url="/vms/${vm_uuid}?action=migrate&migration_action=pause"
 
-    job_uuid=$(sdc-vmapi "$url" -X POST | json -H job_uuid message)
+    job_uuid=$(sdc-vmapi "$url" -X POST | $JSON -H job_uuid message)
     if [[ -n $job_uuid && $job_uuid =~ ^\{?[A-F0-9a-f]{8}-[A-F0-9a-f]{4}-[A-F0-9a-f]{4}-[A-F0-9a-f]{4}-[A-F0-9a-f]{12}\}?$ ]]; then
         echo "# Migration pause running in job ${job_uuid}"
         sdc-waitforjob "${job_uuid}"
@@ -459,7 +470,7 @@ function migration_watch() {
 
     if [[ -z ${VMAPI_URL} ]]; then
         # Copied from sdc vmapi wrapper script.
-        ufds_admin_uuid=$(bash /lib/sdc/config.sh -json | json ufds_admin_uuid)
+        ufds_admin_uuid=$(bash /lib/sdc/config.sh -json | $JSON ufds_admin_uuid)
         sdc_zone=$(vmadm list -H -o tags.smartdc_role,uuid,create_timestamp \
                 -s create_timestamp owner_uuid=${ufds_admin_uuid} | \
                 (grep '^sdc\>' || true) | \
@@ -468,7 +479,7 @@ function migration_watch() {
             fatal "error: $(basename $0): unable to find a 'sdc' core zone on this node"
         fi
 
-        VMAPI_URL="http://"$(/usr/bin/json -f "/zones/${sdc_zone}/root/opt/smartdc/sdc/etc/config.json" vmapi_domain)
+        VMAPI_URL="http://"$($JSON -f "/zones/${sdc_zone}/root/opt/smartdc/sdc/etc/config.json" vmapi_domain)
     fi
 
     local url="${VMAPI_URL}/migrations/${vm_uuid}/watch"
@@ -546,8 +557,7 @@ function migration_watch() {
             fi
         fi
     done < <(curl ${CURL_OPTS} "${url}" \
-        | tee "/var/tmp/watch.log" \
-        | json -H -ga -d '~' \
+        | $JSON -H -ga -d '~' \
             -e 'if (this.code && this.message) { this.type = "error"; this.state = "error"; }' \
             -e 'function humanizeNetworkSpeed(speed) { if (typeof (speed) !== "number") { return speed; } var i = 0; var byteUnits = ["B/s", "kB/s", "MB/s", "GB/s", "TB/s", "PB/s", "EB/s"]; while (speed > 1024 && i < byteUnits.length) { speed = speed / 1024; i++; } return Math.max(speed, 0).toFixed(1) + byteUnits[i]; } this.bandwidth = humanizeNetworkSpeed(this.transfer_bytes_second);' \
             -e 'function humanizeDuration(ms) { if (typeof (ms) !== "number") { return ms; } var l = [["s", 1000], ["m", 60], ["h", 60], ["d", 24], ["y", 365]]; for (var s="", i=0; i < l.length; i++) { ms = Math.floor(ms / l[i][1]); if (ms === 0) return s; s = (ms % (l[i+1]||["", ms+1])[1]) + l[i][0] + s; } return s; } this.human_duration = humanizeDuration(this.duration_ms); this.human_eta = humanizeDuration(this.eta_ms);' \
