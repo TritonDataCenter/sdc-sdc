@@ -538,6 +538,15 @@ function migration_watch() {
             continue
         fi
 
+        if [[ -n $message ]]; then
+            if [[ -n $need_newline ]]; then
+                printf "\n"
+                need_newline=
+            fi
+            printf -- " - ${message}\n"
+            continue
+        fi
+
         percentage=$((current_progress*100/total_progress))
 
         eta_message=
@@ -545,16 +554,11 @@ function migration_watch() {
             eta_message=" (ETA ${eta}) "
         fi
 
-        printf "${CLEARLINE}running: %s%%  %s %s %s" "${percentage}" "${bandwidth}" "${eta_message}" "${message}"
+        printf -- "${CLEARLINE}  - running: %s%%  %s %s %s" "${percentage}" "${bandwidth}" "${eta_message}"
         if [[ -n $NOANSI ]]; then
             printf "\n"
         else
-            if [[ -n $message ]]; then
-                printf "\n"
-                need_newline=
-            else
-                need_newline="true"
-            fi
+            need_newline="true"
         fi
     done < <(curl ${CURL_OPTS} "${url}" \
         | $JSON -H -ga -d '~' \
