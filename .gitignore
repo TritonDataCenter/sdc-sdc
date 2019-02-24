@@ -1,7 +1,10 @@
+/make_stamps
 /node_modules
 /tmp
+/bits
 /build
 docs/*.json
 docs/*.html
 /man/**/*.roff
 /etc/config.json
+sdc-pkg-*.tar.gz

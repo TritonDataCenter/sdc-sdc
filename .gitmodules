@@ -16,3 +16,6 @@
 [submodule "deps/sdc-napi-ufds-watcher"]
 	path = deps/sdc-napi-ufds-watcher
 	url = https://github.com/joyent/sdc-napi-ufds-watcher.git
+[submodule "deps/eng"]
+	path = deps/eng
+	url = https://github.com/joyent/eng.git
