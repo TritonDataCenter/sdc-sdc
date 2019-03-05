@@ -463,6 +463,23 @@ function migration_pause() {
 }
 
 
+function migration_abort() {
+    local vm_uuid=$1
+
+    [[ -z ${vm_uuid} ]] && fatal "abort: no instance uuid provided"
+
+    local url="/vms/${vm_uuid}?action=migrate&migration_action=abort"
+
+    job_uuid=$(sdc-vmapi "$url" -X POST | $JSON -H job_uuid message)
+    if [[ -n $job_uuid && $job_uuid =~ ^\{?[A-F0-9a-f]{8}-[A-F0-9a-f]{4}-[A-F0-9a-f]{4}-[A-F0-9a-f]{4}-[A-F0-9a-f]{12}\}?$ ]]; then
+        echo "# Migration abort running in job ${job_uuid}"
+        migration_watch "$vm_uuid" "abort"
+    else
+        fatal "Error: ${job_uuid}"
+    fi
+}
+
+
 function migration_watch() {
     local vm_uuid=$1
     local need_newline=
@@ -594,6 +611,10 @@ fi
 case ${command} in
     -h|--help)
         usage
+        ;;
+    abort)
+        migration_abort "$@"
+        exit $?
         ;;
     begin)
         migration_begin "$@"
