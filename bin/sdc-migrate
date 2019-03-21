@@ -40,6 +40,52 @@ fi
 
 MIGRATION_AUTOMATIC=
 
+NODE_FN_HUMANIZE_DURATION='
+  function humanizeDuration(ms) {
+    if (typeof (ms) !== "number") {
+      return ms;
+    }
+    var l = [["s", 1000], ["m", 60], ["h", 60], ["d", 24], ["y", 365]];
+    for (var s="", i=0; i < l.length; i++) {
+      ms = Math.floor(ms / l[i][1]);
+      if (ms === 0) {
+        return s;
+      }
+      s = (ms % (l[i+1]||["", ms+1])[1]) + l[i][0] + s;
+    }
+    return s;
+  }'
+
+NODE_FN_HUMANIZE_MS='
+  function humanizeMs(ms, precision) {
+    if (typeof (ms) !== "number") {
+      return ms;
+    }
+    var r = [];
+    var l = [["s", 1000], ["m", 60], ["h", 60], ["d", 24], ["w", 7], ["y", 52]];
+    for (var i=0; i < l.length; i++) {
+      ms = Math.floor(ms / l[i][1]);
+      if (ms === 0) {
+        break;
+      }
+      r.splice(0, 0, (ms % (l[i+1]||["", ms+1])[1]) + l[i][0]);
+    }
+    return r.slice(0, precision || l.length).join("");
+  }'
+
+NODE_FN_HUMANIZE_NETWORK_SPEED='
+  function humanizeNetworkSpeed(speed) {
+    if (typeof (speed) !== "number") {
+      return speed;
+    }
+    var i = 0;
+    var byteUnits = ["B/s", "kB/s", "MB/s", "GB/s", "TB/s", "PB/s", "EB/s"];
+    while (speed > 1024 && i < byteUnits.length) {
+      speed = speed / 1024; i++;
+    }
+    return Math.max(speed, 0).toFixed(1) + byteUnits[i];
+  }'
+
 # ANSI colors and markers, which can be disabled by the '--no-ansi' argument.
 BOLD=$(tput bold)
 GREEN=$(tput setaf 2)
@@ -96,6 +142,17 @@ EOF
 }
 
 
+function check_job_uuid() {
+    local job_uuid=$1
+
+    if [[ -n $job_uuid && $job_uuid =~ ^\{?[A-F0-9a-f]{8}-[A-F0-9a-f]{4}-[A-F0-9a-f]{4}-[A-F0-9a-f]{4}-[A-F0-9a-f]{12}\}?$ ]]; then
+        echo "# Migration ${action} running in job ${job_uuid}"
+    else
+        fatal "Error: ${job_uuid}"
+    fi
+}
+
+
 function migration_get() {
     local format="%-8s %6s %-8s  %s"
     local headers="PHASE AGE RUNTIME MESSAGE"
@@ -120,7 +177,7 @@ function migration_get() {
     # Print the migration details.
     names="source_server_uuid target_server_uuid state created_timestamp runtime automatic error"
     values=$($JSON -Ha -d '~' \
-            -e 'function humanizeMs(ms, precision) { if (typeof (ms) !== "number") { return ms; } var r = []; var l = [["s", 1000], ["m", 60], ["h", 60], ["d", 24], ["w", 7], ["y", 52]]; for (var i=0; i < l.length; i++) { ms = Math.floor(ms / l[i][1]); if (ms === 0) break; r.splice(0, 0, (ms % (l[i+1]||["", ms+1])[1]) + l[i][0]); } return r.slice(0, precision || l.length).join(""); } this.runtime = humanizeMs(this.duration_ms, 1);' \
+            -e "${NODE_FN_HUMANIZE_MS} this.runtime = humanizeMs(this.duration_ms, 1);" \
             $names <<< "${result}")
     IFS='~' read -r $names <<< "${values}"
 
@@ -151,7 +208,7 @@ function migration_get() {
 
     progress_fields=$($JSON -H progress_history <<< "${result}" | $JSON -d '~' -a \
             -e 'if (this.error) { this.message = this.error; }' \
-            -e 'function humanizeMs(ms, precision) { if (typeof (ms) !== "number") { return ms; } var r = []; var l = [["s", 1000], ["m", 60], ["h", 60], ["d", 24], ["w", 7], ["y", 52]]; for (var i=0; i < l.length; i++) { ms = Math.floor(ms / l[i][1]); if (ms === 0) break; r.splice(0, 0, (ms % (l[i+1]||["", ms+1])[1]) + l[i][0]); } return r.slice(0, precision || l.length).join(""); } this.runtime = humanizeMs(this.duration_ms, 1); this.age = humanizeMs(new Date() - new Date(this.started_timestamp), 1);' \
+            -e "${NODE_FN_HUMANIZE_MS} this.runtime = humanizeMs(this.duration_ms, 1); this.age = humanizeMs(new Date() - new Date(this.started_timestamp), 1);" \
         phase state age runtime message)
 
     while IFS='~' read -r phase state age runtime message; do
@@ -266,7 +323,7 @@ EOF
 
     # Get migrations and format/output.
     lines=$(sdc-vmapi "$url" | $JSON -Hga -d '~' \
-            -e 'function humanizeMs(ms, precision) { if (typeof (ms) !== "number") { return ms; } var r = []; var l = [["s", 1000], ["m", 60], ["h", 60], ["d", 24], ["w", 7], ["y", 52]]; for (var i=0; i < l.length; i++) { ms = Math.floor(ms / l[i][1]); if (ms === 0) break; r.splice(0, 0, (ms % (l[i+1]||["", ms+1])[1]) + l[i][0]); } return r.slice(0, precision || l.length).join(""); } this.runtime = humanizeMs(this.duration_ms, 1); this.age = humanizeMs(new Date() - new Date(this.created_timestamp), 1);' \
+            -e "${NODE_FN_HUMANIZE_MS} this.runtime = humanizeMs(this.duration_ms, 1); this.age = humanizeMs(new Date() - new Date(this.created_timestamp), 1);" \
             $fields)
     while IFS='~' read -r $fields; do
         if [[ -z $vm_uuid ]]; then
@@ -313,7 +370,7 @@ function migration_estimate() {
             -h|--help)
                 cat <<EOF
 Usage:
-        $0 estimate [options]
+        $0 ${action} [options]
 
 Options:
 
@@ -330,17 +387,17 @@ EOF
                 if [[  -z $vm_uuid ]]; then
                     vm_uuid="${arg}"
                 else
-                    echo "Ignoring unrecognized estimate option: ${arg}" >&2
+                    echo "Ignoring unrecognized ${action} option: ${arg}" >&2
                 fi
                 ;;
         esac
     done
 
     if [[ -z ${vm_uuid} ]]; then
-        fatal "estimate: no instance uuid provided"
+        fatal "${action}: no instance uuid provided"
     fi
 
-    url="/vms/${vm_uuid}?action=migrate&migration_action=estimate"
+    url="/vms/${vm_uuid}?action=migrate&migration_action=${action}"
     if [[ -n $server_uuid ]]; then
         url="${url}&override_server_uuid=${server_uuid}"
     fi
@@ -365,7 +422,7 @@ function migration_begin() {
             -h|--help)
                 cat <<EOF
 Usage:
-        $0 begin [options]
+        $0 ${action} [options]
 
 Options:
 
@@ -382,17 +439,17 @@ EOF
                 if [[  -z $vm_uuid ]]; then
                     vm_uuid="${arg}"
                 else
-                    echo "Ignoring unrecognized begin option: ${arg}" >&2
+                    echo "Ignoring unrecognized ${action} option: ${arg}" >&2
                 fi
                 ;;
         esac
     done
 
     if [[ -z ${vm_uuid} ]]; then
-        fatal "begin: no instance uuid provided"
+        fatal "${action}: no instance uuid provided"
     fi
 
-    url="/vms/${vm_uuid}?action=migrate&migration_action=begin"
+    url="/vms/${vm_uuid}?action=migrate&migration_action=${action}"
 
     if [[ -n $server_uuid ]]; then
         url="${url}&override_server_uuid=${server_uuid}"
@@ -403,46 +460,37 @@ EOF
     fi
 
     job_uuid=$(sdc-vmapi "$url" -X POST | $JSON -H job_uuid message)
-    if [[ -n $job_uuid && $job_uuid =~ ^\{?[A-F0-9a-f]{8}-[A-F0-9a-f]{4}-[A-F0-9a-f]{4}-[A-F0-9a-f]{4}-[A-F0-9a-f]{12}\}?$ ]]; then
-        echo "# Migration begin running in job ${job_uuid}"
-        migration_watch "$vm_uuid" "begin"
-    else
-        fatal "Error: ${job_uuid}"
-    fi
+
+    check_job_uuid "${job_uuid}"
+    migration_watch "${vm_uuid}"
 }
 
 
 function migration_sync() {
     local vm_uuid=$1
 
-    [[ -z ${vm_uuid} ]] && fatal "sync: no instance uuid provided"
+    [[ -z ${vm_uuid} ]] && fatal "${action}: no instance uuid provided"
 
-    local url="/vms/${vm_uuid}?action=migrate&migration_action=sync"
+    local url="/vms/${vm_uuid}?action=migrate&migration_action=${action}"
 
     job_uuid=$(sdc-vmapi "$url" -X POST | $JSON -H job_uuid message)
-    if [[ -n $job_uuid && $job_uuid =~ ^\{?[A-F0-9a-f]{8}-[A-F0-9a-f]{4}-[A-F0-9a-f]{4}-[A-F0-9a-f]{4}-[A-F0-9a-f]{12}\}?$ ]]; then
-        echo "# Migration sync running in job ${job_uuid}"
-        migration_watch "$vm_uuid" "sync"
-    else
-        fatal "Error: ${job_uuid}"
-    fi
+
+    check_job_uuid "${job_uuid}"
+    migration_watch "${vm_uuid}"
 }
 
 
 function migration_switch() {
     local vm_uuid=$1
 
-    [[ -z ${vm_uuid} ]] && fatal "switch: no instance uuid provided"
+    [[ -z ${vm_uuid} ]] && fatal "${action}: no instance uuid provided"
 
-    local url="/vms/${vm_uuid}?action=migrate&migration_action=switch"
+    local url="/vms/${vm_uuid}?action=migrate&migration_action=${action}"
 
     job_uuid=$(sdc-vmapi "$url" -X POST | $JSON -H job_uuid message)
-    if [[ -n $job_uuid && $job_uuid =~ ^\{?[A-F0-9a-f]{8}-[A-F0-9a-f]{4}-[A-F0-9a-f]{4}-[A-F0-9a-f]{4}-[A-F0-9a-f]{12}\}?$ ]]; then
-        echo "# Migration switch running in job ${job_uuid}"
-        migration_watch "$vm_uuid" "switch"
-    else
-        fatal "Error: ${job_uuid}"
-    fi
+
+    check_job_uuid "${job_uuid}"
+    migration_watch "${vm_uuid}"
 }
 
 
@@ -454,12 +502,9 @@ function migration_pause() {
     local url="/vms/${vm_uuid}?action=migrate&migration_action=pause"
 
     job_uuid=$(sdc-vmapi "$url" -X POST | $JSON -H job_uuid message)
-    if [[ -n $job_uuid && $job_uuid =~ ^\{?[A-F0-9a-f]{8}-[A-F0-9a-f]{4}-[A-F0-9a-f]{4}-[A-F0-9a-f]{4}-[A-F0-9a-f]{12}\}?$ ]]; then
-        echo "# Migration pause running in job ${job_uuid}"
-        sdc-waitforjob "${job_uuid}"
-    else
-        fatal "Error: ${job_uuid}"
-    fi
+
+    check_job_uuid "${job_uuid}"
+    sdc-waitforjob "${job_uuid}"
 }
 
 
@@ -471,12 +516,9 @@ function migration_abort() {
     local url="/vms/${vm_uuid}?action=migrate&migration_action=abort"
 
     job_uuid=$(sdc-vmapi "$url" -X POST | $JSON -H job_uuid message)
-    if [[ -n $job_uuid && $job_uuid =~ ^\{?[A-F0-9a-f]{8}-[A-F0-9a-f]{4}-[A-F0-9a-f]{4}-[A-F0-9a-f]{4}-[A-F0-9a-f]{12}\}?$ ]]; then
-        echo "# Migration abort running in job ${job_uuid}"
-        migration_watch "$vm_uuid" "abort"
-    else
-        fatal "Error: ${job_uuid}"
-    fi
+
+    check_job_uuid "${job_uuid}"
+    migration_watch "${vm_uuid}"
 }
 
 
@@ -525,7 +567,7 @@ function migration_watch() {
             fi
 
             if [[ $state == "failed" ]]; then
-                fatal "Failure: ${message}" 
+                fatal "Failure: ${message}"
             fi
 
             if [[ $state == "successful" ]]; then
@@ -587,28 +629,28 @@ function migration_watch() {
     done < <(curl ${CURL_OPTS} "${url}" \
         | $JSON -H -ga -d '~' \
             -e 'if (this.code && this.message) { this.type = "error"; this.state = "error"; }' \
-            -e 'function humanizeNetworkSpeed(speed) { if (typeof (speed) !== "number") { return speed; } var i = 0; var byteUnits = ["B/s", "kB/s", "MB/s", "GB/s", "TB/s", "PB/s", "EB/s"]; while (speed > 1024 && i < byteUnits.length) { speed = speed / 1024; i++; } return Math.max(speed, 0).toFixed(1) + byteUnits[i]; } this.bandwidth = humanizeNetworkSpeed(this.transfer_bytes_second);' \
-            -e 'function humanizeDuration(ms) { if (typeof (ms) !== "number") { return ms; } var l = [["s", 1000], ["m", 60], ["h", 60], ["d", 24], ["y", 365]]; for (var s="", i=0; i < l.length; i++) { ms = Math.floor(ms / l[i][1]); if (ms === 0) return s; s = (ms % (l[i+1]||["", ms+1])[1]) + l[i][0] + s; } return s; } this.human_duration = humanizeDuration(this.duration_ms); this.human_eta = humanizeDuration(this.eta_ms);' \
+            -e "${NODE_FN_HUMANIZE_NETWORK_SPEED} this.bandwidth = humanizeNetworkSpeed(this.transfer_bytes_second);" \
+            -e "${NODE_FN_HUMANIZE_DURATION} this.human_duration = humanizeDuration(this.duration_ms); this.human_eta = humanizeDuration(this.eta_ms);" \
             type state phase current_progress total_progress human_duration finished_timestamp bandwidth human_eta message)
 }
 
 
-# Handle the command
-command=$1
+# Handle the migration action.
+action=$1
 
-if [[ -z "${command}" ]]; then
+if [[ -z "${action}" ]]; then
     usage
 fi
 
 shift
 
-if [[ $command == "--noansi" || $command == "--no-ansi" ]]; then
+if [[ $action == "--noansi" || $action == "--no-ansi" ]]; then
     noansi
-    command=$1
+    action=$1
     shift
 fi
 
-case ${command} in
+case ${action} in
     -h|--help)
         usage
         ;;
@@ -634,6 +676,7 @@ case ${command} in
         ;;
     migrate)
         MIGRATION_AUTOMATIC="true"
+        action="begin"
         migration_begin "$@"
         exit $?
         ;;
@@ -654,7 +697,7 @@ case ${command} in
         exit $?
         ;;
     *)
-        echo "Unknown command: ${command}" >&2
+        echo "Unknown command: ${action}" >&2
         usage
         ;;
 esac
