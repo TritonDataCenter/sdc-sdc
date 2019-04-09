@@ -1,5 +1,9 @@
 # sdc (SDC ops core zone) Changelog
 
+## 1.8.0
+
+- TRITON-XXX Add sdc-migrate command to headnode's GZ
+
 ## 1.7.1
 
 - TRITON-788 Update to sdc-amonadm that isn't broken by sdc-clients@11

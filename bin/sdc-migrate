@@ -1,0 +1,705 @@
+#!/usr/bin/bash
+#
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+#
+
+#
+# Copyright (c) 2019, Joyent, Inc.
+#
+
+#
+# Migrate an instance to another compute node in Triton.
+#
+# This script communicates with VMAPI using curl and formats the migration
+# output response(s) using `json`.
+#
+# By default this script will output colors and unicode characters - use the
+# `--no-ansi` argument to disable that.
+#
+
+if [[ -n "$TRACE" ]]; then
+    export PS4='[\D{%FT%TZ}] ${BASH_SOURCE}:${LINENO}: ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
+    set -o xtrace
+fi
+set -o errexit
+set -o pipefail
+
+
+if [[ -z ${CURL_OPTS} ]]; then
+    CURL_OPTS="-N -4 --connect-timeout 10 -sS"
+fi
+
+JSON=/usr/bin/json
+# Use a newer version of json when available, is it will be a lot faster than
+# the platform json.
+if [[ -f /opt/smartdc/bin/json ]]; then
+    JSON=/opt/smartdc/bin/json
+fi
+
+MIGRATION_AUTOMATIC=
+
+NODE_FN_HUMANIZE_DURATION='
+  function humanizeDuration(ms) {
+    if (typeof (ms) !== "number") {
+      return ms;
+    }
+    var l = [["s", 1000], ["m", 60], ["h", 60], ["d", 24], ["y", 365]];
+    for (var s="", i=0; i < l.length; i++) {
+      ms = Math.floor(ms / l[i][1]);
+      if (ms === 0) {
+        return s;
+      }
+      s = (ms % (l[i+1]||["", ms+1])[1]) + l[i][0] + s;
+    }
+    return s;
+  }'
+
+NODE_FN_HUMANIZE_MS='
+  function humanizeMs(ms, precision) {
+    if (typeof (ms) !== "number") {
+      return ms;
+    }
+    var r = [];
+    var l = [["s", 1000], ["m", 60], ["h", 60], ["d", 24], ["w", 7], ["y", 52]];
+    for (var i=0; i < l.length; i++) {
+      ms = Math.floor(ms / l[i][1]);
+      if (ms === 0) {
+        break;
+      }
+      r.splice(0, 0, (ms % (l[i+1]||["", ms+1])[1]) + l[i][0]);
+    }
+    return r.slice(0, precision || l.length).join("");
+  }'
+
+NODE_FN_HUMANIZE_NETWORK_SPEED='
+  function humanizeNetworkSpeed(speed) {
+    if (typeof (speed) !== "number") {
+      return speed;
+    }
+    var i = 0;
+    var byteUnits = ["B/s", "kB/s", "MB/s", "GB/s", "TB/s", "PB/s", "EB/s"];
+    while (speed > 1024 && i < byteUnits.length) {
+      speed = speed / 1024; i++;
+    }
+    return Math.max(speed, 0).toFixed(1) + byteUnits[i];
+  }'
+
+# ANSI colors and markers, which can be disabled by the '--no-ansi' argument.
+BOLD=$(tput bold)
+GREEN=$(tput setaf 2)
+RED=$(tput setaf 1)
+NORMAL="$(tput sgr0)"
+CHECKMARK="\u2714"
+CROSS="x"
+PAUSED="\""
+RUNNING="\u25ba"
+CLEARLINE="\33[2K\r"
+
+function noansi() {
+    BOLD=
+    GREEN=
+    RED=
+    NORMAL=
+    CHECKMARK=
+    CROSS=
+    PAUSED=
+    RUNNING=
+    CLEARLINE=
+
+    NOANSI="true"
+}
+
+function fatal() {
+    echo "$@" >&2
+    exit 1
+}
+
+
+function usage() {
+    cat <<EOF
+
+Usage:
+        $0 [--no-ansi] <sub-command> [options]
+
+    --no-ansi                    - disables colors and VT100 escape sequences
+
+Sub-commands:
+
+    get VM_UUID                  - show the migration record for this instance
+    list [-s STATE] [-n CN] [-l] - list migrations in this DC
+    estimate [-n CN] VM_UUID     - estimate how long a migration would take
+    migrate [-n CN] VM_UUID      - full automatic migration for this instance
+    begin [-n CN] VM_UUID        - begin a migration for this instance
+    sync VM_UUID                 - sync the filesystems of this migration
+    switch VM_UUID               - switch control over to the migrated instance
+    pause VM_UUID                - pause a migration operation
+    watch VM_UUID                - watch an ongoing migration operation
+
+EOF
+    exit 1
+}
+
+
+function check_job_uuid() {
+    local job_uuid=$1
+
+    if [[ -n $job_uuid && $job_uuid =~ ^\{?[A-F0-9a-f]{8}-[A-F0-9a-f]{4}-[A-F0-9a-f]{4}-[A-F0-9a-f]{4}-[A-F0-9a-f]{12}\}?$ ]]; then
+        echo "# Migration ${action} running in job ${job_uuid}"
+    else
+        fatal "Error: ${job_uuid}"
+    fi
+}
+
+
+function migration_get() {
+    local format="%-8s %6s %-8s  %s"
+    local headers="PHASE AGE RUNTIME MESSAGE"
+    local space=" "
+    local vm_uuid=$1
+
+    [[ -z ${vm_uuid} ]] && fatal "get: no instance uuid provided"
+
+    result=$(sdc-vmapi "/migrations/${vm_uuid}?format=raw")
+
+    # Check for vmapi error.
+    message=$($JSON -H message <<< "$result")
+    if [[ -n $message ]]; then
+        fatal "Error: ${message}"
+    fi
+
+    if [[ -n $NOANSI ]]; then
+        format="%-16s %6s %-8s  %s"
+        space=
+    fi
+
+    # Print the migration details.
+    names="source_server_uuid target_server_uuid state created_timestamp runtime automatic error"
+    values=$($JSON -Ha -d '~' \
+            -e "${NODE_FN_HUMANIZE_MS} this.runtime = humanizeMs(this.duration_ms, 1);" \
+            $names <<< "${result}")
+    IFS='~' read -r $names <<< "${values}"
+
+    if [[ -z $target_server_uuid ]]; then
+        target_server_uuid="(none)"
+    fi
+
+    if [[ $state == "successful" ]]; then
+        printf "State        : %s\n" "${GREEN}${state}${NORMAL}"
+    elif [[ $state == "running" ]]; then
+        printf "State        : %s\n" "${BOLD}${state}${NORMAL}"
+    elif [[ $state == "failed" ]]; then
+        printf "State        : %s\n" "${RED}${state}${NORMAL}"
+    else
+        printf "State        : %s\n" "${state}"
+    fi
+    printf "Source server: %s\n" "${source_server_uuid}"
+    printf "Target server: %s\n" "${target_server_uuid}"
+    printf "Created      : %s\n" "${created_timestamp}"
+    printf "Automatic    : %s\n" "${automatic}"
+    printf "Total runtime: %s\n" "${runtime}"
+    mainstate="$state"
+
+    # Print the phase headers.
+    # printf "\n"
+    printf "Phases       :\n"
+    printf "${space}${space}${format}\n" $headers
+
+    progress_fields=$($JSON -H progress_history <<< "${result}" | $JSON -d '~' -a \
+            -e 'if (this.error) { this.message = this.error; }' \
+            -e "${NODE_FN_HUMANIZE_MS} this.runtime = humanizeMs(this.duration_ms, 1); this.age = humanizeMs(new Date() - new Date(this.started_timestamp), 1);" \
+        phase state age runtime message)
+
+    while IFS='~' read -r phase state age runtime message; do
+        if [[ -n $NOANSI ]]; then
+            phase="${phase} [${state}]"
+        fi
+
+        if [[ $state == "successful" ]]; then
+            printf "${GREEN}${CHECKMARK}${NORMAL}${space}${format}\n" "${phase}" "${age}" "${runtime}" "${message}"
+        elif [[ $state == "running" ]]; then
+            printf "${RUNNING}${space}${format}\n" "${phase}" "${age}" "${runtime}" "${message}"
+        elif [[ $state == "paused" ]]; then
+            printf "${PAUSED}${space}${format}\n" "${phase}" "${age}" "${runtime}" "${message}"
+        else
+            printf "${RED}${CROSS}${NORMAL}${space}${format}\n" "${phase}" "${age}" "${runtime}" "${message}"
+        fi
+    done <<< "${progress_fields}"
+
+    printf "\n"
+
+    if [[ $mainstate == "successful" ]]; then
+        printf "Migration finished successfully\n"
+    elif [[ $mainstate == "failed" || -n ${error} ]]; then
+        # error=$($JSON -H error <<< "${result}")
+        printf "${RED}Migration error:${NORMAL} %s\n" "${error}"
+    else
+        printf "Migration ${mainstate}\n"
+    fi
+}
+
+
+function migration_list() {
+    local arg
+    local fields="vm_uuid phase state age runtime"
+    local format="%-36s %8s %10s %6s %7s"
+    local format_success="%-36s %8s ${GREEN}%10s${NORMAL} %6s %7s"
+    local format_failure="%-36s %8s ${RED}%10s${NORMAL} %6s %7s"
+    local headers="UUID PHASE STATE AGE RUNTIME"
+    local longformat
+    local state
+    local server_uuid
+    local url
+
+    # Handle arguments.
+    while [[ $# -gt 0 ]];
+    do
+        arg=$1
+        shift
+
+        case "$arg" in
+            -h|--help)
+                cat <<EOF
+Usage:
+        $0 list [options]
+
+Options:
+
+    -a, --all       List all migrations.
+    -l, --long      Long format - includes original and target server uuids.
+    -n, --cn        Filter to *only* migrations originating from this CN.
+    -s, --state     Filter on this state (any, running, succcessful, failed).
+                    Defaults to state "active", which is any of running,
+                    paused or failed.
+EOF
+                return 1;
+                ;;
+
+            -a|--all)
+                state=all
+                ;;
+
+            -n|--cn)
+                server_uuid=$1
+                shift
+                ;;
+
+            -s|--state)
+                state=$1
+                shift
+                ;;
+
+            -l|--long)
+                longformat="true"
+                fields="${fields} source_server_uuid target_server_uuid error"
+                format="${format} %-36s %-36s %s"
+                format_success="${format_success} %-36s %-36s %s"
+                format_failure="${format_failure} %-36s %-36s %s"
+                headers="${headers} SOURCE_CN TARGET_CN ERROR"
+                ;;
+            *)
+                echo "Ignoring unrecognized list option: $arg" >&2
+                ;;
+        esac
+    done
+
+    if [[ -z ${state} ]]; then
+        state="active"
+    fi
+
+    url="/migrations?format=raw"
+
+    if [[ "${state}" != "all" && "${state}" != "any" ]]; then
+        url="${url}&state=${state}"
+    fi
+
+    if [[ -n ${server_uuid} ]]; then
+        url="${url}&source_server_uuid=${server_uuid}"
+    fi
+
+    # Print the headers.
+    printf "${format}\n" $headers
+
+    # Get migrations and format/output.
+    lines=$(sdc-vmapi "$url" | $JSON -Hga -d '~' \
+            -e "${NODE_FN_HUMANIZE_MS} this.runtime = humanizeMs(this.duration_ms, 1); this.age = humanizeMs(new Date() - new Date(this.created_timestamp), 1);" \
+            $fields)
+    while IFS='~' read -r $fields; do
+        if [[ -z $vm_uuid ]]; then
+            # Ignore empty lines.
+            continue
+        fi
+        if [[ -n $longformat ]]; then
+            if [[ -z $target_server_uuid ]]; then
+                target_server_uuid="(none)"
+            fi
+            if [[ $state == "successful" ]]; then
+                printf "${format_success}\n" "${vm_uuid}" "${phase}" "${state}" "${age}" "${runtime}" "${source_server_uuid}" "${target_server_uuid}" "${error}"
+            elif [[ $state == "paused" || $state == "running" ]]; then
+                printf "${format}\n" "${vm_uuid}" "${phase}" "${state}" "${age}" "${runtime}" "${source_server_uuid}" "${target_server_uuid}" "${error}"
+            else
+                printf "${format_failure}\n" "${vm_uuid}" "${phase}" "${state}" "${age}" "${runtime}" "${source_server_uuid}" "${target_server_uuid}" "${error}"
+            fi
+        else
+            if [[ $state == "successful" ]]; then
+                printf "${format_success}\n" "${vm_uuid}" "${phase}" "${state}" "${age}" "${runtime}"
+            elif [[ $state == "paused" || $state == "running" ]]; then
+                printf "${format}\n" "${vm_uuid}" "${phase}" "${state}" "${age}" "${runtime}"
+            else
+                printf "${format_failure}\n" "${vm_uuid}" "${phase}" "${state}" "${age}" "${runtime}"
+            fi
+        fi
+    done <<< "$lines"
+}
+
+
+function migration_estimate() {
+    local arg
+    local server_uuid
+    local url
+    local vm_uuid
+
+    # Handle arguments.
+    while [[ $# -gt 0 ]];
+    do
+        arg=$1
+        shift
+
+        case "$arg" in
+            -h|--help)
+                cat <<EOF
+Usage:
+        $0 ${action} [options]
+
+Options:
+
+    -n, --cn    The compute node to migrate the instance to.
+EOF
+                return 1
+                ;;
+
+            -n|--cn)
+                server_uuid=$1
+                shift
+                ;;
+            *)
+                if [[  -z $vm_uuid ]]; then
+                    vm_uuid="${arg}"
+                else
+                    echo "Ignoring unrecognized ${action} option: ${arg}" >&2
+                fi
+                ;;
+        esac
+    done
+
+    if [[ -z ${vm_uuid} ]]; then
+        fatal "${action}: no instance uuid provided"
+    fi
+
+    url="/vms/${vm_uuid}?action=migrate&migration_action=${action}"
+    if [[ -n $server_uuid ]]; then
+        url="${url}&override_server_uuid=${server_uuid}"
+    fi
+
+    sdc-vmapi "$url" -X POST | $JSON -q -H
+}
+
+
+function migration_begin() {
+    local arg
+    local server_uuid
+    local url
+    local vm_uuid
+
+    # Handle arguments.
+    while [[ $# -gt 0 ]];
+    do
+        arg=$1
+        shift
+
+        case "$arg" in
+            -h|--help)
+                cat <<EOF
+Usage:
+        $0 ${action} [options]
+
+Options:
+
+    -n, --cn    The compute node to migrate the instance to.
+EOF
+                return 1
+                ;;
+
+            -n|--cn)
+                server_uuid=$1
+                shift
+                ;;
+            *)
+                if [[  -z $vm_uuid ]]; then
+                    vm_uuid="${arg}"
+                else
+                    echo "Ignoring unrecognized ${action} option: ${arg}" >&2
+                fi
+                ;;
+        esac
+    done
+
+    if [[ -z ${vm_uuid} ]]; then
+        fatal "${action}: no instance uuid provided"
+    fi
+
+    url="/vms/${vm_uuid}?action=migrate&migration_action=${action}"
+
+    if [[ -n $server_uuid ]]; then
+        url="${url}&override_server_uuid=${server_uuid}"
+    fi
+
+    if [[ -n $MIGRATION_AUTOMATIC ]]; then
+        url="${url}&migration_automatic=true"
+    fi
+
+    job_uuid=$(sdc-vmapi "$url" -X POST | $JSON -H job_uuid message)
+
+    check_job_uuid "${job_uuid}"
+    migration_watch "${vm_uuid}"
+}
+
+
+function migration_sync() {
+    local vm_uuid=$1
+
+    [[ -z ${vm_uuid} ]] && fatal "${action}: no instance uuid provided"
+
+    local url="/vms/${vm_uuid}?action=migrate&migration_action=${action}"
+
+    job_uuid=$(sdc-vmapi "$url" -X POST | $JSON -H job_uuid message)
+
+    check_job_uuid "${job_uuid}"
+    migration_watch "${vm_uuid}"
+}
+
+
+function migration_switch() {
+    local vm_uuid=$1
+
+    [[ -z ${vm_uuid} ]] && fatal "${action}: no instance uuid provided"
+
+    local url="/vms/${vm_uuid}?action=migrate&migration_action=${action}"
+
+    job_uuid=$(sdc-vmapi "$url" -X POST | $JSON -H job_uuid message)
+
+    check_job_uuid "${job_uuid}"
+    migration_watch "${vm_uuid}"
+}
+
+
+function migration_pause() {
+    local vm_uuid=$1
+
+    [[ -z ${vm_uuid} ]] && fatal "pause: no instance uuid provided"
+
+    local url="/vms/${vm_uuid}?action=migrate&migration_action=pause"
+
+    job_uuid=$(sdc-vmapi "$url" -X POST | $JSON -H job_uuid message)
+
+    check_job_uuid "${job_uuid}"
+    sdc-waitforjob "${job_uuid}"
+}
+
+
+function migration_abort() {
+    local vm_uuid=$1
+
+    [[ -z ${vm_uuid} ]] && fatal "abort: no instance uuid provided"
+
+    local url="/vms/${vm_uuid}?action=migrate&migration_action=abort"
+
+    job_uuid=$(sdc-vmapi "$url" -X POST | $JSON -H job_uuid message)
+
+    check_job_uuid "${job_uuid}"
+    migration_watch "${vm_uuid}"
+}
+
+
+function migration_watch() {
+    local vm_uuid=$1
+    local need_newline=
+
+    [[ -z ${vm_uuid} ]] && fatal "watch: no instance uuid provided"
+
+    # We need to pipe ongoing watch events from vmapi to be able to process
+    # the progress events. The regular 'sdc-vmapi' script will only process the
+    # data all in one go (as it pipes the vmapi data through 'json -q'). We
+    # don't want that behaviour, so we replicate parts of the sdc-vmapi script
+    # and then directly call vmapi (using curl) ourself.
+
+    if [[ -z ${VMAPI_URL} ]]; then
+        # Copied from sdc vmapi wrapper script.
+        ufds_admin_uuid=$(bash /lib/sdc/config.sh -json | $JSON ufds_admin_uuid)
+        sdc_zone=$(vmadm list -H -o tags.smartdc_role,uuid,create_timestamp \
+                -s create_timestamp owner_uuid=${ufds_admin_uuid} | \
+                (grep '^sdc\>' || true) | \
+                tail -1 | awk '{print $2}')
+        if [[ -z "${sdc_zone}" ]]; then
+            fatal "error: $(basename $0): unable to find a 'sdc' core zone on this node"
+        fi
+
+        VMAPI_URL="http://"$($JSON -f "/zones/${sdc_zone}/root/opt/smartdc/sdc/etc/config.json" vmapi_domain)
+    fi
+
+    local url="${VMAPI_URL}/migrations/${vm_uuid}/watch"
+
+    while IFS='~' read type state phase current_progress total_progress human_duration finished_timestamp bandwidth eta message;
+    do
+        if [[ -z $state ]]; then
+            if [[ -n $need_newline ]]; then
+                printf "\n"
+                need_newline=
+            fi
+            break;
+        fi
+
+        if [[ $type == "end" ]]; then
+            if [[ -n $need_newline ]]; then
+                printf "\n"
+                need_newline=
+            fi
+
+            if [[ $state == "failed" ]]; then
+                fatal "Failure: ${message}"
+            fi
+
+            if [[ $state == "successful" ]]; then
+                echo "Migration was successful ${message}"
+            elif [[ $state == "paused" ]]; then
+                if [[ $phase == "begin" ]]; then
+                    echo "OK - ready for migration sync"
+                else
+                    echo "OK - ready for migration sync or migration switch"
+                fi
+            else
+                echo "Migration ${state} ${message}"
+            fi
+            break;
+        fi
+
+        if [[ $type == "error" ]]; then
+            if [[ -n $need_newline ]]; then
+                printf "\n"
+                need_newline=
+            fi
+            fatal "Error: ${message}"
+            continue
+        fi
+
+        if [[ $type != "progress" ]]; then
+            if [[ -n $message ]]; then
+                if [[ -n $need_newline ]]; then
+                    printf "\n"
+                    need_newline=
+                fi
+                printf "${message}\n"
+            fi
+            continue
+        fi
+
+        if [[ -n $message ]]; then
+            if [[ -n $need_newline ]]; then
+                printf "\n"
+                need_newline=
+            fi
+            printf -- " - ${message}\n"
+            continue
+        fi
+
+        percentage=$((current_progress*100/total_progress))
+
+        eta_message=
+        if [[ -n $eta ]]; then
+            eta_message=" (ETA ${eta}) "
+        fi
+
+        printf -- "${CLEARLINE}  - running: %s%%  %s %s %s" "${percentage}" "${bandwidth}" "${eta_message}"
+        if [[ -n $NOANSI ]]; then
+            printf "\n"
+        else
+            need_newline="true"
+        fi
+    done < <(curl ${CURL_OPTS} "${url}" \
+        | $JSON -H -ga -d '~' \
+            -e 'if (this.code && this.message) { this.type = "error"; this.state = "error"; }' \
+            -e "${NODE_FN_HUMANIZE_NETWORK_SPEED} this.bandwidth = humanizeNetworkSpeed(this.transfer_bytes_second);" \
+            -e "${NODE_FN_HUMANIZE_DURATION} this.human_duration = humanizeDuration(this.duration_ms); this.human_eta = humanizeDuration(this.eta_ms);" \
+            type state phase current_progress total_progress human_duration finished_timestamp bandwidth human_eta message)
+}
+
+
+# Handle the migration action.
+action=$1
+
+if [[ -z "${action}" ]]; then
+    usage
+fi
+
+shift
+
+if [[ $action == "--noansi" || $action == "--no-ansi" ]]; then
+    noansi
+    action=$1
+    shift
+fi
+
+case ${action} in
+    -h|--help)
+        usage
+        ;;
+    abort)
+        migration_abort "$@"
+        exit $?
+        ;;
+    begin)
+        migration_begin "$@"
+        exit $?
+        ;;
+    estimate)
+        migration_estimate "$@"
+        exit $?
+        ;;
+    get)
+        migration_get "$@"
+        exit $?
+        ;;
+    list)
+        migration_list "$@"
+        exit $?
+        ;;
+    migrate)
+        MIGRATION_AUTOMATIC="true"
+        action="begin"
+        migration_begin "$@"
+        exit $?
+        ;;
+    pause)
+        migration_pause "$@"
+        exit $?
+        ;;
+    switch)
+        migration_switch "$@"
+        exit $?
+        ;;
+    sync)
+        migration_sync "$@"
+        exit $?
+        ;;
+    watch)
+        migration_watch "$@"
+        exit $?
+        ;;
+    *)
+        echo "Unknown command: ${action}" >&2
+        usage
+        ;;
+esac
+
+exit 2
