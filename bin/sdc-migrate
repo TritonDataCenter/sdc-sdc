@@ -135,6 +135,7 @@ Sub-commands:
     sync VM_UUID                 - sync the filesystems of this migration
     switch VM_UUID               - switch control over to the migrated instance
     pause VM_UUID                - pause a migration operation
+    abort VM_UUID                - abort the migration attempt
     watch VM_UUID                - watch an ongoing migration operation
 
 EOF
@@ -510,6 +511,17 @@ function migration_pause() {
 
 function migration_abort() {
     local vm_uuid=$1
+
+   # Handle the help argument.
+    if [[ $vm_uuid == "-h" || $vm_uuid == "--help" ]]; then
+        cat <<EOF
+Usage:
+        $0 abort vm_uuid
+
+Aborts the migration, leaving the original instance untouched.
+EOF
+        return 1;
+    fi
 
     [[ -z ${vm_uuid} ]] && fatal "abort: no instance uuid provided"
 
