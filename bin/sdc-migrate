@@ -527,7 +527,17 @@ EOF
 
     local url="/vms/${vm_uuid}?action=migrate&migration_action=abort"
 
-    job_uuid=$(sdc-vmapi "$url" -X POST | $JSON -H job_uuid message)
+    local result=$(sdc-vmapi "$url" -X POST)
+
+    # A 200 status code means the migration was aborted, but it didn't need
+    # a job to delete the target instance (as their was no target instance).
+    local status_code=$(echo "$result" | grep '^HTTP' | head -1 | awk '{print $2}')
+    if [[ $status_code == "200" ]]; then
+        echo "Migration was successfully aborted"
+        return 0
+    fi
+
+    local job_uuid=$($JSON -H job_uuid message <<< "$result")
 
     check_job_uuid "${job_uuid}"
     migration_watch "${vm_uuid}"
