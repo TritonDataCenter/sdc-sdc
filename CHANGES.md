@@ -1,8 +1,17 @@
 # sdc (SDC ops core zone) Changelog
 
+## 1.8.2
+
+- TRITON-1721 sdc-migrate needs a cleanup command.
+  Implemented the `sdc-migrate finalize` command.
+
+## 1.8.1
+
+- TRITON-1718 sdc-migrate is missing 'abort' help docs
+
 ## 1.8.0
 
-- TRITON-XXX Add sdc-migrate command to headnode's GZ
+- TRITON-1233 Add sdc-migrate command to headnode's GZ
 
 ## 1.7.1
 

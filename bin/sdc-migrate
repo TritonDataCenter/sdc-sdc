@@ -136,6 +136,7 @@ Sub-commands:
     switch VM_UUID               - switch control over to the migrated instance
     pause VM_UUID                - pause a migration operation
     abort VM_UUID                - abort the migration attempt
+    finalize VM_UUID             - cleanup, removes the original source instance
     watch VM_UUID                - watch an ongoing migration operation
 
 EOF
@@ -544,6 +545,38 @@ EOF
 }
 
 
+function migration_finalize() {
+    local result
+    local url
+    local vm_uuid=$1
+
+   # Handle the help argument.
+    if [[ $vm_uuid == "-h" || $vm_uuid == "--help" ]]; then
+        cat <<EOF
+Usage:
+        $0 finalize vm_uuid
+
+Finalizes the migration. Removes the original source instance and removes the
+migration record. The target instance remains untouched.
+EOF
+        return 1;
+    fi
+
+    if [[ -z ${vm_uuid} ]]; then
+        fatal "${action}: no instance uuid provided"
+    fi
+
+    url="/vms/${vm_uuid}?action=migrate&migration_action=${action}"
+
+    result=$(sdc-vmapi "$url" -X POST | $JSON -q -H)
+    if [[ -z $result ]]; then
+        result="Done - the migration is finished."
+    fi
+
+    echo "$result"
+}
+
+
 function migration_watch() {
     local vm_uuid=$1
     local need_newline=
@@ -593,7 +626,7 @@ function migration_watch() {
             fi
 
             if [[ $state == "successful" ]]; then
-                echo "Migration was successful ${message}"
+                echo "OK - switch was successful"
             elif [[ $state == "paused" ]]; then
                 if [[ $phase == "begin" ]]; then
                     echo "OK - ready for migration sync"
@@ -686,6 +719,10 @@ case ${action} in
         ;;
     estimate)
         migration_estimate "$@"
+        exit $?
+        ;;
+    finalize)
+        migration_finalize "$@"
         exit $?
         ;;
     get)
