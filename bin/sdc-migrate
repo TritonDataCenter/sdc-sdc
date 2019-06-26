@@ -137,6 +137,7 @@ Sub-commands:
     pause VM_UUID                - pause a migration operation
     abort VM_UUID                - abort the migration attempt
     finalize VM_UUID             - cleanup, removes the original source instance
+    rollback VM_UUID             - revert back to the original source instance
     watch VM_UUID                - watch an ongoing migration operation
 
 EOF
@@ -577,6 +578,35 @@ EOF
 }
 
 
+function migration_rollback() {
+    local job_uuid
+    local url
+    local vm_uuid=$1
+
+   # Handle the help argument.
+    if [[ $vm_uuid == "-h" || $vm_uuid == "--help" ]]; then
+        cat <<EOF
+Usage:
+        $0 rollback vm_uuid
+
+Similar to abort. Reverts back to the original migration instance, deletes the
+target instance and removes the migration record. Any filesystem changes made
+in the target instance since the migration switch will be lost.
+EOF
+        return 1;
+    fi
+
+    [[ -z ${vm_uuid} ]] && fatal "rollback: no instance uuid provided"
+
+    url="/vms/${vm_uuid}?action=migrate&migration_action=rollback"
+
+    job_uuid=$(sdc-vmapi "$url" -X POST | $JSON -H job_uuid message)
+
+    check_job_uuid "${job_uuid}"
+    migration_watch "${vm_uuid}"
+}
+
+
 function migration_watch() {
     local vm_uuid=$1
     local need_newline=
@@ -741,6 +771,10 @@ case ${action} in
         ;;
     pause)
         migration_pause "$@"
+        exit $?
+        ;;
+    rollback)
+        migration_rollback "$@"
         exit $?
         ;;
     switch)
