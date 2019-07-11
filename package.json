@@ -28,7 +28,7 @@
         "json": "9.0.3",
         "jsprim": "0.5.1",
         "tabula": "1.4.1",
-        "urclient": "git+https://github.com/joyent/node-urclient.git#2b9f739",
+        "urclient": "1.2.1",
         "vasync": "1.5.0"
     },
     "devDependencies": {
