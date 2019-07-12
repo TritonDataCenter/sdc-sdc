@@ -547,7 +547,9 @@ EOF
 
 
 function migration_finalize() {
+    local message
     local result
+    local status_code
     local url
     local vm_uuid=$1
 
@@ -569,12 +571,17 @@ EOF
 
     url="/vms/${vm_uuid}?action=migrate&migration_action=${action}"
 
-    result=$(sdc-vmapi "$url" -X POST | $JSON -q -H)
-    if [[ -z $result ]]; then
-        result="Done - the migration is finished."
+    result=$(sdc-vmapi "$url" -X POST)
+
+    # A 200 status code means the finalize was successful.
+    status_code=$(echo "$result" | grep '^HTTP' | head -1 | awk '{print $2}')
+    if [[ $status_code == "200" ]]; then
+        message="Done - the migration is finished."
+    else
+        message=$(echo "$result" | $JSON -q -H)
     fi
 
-    echo "$result"
+    echo "$message"
 }
 
 
