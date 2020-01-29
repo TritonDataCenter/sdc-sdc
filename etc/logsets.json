@@ -246,7 +246,6 @@
       "redis",
       "sapi",
       "sdc",
-      "sdcsso",
       "ufds",
       "vmapi",
       "workflow"
