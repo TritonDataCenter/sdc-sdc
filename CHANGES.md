@@ -1,5 +1,14 @@
 # sdc (SDC ops core zone) Changelog
 
+## 1.8.4
+
+- TRITON-2109 sdc-migrate abort should delete the record when successful
+- TRITON-2052 sdc-imgadm import should import from any channel by default
+
+## 1.8.3
+
+- TRITON-1777 sdc-migrate finalize does not output anything on success
+
 ## 1.8.2
 
 - TRITON-1721 sdc-migrate needs a cleanup command.

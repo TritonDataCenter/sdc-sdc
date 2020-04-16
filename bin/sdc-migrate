@@ -6,7 +6,7 @@
 #
 
 #
-# Copyright (c) 2019, Joyent, Inc.
+# Copyright 2020 Joyent, Inc.
 #
 
 #
@@ -663,7 +663,7 @@ function migration_watch() {
             fi
 
             if [[ $state == "successful" ]]; then
-                echo "OK - switch was successful"
+                echo "OK - ${phase} was successful"
             elif [[ $state == "paused" ]]; then
                 if [[ $phase == "begin" ]]; then
                     echo "OK - ready for migration sync"
