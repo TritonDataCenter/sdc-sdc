@@ -15,7 +15,7 @@
         "assert-plus": "0.1.5",
         "ldapjs": "git+https://github.com/mcavage/node-ldapjs.git#f213b3e",
         "mkdirp": "0.3.5",
-        "node-uuid": "1.4.0",
+        "node-uuid": "1.4.8",
         "posix-getopt": "1.1.0",
         "cmdln": "1.2.2",
         "dashdash": "1.7.3",
