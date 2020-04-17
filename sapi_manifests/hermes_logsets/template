@@ -1,0 +1,302 @@
+[
+  {
+    "name": "hagfish_logs",
+    "search_dirs": [ "/var/log/usage" ],
+    "regex": "^/var/log/usage/([0-9]+)-([0-9]+)-([0-9]+)T([0-9]+)\\.log\\.gz$",
+    {{^USE_MANTA_BUCKETS}}
+    "manta_path": "/%u/stor/sdc/usage/%d/%n/#y/#m/#d/#H.log.gz",
+    {{/USE_MANTA_BUCKETS}}
+    {{#USE_MANTA_BUCKETS}}
+    "manta_path": "/%u/buckets/sdc/objects/usage_%d_%n_#y#m#d_#H.log.gz",
+    {{/USE_MANTA_BUCKETS}}
+    "debounce_time": 600,
+    "retain_time": 21600,
+    "date_string": {
+      "y": "$1", "m": "$2", "d": "$3",
+      "H": "$4"
+    },
+    "zones": [
+      "global"
+    ]
+  },
+
+  {
+    "name": "cn_agent_logs",
+    "search_dirs": [ "/var/log/cn-agent" ],
+    "regex": "^/var/log/cn-agent/cn-agent_([0-9a-zA-Z-]+)_([0-9]+)-([0-9]+)-([0-9]+)T([0-9]+):([0-9]+):([0-9]+)\\.log$",
+    {{^USE_MANTA_BUCKETS}}
+    "manta_path": "/%u/stor/logs/%d/cn-agent/#y/#m/#d/#H/$1.log",
+    {{/USE_MANTA_BUCKETS}}
+    {{#USE_MANTA_BUCKETS}}
+    "manta_path": "/%u/buckets/logs/objects/%d_cn-agent_#y#m#d_#H_$1.log",
+    {{/USE_MANTA_BUCKETS}}
+    "date_string": {
+      "y": "$2", "m": "$3", "d": "$4",
+      "H": "$5", "M": "$6", "S": "$7"
+    },
+    "date_adjustment": "-1H",
+    "debounce_time": 600,
+    "retain_time": 86400,
+    "zones": [
+      "global"
+    ]
+  },
+  {
+    "name": "cn_agent_task_logs",
+    "search_dirs": [ "/var/log/cn-agent" ],
+    "regex": "^/var/log/cn-agent/cn-agent-tasks_([0-9a-zA-Z-]+)_([0-9]+)-([0-9]+)-([0-9]+)T([0-9]+):([0-9]+):([0-9]+)\\.log$",
+    {{^USE_MANTA_BUCKETS}}
+    "manta_path": "/%u/stor/logs/%d/cn-agent/#y/#m/#d/#H/$1-tasks.log",
+    {{/USE_MANTA_BUCKETS}}
+    {{#USE_MANTA_BUCKETS}}
+    "manta_path": "/%u/buckets/logs/objects/%d_cn-agent_#y#m#d_#H_$1-tasks.log",
+    {{/USE_MANTA_BUCKETS}}
+    "date_string": {
+      "y": "$2", "m": "$3", "d": "$4",
+      "H": "$5", "M": "$6", "S": "$7"
+    },
+    "date_adjustment": "-1H",
+    "debounce_time": 600,
+    "retain_time": 86400,
+    "zones": [
+      "global"
+    ]
+  },
+
+  {
+    "name": "vm_agent_logs",
+    "search_dirs": [ "/var/log/vm-agent" ],
+    "regex": "^/var/log/vm-agent/vm-agent_([0-9a-zA-Z-]+)_([0-9]+)-([0-9]+)-([0-9]+)T([0-9]+):([0-9]+):([0-9]+)\\.log$",
+    {{^USE_MANTA_BUCKETS}}
+    "manta_path": "/%u/stor/logs/%d/vm-agent/#y/#m/#d/#H/$1.log",
+    {{/USE_MANTA_BUCKETS}}
+    {{#USE_MANTA_BUCKETS}}
+    "manta_path": "/%u/buckets/logs/objects/%d_vm-agent_#y#m#d_#H_$1.log",
+    {{/USE_MANTA_BUCKETS}}
+    "date_string": {
+      "y": "$2", "m": "$3", "d": "$4",
+      "H": "$5", "M": "$6", "S": "$7"
+    },
+    "date_adjustment": "-1H",
+    "debounce_time": 600,
+    "retain_time": 86400,
+    "zones": [
+      "global"
+    ]
+  },
+
+  {
+    "name": "net_agent_logs",
+    "search_dirs": [ "/var/log/net-agent" ],
+    "regex": "^/var/log/net-agent/net-agent_([0-9a-zA-Z-]+)_([0-9]+)-([0-9]+)-([0-9]+)T([0-9]+):([0-9]+):([0-9]+)\\.log$",
+    {{^USE_MANTA_BUCKETS}}
+    "manta_path": "/%u/stor/logs/%d/net-agent/#y/#m/#d/#H/$1.log",
+    {{/USE_MANTA_BUCKETS}}
+    {{#USE_MANTA_BUCKETS}}
+    "manta_path": "/%u/buckets/logs/objects/%d_net-agent_#y#m#d_#H_$1.log",
+    {{/USE_MANTA_BUCKETS}}
+    "date_string": {
+      "y": "$2", "m": "$3", "d": "$4",
+      "H": "$5", "M": "$6", "S": "$7"
+    },
+    "date_adjustment": "-1H",
+    "debounce_time": 600,
+    "retain_time": 86400,
+    "zones": [
+      "global"
+    ]
+  },
+
+  {
+    "name": "firewaller_logs",
+    "search_dirs": [ "/var/log/sdc/upload" ],
+    "regex": "^/var/log/sdc/upload/firewaller_([0-9a-zA-Z-]+)_([0-9]+)-([0-9]+)-([0-9]+)T([0-9]+):([0-9]+):([0-9]+)\\.log$",
+    {{^USE_MANTA_BUCKETS}}
+    "manta_path": "/%u/stor/logs/%d/firewaller/#y/#m/#d/#H/$1.log",
+    {{/USE_MANTA_BUCKETS}}
+    {{#USE_MANTA_BUCKETS}}
+    "manta_path": "/%u/buckets/logs/objects/%d_firewaller_#y#m#d_#H_$1.log",
+    {{/USE_MANTA_BUCKETS}}
+    "date_string": {
+      "y": "$2", "m": "$3", "d": "$4",
+      "H": "$5", "M": "$6", "S": "$7"
+    },
+    "date_adjustment": "-1H",
+    "debounce_time": 600,
+    "retain_time": 86400,
+    "zones": [
+      "global"
+    ]
+  },
+  {
+    "name": "fwadm_logs",
+    "search_dirs": [ "/var/log/fw" ],
+    "regex": "^/var/log/fw/fwadm_([0-9a-zA-Z-]+)_([0-9]+)-([0-9]+)-([0-9]+)T([0-9]+):([0-9]+):([0-9]+)\\.log$",
+    {{^USE_MANTA_BUCKETS}}
+    "manta_path": "/%u/stor/logs/%d/fwadm/#y/#m/#d/#H/$1.log",
+    {{/USE_MANTA_BUCKETS}}
+    {{#USE_MANTA_BUCKETS}}
+    "manta_path": "/%u/buckets/logs/objects/%d_fwadm_#y#m#d_#H_$1.log",
+    {{/USE_MANTA_BUCKETS}}
+    "date_string": {
+      "y": "$2", "m": "$3", "d": "$4",
+      "H": "$5", "M": "$6", "S": "$7"
+    },
+    "date_adjustment": "-1H",
+    "debounce_time": 600,
+    "retain_time": 86400,
+    "zones": [
+      "global"
+    ]
+  },
+  {
+    "name": "vmadm_logs",
+    "search_dirs": [ "/var/log/vm" ],
+    "regex": "^/var/log/vm/vmadm_([0-9a-zA-Z-]+)_([0-9]+)-([0-9]+)-([0-9]+)T([0-9]+):([0-9]+):([0-9]+)\\.log$",
+    {{^USE_MANTA_BUCKETS}}
+    "manta_path": "/%u/stor/logs/%d/vmadm/#y/#m/#d/#H/$1.log",
+    {{/USE_MANTA_BUCKETS}}
+    {{#USE_MANTA_BUCKETS}}
+    "manta_path": "/%u/buckets/logs/objects/%d_vmadm_#y#m#d_#H_$1.log",
+    {{/USE_MANTA_BUCKETS}}
+    "date_string": {
+      "y": "$2", "m": "$3", "d": "$4",
+      "H": "$5", "M": "$6", "S": "$7"
+    },
+    "date_adjustment": "-1H",
+    "debounce_time": 600,
+    "retain_time": 86400,
+    "zones": [
+      "global"
+    ]
+  },
+  {
+    "name": "vmadmd_logs",
+    "search_dirs": [ "/var/log/vm" ],
+    "regex": "^/var/log/vm/vmadmd_([0-9a-zA-Z-]+)_([0-9]+)-([0-9]+)-([0-9]+)T([0-9]+):([0-9]+):([0-9]+)\\.log$",
+    {{^USE_MANTA_BUCKETS}}
+    "manta_path": "/%u/stor/logs/%d/vmadmd/#y/#m/#d/#H/$1.log",
+    {{/USE_MANTA_BUCKETS}}
+    {{#USE_MANTA_BUCKETS}}
+    "manta_path": "/%u/buckets/logs/objects/%d_vmadmd_#y#m#d_#H_$1.log",
+    {{/USE_MANTA_BUCKETS}}
+    "date_string": {
+      "y": "$2", "m": "$3", "d": "$4",
+      "H": "$5", "M": "$6", "S": "$7"
+    },
+    "date_adjustment": "-1H",
+    "debounce_time": 600,
+    "retain_time": 86400,
+    "zones": [
+      "global"
+    ]
+  },
+  {
+    "name": "vminfod_logs",
+    "search_dirs": [ "/var/log/vm" ],
+    "regex": "^/var/log/vm/vminfod_([0-9a-zA-Z-]+)_([0-9]+)-([0-9]+)-([0-9]+)T([0-9]+):([0-9]+):([0-9]+)\\.log$",
+    {{^USE_MANTA_BUCKETS}}
+    "manta_path": "/%u/stor/logs/%d/vminfod/#y/#m/#d/#H/$1.log",
+    {{/USE_MANTA_BUCKETS}}
+    {{#USE_MANTA_BUCKETS}}
+    "manta_path": "/%u/buckets/logs/objects/%d_vminfod_#y#m#d_#H_$1.log",
+    {{/USE_MANTA_BUCKETS}}
+    "date_string": {
+      "y": "$2", "m": "$3", "d": "$4",
+      "H": "$5", "M": "$6", "S": "$7"
+    },
+    "date_adjustment": "-1H",
+    "debounce_time": 600,
+    "retain_time": 86400,
+    "zones": [
+      "global"
+    ]
+  },
+  {
+    "name": "sdcadm_logs",
+    "search_dirs": [ "/var/log/sdcadm" ],
+    "regex": "^/var/log/sdcadm/sdcadm_([0-9a-zA-Z-]+)_([0-9]+)-([0-9]+)-([0-9]+)T([0-9]+):([0-9]+):([0-9]+)\\.log$",
+    {{^USE_MANTA_BUCKETS}}
+    "manta_path": "/%u/stor/logs/%d/sdcadm/#y/#m/#d/#H/$1.log",
+    {{/USE_MANTA_BUCKETS}}
+    {{#USE_MANTA_BUCKETS}}
+    "manta_path": "/%u/buckets/logs/objects/%d_sdcadm_#y#m#d_#H_$1.log",
+    {{/USE_MANTA_BUCKETS}}
+    "date_string": {
+      "y": "$2", "m": "$3", "d": "$4",
+      "H": "$5", "M": "$6", "S": "$7"
+    },
+    "date_adjustment": "-1H",
+    "debounce_time": 600,
+    "retain_time": 86400,
+    "zones": [
+      "global"
+    ]
+  },
+  {
+    "name": "sdc_zone_logs",
+    "search_dirs": [ "/var/log/sdc/upload" ],
+    "regex": "^/var/log/sdc/upload/([a-zA-Z0-9-]+)_([0-9a-f-]+)_([0-9]+)-([0-9]+)-([0-9]+)T([0-9]+):00:00\\.log$",
+    "date_string": {
+      "y": "$3", "m": "$4", "d": "$5",
+      "H": "$6"
+    },
+    "date_adjustment": "-1H",
+    {{^USE_MANTA_BUCKETS}}
+    "manta_path": "/%u/stor/logs/%d/$1/#y/#m/#d/#H/$2.log",
+    {{/USE_MANTA_BUCKETS}}
+    {{#USE_MANTA_BUCKETS}}
+    "manta_path": "/%u/buckets/logs/objects/%d_$1_#y#m#d_#H_$2.log",
+    {{/USE_MANTA_BUCKETS}}
+    "debounce_time": 600,
+    "retain_time": 86400,
+    "zones": [
+      "adminui",
+      "amon",
+      "amonredis",
+      "binder",
+      "cloudapi",
+      "cmon",
+      "cnapi",
+      "cns",
+      "dhcpd",
+      "docker",
+      "fwapi",
+      "imgapi",
+      "mahi",
+      "manatee",
+      "manta",
+      "moray",
+      "napi",
+      "papi",
+      "portolan",
+      "rabbitmq",
+      "redis",
+      "sapi",
+      "sdc",
+      "ufds",
+      "vmapi",
+      "workflow"
+    ]
+  },
+  {
+    "name": "sdc_manatee_dumps",
+    "search_dirs": [ "/var/spool/pg_dumps" ],
+    "regex": "^/var/spool/pg_dumps/([0-9]+)/([0-9]+)/([0-9]+)/([0-9]+)/(.+)\\.gz$",
+    "date_string": {
+      "y": "$1", "m": "$2", "d": "$3",
+      "H": "$4"
+    },
+    {{^USE_MANTA_BUCKETS}}
+    "manta_path": "/%u/stor/sdc/manatee_backups/%d/#y/#m/#d/#H/$5.gz",
+    {{/USE_MANTA_BUCKETS}}
+    {{#USE_MANTA_BUCKETS}}
+    "manta_path": "/%u/buckets/sdc/objects/manatee_backups_%d_#y#m#d_#H_$5.gz",
+    {{/USE_MANTA_BUCKETS}}
+    "debounce_time": 600,
+    "retain_time": 0,
+    "zones": [
+      "manatee"
+    ]
+  }
+]
