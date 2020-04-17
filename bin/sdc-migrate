@@ -116,6 +116,10 @@ function fatal() {
     exit 1
 }
 
+function warn() {
+    echo "Warning: $@" >&2
+}
+
 
 function usage() {
     cat <<EOF
@@ -279,6 +283,7 @@ EOF
             # state=all is deprecated - here for backwards compatibility
             -a|--all)
                 state=all
+                warn "argument ${arg} is deprecated"
                 ;;
 
             -n|--cn)
