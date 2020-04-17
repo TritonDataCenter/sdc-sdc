@@ -116,6 +116,10 @@ function fatal() {
     exit 1
 }
 
+function warn() {
+    echo "Warning: $@" >&2
+}
+
 
 function usage() {
     cat <<EOF
@@ -269,18 +273,17 @@ Usage:
 
 Options:
 
-    -a, --all       List all migrations.
     -l, --long      Long format - includes original and target server uuids.
     -n, --cn        Filter to *only* migrations originating from this CN.
-    -s, --state     Filter on this state (any, running, succcessful, failed).
-                    Defaults to state "active", which is any of running,
-                    paused or failed.
+    -s, --state     Filter on this state (paused, running, succcessful, failed).
 EOF
                 return 1;
                 ;;
 
+            # state=all is deprecated - here for backwards compatibility
             -a|--all)
                 state=all
+                warn "argument ${arg} is deprecated"
                 ;;
 
             -n|--cn)
