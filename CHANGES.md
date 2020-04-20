@@ -1,5 +1,9 @@
 # sdc (SDC ops core zone) Changelog
 
+## 1.8.6
+
+- TRITON-2112 update sdc-events to exclude virtual servers
+
 ## 1.8.5
 
 - TRITON-2111 update sdc-events to include volapi logs
