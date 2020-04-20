@@ -12,7 +12,8 @@
 	url = https://github.com/joyent/sdc-scripts.git
 [submodule "deps/hermes"]
 	path = deps/hermes
-	url = https://github.com/joyent/sdc-hermes.git#14c9205bf12b15513aeb02a783c8ef1a415dd887
+	url = https://github.com/joyent/sdc-hermes.git
+	branch = LAB-516
 [submodule "deps/sdc-napi-ufds-watcher"]
 	path = deps/sdc-napi-ufds-watcher
 	url = https://github.com/joyent/sdc-napi-ufds-watcher.git
