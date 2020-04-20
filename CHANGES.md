@@ -1,5 +1,9 @@
 # sdc (SDC ops core zone) Changelog
 
+## 1.8.5
+
+- TRITON-2111 update sdc-events to include volapi logs
+
 ## 1.8.4
 
 - TRITON-2109 sdc-migrate abort should delete the record when successful
