@@ -1,21 +1,5 @@
 [
   {
-    "name": "hagfish_logs",
-    "search_dirs": [ "/var/log/usage" ],
-    "regex": "^/var/log/usage/([0-9]+)-([0-9]+)-([0-9]+)T([0-9]+)\\.log\\.gz$",
-    "manta_path": "/%u/stor/sdc/usage/%d/%n/#y/#m/#d/#H.log.gz",
-    "debounce_time": 600,
-    "retain_time": 21600,
-    "date_string": {
-      "y": "$1", "m": "$2", "d": "$3",
-      "H": "$4"
-    },
-    "zones": [
-      "global"
-    ]
-  },
-
-  {
     "name": "cn_agent_logs",
     "search_dirs": [ "/var/log/cn-agent" ],
     "regex": "^/var/log/cn-agent/cn-agent_([0-9a-zA-Z-]+)_([0-9]+)-([0-9]+)-([0-9]+)T([0-9]+):([0-9]+):([0-9]+)\\.log$",
@@ -167,38 +151,6 @@
     "search_dirs": [ "/var/log/sdcadm" ],
     "regex": "^/var/log/sdcadm/sdcadm_([0-9a-zA-Z-]+)_([0-9]+)-([0-9]+)-([0-9]+)T([0-9]+):([0-9]+):([0-9]+)\\.log$",
     "manta_path": "/%u/stor/logs/%d/sdcadm/#y/#m/#d/#H/$1.log",
-    "date_string": {
-      "y": "$2", "m": "$3", "d": "$4",
-      "H": "$5", "M": "$6", "S": "$7"
-    },
-    "date_adjustment": "-1H",
-    "debounce_time": 600,
-    "retain_time": 86400,
-    "zones": [
-      "global"
-    ]
-  },
-  {
-    "name": "provisioner_task_logs",
-    "search_dirs": [ "/var/log/provisioner" ],
-    "regex": "^/var/log/provisioner/provisioner_tasks_([0-9a-zA-Z-]+)_([0-9]+)-([0-9]+)-([0-9]+)T([0-9]+):([0-9]+):([0-9]+)\\.log$",
-    "manta_path": "/%u/stor/logs/%d/provisioner/#y/#m/#d/#H/$1_tasks.log",
-    "date_string": {
-      "y": "$2", "m": "$3", "d": "$4",
-      "H": "$5", "M": "$6", "S": "$7"
-    },
-    "date_adjustment": "-1H",
-    "debounce_time": 600,
-    "retain_time": 86400,
-    "zones": [
-      "global"
-    ]
-  },
-  {
-    "name": "provisioner_logs",
-    "search_dirs": [ "/var/log/provisioner" ],
-    "regex": "^/var/log/provisioner/provisioner_([0-9a-zA-Z-]+)_([0-9]+)-([0-9]+)-([0-9]+)T([0-9]+):([0-9]+):([0-9]+)\\.log$",
-    "manta_path": "/%u/stor/logs/%d/provisioner/#y/#m/#d/#H/$1.log",
     "date_string": {
       "y": "$2", "m": "$3", "d": "$4",
       "H": "$5", "M": "$6", "S": "$7"

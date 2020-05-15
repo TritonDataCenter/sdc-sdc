@@ -78,6 +78,33 @@ TODO: document appropriate of:
     sdc-role
 
 
+# Uploading SDC service API data to Manta
+
+IMPORTANT: This functionality is deprecated and slated for future removal. Do
+not write new tools that depend on these data dumps. Existing tools should be
+changed whenever possible to use other sources of data. See also TRITON-1076.
+
+The DC's 'sdc' zone (there should be only one) handles taking hourly dumps
+of most of the SDC API's models and uploading those to Manta. Here is how
+that works (see TOOLS-278 for background):
+
+- Every hourly cron job (at the top of the hour) dumps the output of
+  the various APIs to "/var/log/sdc-data/*.json":
+
+        0 * * * * /opt/smartdc/sdc/tools/dump-hourly-sdc-data.sh >>/var/log/dump-hourly-sdc-data.log 2>&1
+
+  That script will drop dump files more than a week old to ensure these don't
+  grow to consume all space.
+
+- At 10 minutes after the hour, a separate cron job uploads those dumps to Manta
+  **if the DC is configured with a Manta to use**:
+
+        10 * * * * /opt/smartdc/sdc/tools/upload-sdc-data.sh >>/var/log/upload-sdc-data.log 2>&1
+
+- These script's log files are monitored with an Amon log-scan alarm for
+  'fatal error'
+
+
 # Uploading SDC log data to Manta
 
 TODO: describe how this works and where pieces are uploaded.
