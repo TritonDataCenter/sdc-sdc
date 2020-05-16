@@ -7,7 +7,7 @@
 #
 
 #
-# Copyright (c) 2014, Joyent, Inc.
+# Copyright 2020 Joyent, Inc.
 #
 
 export PS4='[\D{%FT%TZ}] ${BASH_SOURCE}:${LINENO}: ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
@@ -42,7 +42,6 @@ crontab=/tmp/$role-$$.cron
 crontab -l > $crontab
 [[ $? -eq 0 ]] || fatal "Unable to write to $crontab"
 echo '' >>$crontab
-echo '* * * * * /opt/smartdc/sdc/tools/dump-minutely-sdc-data.sh >>/var/log/dump-minutely-sdc-data.log 2>&1' >>$crontab
 echo '0 * * * * /opt/smartdc/sdc/tools/dump-hourly-sdc-data.sh >>/var/log/dump-hourly-sdc-data.log 2>&1' >>$crontab
 echo '10 * * * * /opt/smartdc/sdc/tools/upload-sdc-data.sh >>/var/log/upload-sdc-data.log 2>&1' >>$crontab
 echo '0 * * * * /opt/smartdc/sdc/bin/sdc-amonadm update >>/var/log/update-probes-hourly.log 2>&1' >>$crontab
