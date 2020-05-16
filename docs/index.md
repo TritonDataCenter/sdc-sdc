@@ -10,7 +10,7 @@ apisections:
 -->
 
 <!--
-    Copyright (c) 2018, Joyent, Inc.
+    Copyright 2020 Joyent, Inc.
 -->
 
 # SDC tools/ops zone
@@ -88,10 +88,9 @@ The DC's 'sdc' zone (there should be only one) handles taking hourly dumps
 of most of the SDC API's models and uploading those to Manta. Here is how
 that works (see TOOLS-278 for background):
 
-- Every minute and hourly cron job (at the top of the hour) dumps the output of
+- Every hourly cron job (at the top of the hour) dumps the output of
   the various APIs to "/var/log/sdc-data/*.json":
 
-        * * * * * /opt/smartdc/sdc/tools/dump-minutely-sdc-data.sh >>/var/log/dump-minutely-sdc-data.log 2>&1
         0 * * * * /opt/smartdc/sdc/tools/dump-hourly-sdc-data.sh >>/var/log/dump-hourly-sdc-data.log 2>&1
 
   That script will drop dump files more than a week old to ensure these don't
@@ -104,7 +103,6 @@ that works (see TOOLS-278 for background):
 
 - These script's log files are monitored with an Amon log-scan alarm for
   'fatal error'
-
 
 
 # Uploading SDC log data to Manta

@@ -10,7 +10,7 @@ apisections:
 -->
 
 <!--
-    Copyright (c) 2014, Joyent, Inc.
+    Copyright 2020 Joyent, Inc.
 -->
 
 # About This Document
@@ -77,7 +77,6 @@ running.
 | ---------- | ---------- | ------------- | ------ | --------------- |
 | check-amqp-online | cmd | /opt/smartdc/sdc/bin/sdc-check-amqp | Script was not able to connect to AMQP and it returned a non-zero exit code | Review the rabbitmq service zones. SMF service should be running. Use `sdc-healthcheck` to make sure all services that depend on AMQP are running correctly |
 | dump-hourly-sdc-data error | log-scan | Pattern match "error" on file "/var/log/dump-hourly-sdc-data.log" | Hourly SDC data dump script has failed | Review log file for more context on the cause of the error |
-| dump-minutely-sdc-data error | log-scan | Pattern match "error" on file "/var/log/dump-minutely-sdc-data.log" | Minutely SDC data dump script has failed | Review log file for more context on the cause of the error |
 | upload-sdc-data error | log-scan | Pattern match "error" on file "/var/log/upload-sdc-data.log" | Upload SDC data dump script has failed | Review log file for more context on the cause of the error |
 | hermes log warn/error/fatal | bunyan-log-scan | Pattern match {"level": "warn or error or fatal"} | Hermes service has logged a warn or error or fatal event | Review the `hermes` SMF service logs for more context on the log events |
 

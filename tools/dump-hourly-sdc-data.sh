@@ -6,7 +6,7 @@
 #
 
 #
-# Copyright (c) 2019, Joyent, Inc.
+# Copyright 2020 Joyent, Inc.
 #
 
 #
@@ -108,71 +108,9 @@ else
     done
 fi
 
-#
-# Note: This vmadm_vms dump can be very expensive on larger DCs since it runs at
-# least 2 commands on every single CN in the DC and then does a relatively
-# expensive CNAPI query.
-#
-echo "Dump vmadm VM info on all CNs"
-# 1. Dump on each CN.
-sdc-oneachnode -a -q '
-    if [[ -d /opt/smartdc/agents/lib ]]; then
-        vmadm lookup -j >/var/tmp/vmadm_vms.json;
-    else
-        echo "no vmadm lookup -j on 6.5";
-    fi'
-if [ $? -ne 0  ]; then
-    echo "$0: error: Dumping 'vmadm lookup -j' on nodes" >&2
-fi
-# 2. Put that file to the headnode.
-PUTDIR=/var/tmp/vmadm_vms.$$
-rm -rf $PUTDIR
-mkdir -p $PUTDIR
-sdc-oneachnode -a -q -d $PUTDIR -p /var/tmp/vmadm_vms.json
-if [ $? -ne 0  ]; then
-    echo "$0: error: Getting 'vmadm lookup -j' dumps from nodes" >&2
-fi
-# 3. Massage the data from each expected CN into newline-separated JSON
-#   (one line per VM).
-DUMPFILE=$DUMPDIR/vmadm_vms-$TIMESTAMP.json
-rm -f $DUMPFILE
-nodeerrs=""
-sdc-cnapi /servers?extras=sysinfo \
-                | $JSON -H -c 'this.sysinfo["SDC Version"]' -a uuid \
-                | while read node; do
-    f=$PUTDIR/$node
-    if [[ ! -s $f ]]; then
-        nodeerrs="$nodeerrs $node"
-        continue
-    fi
-    $JSON -f $f -e "this.cn=\"$node\"" -e "$sanitizeVmJson" \
-        -a -o jsony-0 >>$DUMPFILE
-done
-if [[ -n "$nodeerrs" ]]; then
-    echo "$0: error: Getting vmadm vms from some nodes: $nodeerrs" >&2
-fi
-rm -rf $PUTDIR
-
 echo "Dump CNAPI servers"
 sdc-cnapi /servers?extras=all >$DUMPDIR/cnapi_servers-$TIMESTAMP.json
 [ $? -ne 0 ] && echo "$0: error: Dumping CNAPI servers failed" >&2
-
-echo "Dump PAPI packages"
-papi_domain=$($JSON -f /opt/smartdc/sdc/etc/config.json papi_domain)
-if [[ -n "$papi_domain" ]]; then
-    # We dump as a one-package-per-line json stream. This scales up
-    # to many packages better.
-    echo "Dump PAPI packages"
-    CURL_OPTS="--connect-timeout 10 -sS -H accept:application/json"
-    curl ${CURL_OPTS} --url "http://$papi_domain/packages" \
-        | $JSON -Ha -o jsony-0 \
-        >$DUMPDIR/papi_packages-$TIMESTAMP.json
-    [ $? -ne 0 ] && echo "$0: error: Dumping PAPI packages failed" >&2
-fi
-
-echo "Dump NAPI networks"
-sdc-napi /networks >$DUMPDIR/napi_networks-$TIMESTAMP.json
-[ $? -ne 0 ] && echo "$0: error: Dumping NAPI networks failed" >&2
 
 ls -al $DUMPDIR/*$TIMESTAMP*
 

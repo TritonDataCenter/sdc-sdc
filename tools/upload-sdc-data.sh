@@ -6,7 +6,7 @@
 #
 
 #
-# Copyright (c) 2014, Joyent, Inc.
+# Copyright 2020 Joyent, Inc.
 #
 
 #
@@ -85,7 +85,6 @@ echo "MANTA_URL: $MANTA_URL"
 #   $thing-$timestamp.$ext
 # to:
 #   /$SDC_MANTA_USER/stor/sdc/$thing/$dcname/YYYY/MM/DD/HH/$thing-$timestamp.$ext
-currhourpath=$(date -d "@$(date -u "+%s")" "+%Y/%m/%d/%H")
 dcname=$($JSON -f /opt/smartdc/sdc/etc/config.json datacenter_name)
 for path in $(ls $DUMPDIR/*-*.*)
 do
@@ -108,14 +107,7 @@ do
         ct_opt="-H \"Content-Type: $content_type\""
     fi
     mput -H "Content-Type: $content_type" -f $path $mpath
-
-    # *Don't* want to delete the last one if it is a "updated more than once
-    # per hour" dump file. We could either hardcode that list or have an
-    # indicator in the "$thing". We'll use the latter: if '$thing' ends with
-    # "_minutely".
-    if [[ "${thing:(-9)}" != "_minutely" || "$currhourpath" != "$timepath" ]]; then
-        rm $path
-    fi
+    rm $path
 done
 
 END=$(date +%s)
