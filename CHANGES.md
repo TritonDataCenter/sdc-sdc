@@ -1,5 +1,11 @@
 # sdc (SDC ops core zone) Changelog
 
+## 1.8.7
+
+- TRITON-2155 sdc dumps for CNAPI and VMAPI failed due to Manta SSL certificate error
+- TRITON-2132 sdc should stop creating and uploading extracts for metering purpose
+- TRITON-2128 Update deps/hermes to stop uploading empty log files
+
 ## 1.8.6
 
 - TRITON-2112 update sdc-events to exclude virtual servers
