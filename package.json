@@ -6,7 +6,7 @@
     "private": true,
     "dependencies": {
         "sdc-clients": "8.1.2",
-        "amonadm": "git+https://github.com/joyent/sdc-amonadm.git#v1.0.1",
+        "amonadm": "git+https://github.com/joyent/sdc-amonadm.git#v1.0.2",
         "smartdc": "7.6.0",
         "manta": "5.2.1",
         "moray": "git+https://github.com/joyent/node-moray.git#005d145",
