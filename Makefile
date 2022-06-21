@@ -27,7 +27,7 @@ PERCENT		:= %
 
 ifeq ($(shell uname -s),SunOS)
 	# minimal-64-lts@21.4.0
-	NODE_PREBUILT_IMAGE=18b094b0-eb01-11e5-80c1-175dac7ddf02
+	NODE_PREBUILT_IMAGE=a7199134-7e94-11ec-be67-db6f482136c2
 	NODE_PREBUILT_VERSION=v6.17.1
 	NODE_PREBUILT_TAG=gz
 endif
