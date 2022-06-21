@@ -11,22 +11,23 @@ apisections:
 
 <!--
     Copyright 2020 Joyent, Inc.
+    Copyright 2022 MNX Cloud, Inc.
 -->
 
-# SDC tools/ops zone
+## Triton tools/ops zone
 
-This repository holds the code for the 'sdc' core SmartDataCenter zone.
+This repository holds the code for the 'sdc' core Triton zone. Triton was
+formerly named SmartDataCenter, or "SDC", thus the origin of the command names.
 This document will briefly introduce those tools and also give a general
-overview of the various APIs and systems in SDC.
+overview of the various APIs and systems in Triton.
 
-
-# Tools
+## Tools
 
 As a rule all (most) tools are prefixed with 'sdc-' to avoid name conflicts,
 make the scope obvious, and to facilitate discovery in the shell via
 `sdc-<TAB>`.
 
-There are a number of APIs in SDC and most of them have tools to facilitate
+There are a number of APIs in Triton and most of them have tools to facilitate
 using them from the command line. Typically those are in two categories:
 (a) A raw tool that just wraps calling the API and does minimal massaging of
 the response. For the HTTP APIs, these raw tools are typically a light wrapper
@@ -52,12 +53,11 @@ administrator tool naming tradition).
 In addition there are a number of other tools not directly associated with
 an API in the DC:
 
-| Tool           | Description                                               |
-| -------------- | --------------------------------------------------------- |
-| joyent-imgadm  | Joyent Images (images.joyent.com)                         |
-| updates-imgadm | SDC Updates (updates.joyent.com)                          |
-| sdc-req        | Search for a request UUID on all the SDC application logs |
-
+| Tool           | Description                                                  |
+| -------------- | ------------------------------------------------------------ |
+| images-imgadm  | SmartOS Images (images.smartos.org)                          |
+| updates-imgadm | Triton Updates (updates.tritondatacenter.com)                |
+| sdc-req        | Search for a request UUID on all the Triton application logs |
 
 TODO: document appropriate of:
 
@@ -77,8 +77,7 @@ TODO: document appropriate of:
     sdc-image-sync           sdc-restore
     sdc-role
 
-
-# Uploading SDC service API data to Manta
+## Uploading SDC service API data to Manta
 
 IMPORTANT: This functionality is deprecated and slated for future removal. Do
 not write new tools that depend on these data dumps. Existing tools should be
@@ -104,14 +103,11 @@ that works (see TOOLS-278 for background):
 - These script's log files are monitored with an Amon log-scan alarm for
   'fatal error'
 
-
-# Uploading SDC log data to Manta
+## Uploading SDC log data to Manta
 
 TODO: describe how this works and where pieces are uploaded.
 
-
-
-# Operators Guide
+## Operators Guide
 
 ## HOWTO: Configure SDC to use a Manta
 
@@ -161,7 +157,6 @@ to the headnode GZ, e.g. to "/var/tmp/mykey.id_rsa" and
     sdc-useradm add-key -n "$datacenter_name sdc key" admin $keypath.pub
 
 (TODO: there should be a 'sdcadm' tool for this.)
-
 
 **Step 2 must manually be set** by:
 
