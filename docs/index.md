@@ -14,7 +14,7 @@ apisections:
     Copyright 2022 MNX Cloud, Inc.
 -->
 
-## Triton tools/ops zone
+# Triton tools/ops zone
 
 This repository holds the code for the 'sdc' core Triton zone. Triton was
 formerly named SmartDataCenter, or "SDC", thus the origin of the command names.
