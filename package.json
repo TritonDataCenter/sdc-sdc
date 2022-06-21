@@ -1,16 +1,16 @@
 {
     "name": "sdc",
     "description": "SmartDataCenter 'sdc' zone to hold ops/admin tools",
-    "version": "1.8.8",
-    "author": "Joyent (joyent.com)",
+    "version": "1.9.0",
+    "author": "MNX Cloud (mnx.io)",
     "private": true,
     "dependencies": {
-        "sdc-clients": "8.1.2",
-        "amonadm": "git+https://github.com/joyent/sdc-amonadm.git#v1.0.2",
+        "sdc-clients": "13.0.5",
+        "amonadm": "git+https://github.com/TritonDataCenter/sdc-amonadm.git#v1.0.2",
         "smartdc": "7.6.0",
         "manta": "5.2.1",
-        "moray": "git+https://github.com/joyent/node-moray.git#73c91e3",
-        "imgapi-cli": "git+https://github.com/joyent/sdc-imgapi-cli.git#v2.5.0",
+        "moray": "git+https://github.com/TritonDataCenter/node-moray.git#v1.0.3",
+        "imgapi-cli": "git+https://github.com/TritonDataCenter/sdc-imgapi-cli.git#v2.6.0",
         "bunyan": "1.3.3",
         "assert-plus": "0.1.5",
         "ldapjs": "1.0.2",
@@ -23,8 +23,8 @@
         "read": "1.0.4",
         "verror": "1.4.0",
         "extsprintf": "1.2.0",
-        "amqp": "git+https://github.com/joyent/node-amqp-joyent.git#fd4e05f",
-        "amqp-plus": "git+https://github.com/joyent/node-amqp-plus.git#a864e07",
+        "amqp": "git+https://github.com/TritonDataCenter/node-amqp-joyent.git#fd4e05f",
+        "amqp-plus": "git+https://github.com/TritonDataCenter/node-amqp-plus.git#a864e07",
         "json": "9.0.3",
         "jsprim": "0.5.1",
         "tabula": "1.4.1",
@@ -33,7 +33,6 @@
     },
     "devDependencies": {
         "jshint": "2.1.4",
-        "nodeunit": "0.8.1",
         "ronn": "0.4.0"
     },
     "engines": {
