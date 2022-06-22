@@ -181,7 +181,7 @@ function getPackages(callback)
     var packages = {};
     var package_uuid;
 
-    child = spawn(cmd, args, {sdtio: [-1, -1, -1]});
+    child = spawn(cmd, args, {stdio: [-1, -1, -1]});
     if (debug) {
         console.error('>> running sdc-ldap w/ PID ' + child.pid);
     }
