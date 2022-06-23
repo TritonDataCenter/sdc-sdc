@@ -1,16 +1,1 @@
-#!/bin/bash
-#
-# This Source Code Form is subject to the terms of the Mozilla Public
-# License, v. 2.0. If a copy of the MPL was not distributed with this
-# file, You can obtain one at http://mozilla.org/MPL/2.0/.
-#
-
-#
-# Copyright (c) 2015, Joyent, Inc.
-#
-
-TOP=$(cd $(dirname $0)/../ >/dev/null; pwd)
-
-[[ -r $TOP/etc/http_proxy.env ]] && source $TOP/etc/http_proxy.env
-
-$TOP/build/node/bin/node $TOP/node_modules/imgapi-cli/bin/joyent-imgadm "$@"
+images-imgadm

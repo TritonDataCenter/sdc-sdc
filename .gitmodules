@@ -1,21 +1,21 @@
 [submodule "deps/javascriptlint"]
 	path = deps/javascriptlint
-	url = https://github.com/joyent/javascriptlint.git
+	url = https://github.com/TritonDataCenter/javascriptlint.git
 [submodule "deps/jsstyle"]
 	path = deps/jsstyle
-	url = https://github.com/joyent/jsstyle.git
+	url = https://github.com/TritonDataCenter/jsstyle.git
 [submodule "deps/restdown"]
 	path = deps/restdown
-	url = https://github.com/joyent/restdown.git
+	url = https://github.com/TritonDataCenter/restdown.git
 [submodule "deps/sdc-scripts"]
 	path = deps/sdc-scripts
-	url = https://github.com/joyent/sdc-scripts.git
+	url = https://github.com/TritonDataCenter/sdc-scripts.git
 [submodule "deps/hermes"]
 	path = deps/hermes
-	url = https://github.com/joyent/sdc-hermes.git
+	url = https://github.com/TritonDataCenter/sdc-hermes.git
 [submodule "deps/sdc-napi-ufds-watcher"]
 	path = deps/sdc-napi-ufds-watcher
-	url = https://github.com/joyent/sdc-napi-ufds-watcher.git
+	url = https://github.com/TritonDataCenter/sdc-napi-ufds-watcher.git
 [submodule "deps/eng"]
 	path = deps/eng
-	url = https://github.com/joyent/eng.git
+	url = https://github.com/TritonDataCenter/eng.git

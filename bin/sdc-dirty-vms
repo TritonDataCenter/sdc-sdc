@@ -1,6 +1,7 @@
 #!/opt/smartdc/sdc/build/node/bin/node
 /*
  * copyright (c) 2013 Joyent Inc.
+ * Copyright 2022 MNX Cloud, Inc.
  *
  * This script is intended to be run on an SDC7 HN and will output a line of
  * information for each problem it finds. By default it outputs as a table but
@@ -180,7 +181,7 @@ function getPackages(callback)
     var packages = {};
     var package_uuid;
 
-    child = spawn(cmd, args, {'customFds': [-1, -1, -1]});
+    child = spawn(cmd, args, {stdio: [-1, -1, -1]});
     if (debug) {
         console.error('>> running sdc-ldap w/ PID ' + child.pid);
     }
