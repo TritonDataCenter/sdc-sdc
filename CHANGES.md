@@ -1,5 +1,9 @@
 # sdc (SDC ops core zone) Changelog
 
+## 1.9.1
+
+- TRITON-2352 Add 'xz' support to sdc-imgapi-cli
+
 ## 1.8.6
 
 - TRITON-2112 update sdc-events to exclude virtual servers
