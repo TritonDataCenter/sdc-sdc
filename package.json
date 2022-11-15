@@ -10,7 +10,7 @@
         "smartdc": "7.6.0",
         "manta": "5.2.1",
         "moray": "git+https://github.com/TritonDataCenter/node-moray.git#v1.0.3",
-        "imgapi-cli": "git+https://github.com/TritonDataCenter/sdc-imgapi-cli.git#6629979711eda9d663fe1c7d881490bd62929c31",
+        "imgapi-cli": "git+https://github.com/TritonDataCenter/sdc-imgapi-cli.git#v2.7.0",
         "bunyan": "1.3.3",
         "assert-plus": "0.1.5",
         "ldapjs": "1.0.2",
