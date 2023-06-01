@@ -1,7 +1,7 @@
 {
     "name": "sdc",
     "description": "SmartDataCenter 'sdc' zone to hold ops/admin tools",
-    "version": "1.9.1",
+    "version": "1.9.2",
     "author": "MNX Cloud (mnx.io)",
     "private": true,
     "dependencies": {
@@ -33,7 +33,7 @@
         "vasync": "1.5.0"
     },
     "devDependencies": {
-        "jshint": "2.1.4",
+        "jshint": "^2.13.6",
         "ronn": "0.4.0"
     },
     "engines": {
