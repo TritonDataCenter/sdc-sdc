@@ -1,7 +1,7 @@
 {
     "name": "sdc",
-    "description": "SmartDataCenter 'sdc' zone to hold ops/admin tools",
-    "version": "1.9.2",
+    "description": "Triton Data Center 'sdc' zone to hold ops/admin tools",
+    "version": "1.9.3",
     "author": "MNX Cloud (mnx.io)",
     "private": true,
     "dependencies": {

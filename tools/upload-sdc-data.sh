@@ -7,6 +7,7 @@
 
 #
 # Copyright 2020 Joyent, Inc.
+# Copyright 2024 MNX Cloud, Inc.
 #
 
 #
@@ -16,7 +17,7 @@
 #       imgapi_images-1376953200.json
 # which get uploaded to manta as:
 #       $SDC_MANTA_URL/$SDC_MANTA_USER/stor/sdc/$thing/$dcname/YYYY/MM/DD/HH/$basename.json
-#       https://us-east.manta.joyent.com/admin/stor/sdc/imgapi_images/$dcname/2013/08/18/02/images_images-1376953200.json
+#       https://us-central.manta.mnx.io/admin/stor/sdc/imgapi_images/$dcname/2013/08/18/02/images_images-1376953200.json
 #
 # Note: Earlier discussion was that the service's VM UUID would be in the
 # basename. Currently this data is being gathered via whatever IP is provided
