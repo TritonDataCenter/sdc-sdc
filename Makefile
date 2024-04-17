@@ -6,7 +6,7 @@
 
 #
 # Copyright 2021 Joyent, Inc.
-# Copyright 2022 MNX Cloud, Inc.
+# Copyright 2024 MNX Cloud, Inc.
 #
 
 #
@@ -54,8 +54,6 @@ RELSTAGEDIR       := /tmp/$(NAME)-$(STAMP)
 BASE_IMAGE_UUID = 502eeef2-8267-489f-b19c-a206906f57ef
 BUILDIMAGE_NAME = $(NAME)
 BUILDIMAGE_DESC	= SDC tools/ops zone
-BUILDIMAGE_DO_PKGSRC_UPGRADE = true
-BUILDIMAGE_PKGSRC = mtr-0.94nb1
 AGENTS		= amon config
 
 MAN_PAGES = \
