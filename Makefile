@@ -98,7 +98,8 @@ build/man/%: man/%.ronn
 
 .PHONY: hermes
 hermes: deps/hermes/.git
-	cd deps/hermes && make install DESTDIR=$(TOP)/build/hermes
+	cd deps/hermes && ENGBLD_SKIP_VALIDATE_BUILDENV=1 \
+	    make install DESTDIR=$(TOP)/build/hermes
 
 .PHONY: release
 release: all docs man hermes sdc-napi-ufds-watcher
@@ -167,4 +168,4 @@ include ./deps/eng/tools/mk/Makefile.targ
 sdc-scripts: deps/sdc-scripts/.git
 
 sdc-napi-ufds-watcher: deps/sdc-napi-ufds-watcher/.git
-	cd deps/sdc-napi-ufds-watcher && make
+	cd deps/sdc-napi-ufds-watcher && ENGBLD_SKIP_VALIDATE_BUILDENV=1 make
