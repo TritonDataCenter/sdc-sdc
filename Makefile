@@ -6,7 +6,7 @@
 
 #
 # Copyright 2021 Joyent, Inc.
-# Copyright 2022 MNX Cloud, Inc.
+# Copyright 2024 MNX Cloud, Inc.
 #
 
 #
@@ -54,8 +54,6 @@ RELSTAGEDIR       := /tmp/$(NAME)-$(STAMP)
 BASE_IMAGE_UUID = 502eeef2-8267-489f-b19c-a206906f57ef
 BUILDIMAGE_NAME = $(NAME)
 BUILDIMAGE_DESC	= SDC tools/ops zone
-BUILDIMAGE_DO_PKGSRC_UPGRADE = true
-BUILDIMAGE_PKGSRC = mtr-0.94nb1
 AGENTS		= amon config
 
 MAN_PAGES = \
@@ -100,7 +98,8 @@ build/man/%: man/%.ronn
 
 .PHONY: hermes
 hermes: deps/hermes/.git
-	cd deps/hermes && make install DESTDIR=$(TOP)/build/hermes
+	cd deps/hermes && ENGBLD_SKIP_VALIDATE_BUILDENV=1 \
+	    make install DESTDIR=$(TOP)/build/hermes
 
 .PHONY: release
 release: all docs man hermes sdc-napi-ufds-watcher
@@ -169,4 +168,4 @@ include ./deps/eng/tools/mk/Makefile.targ
 sdc-scripts: deps/sdc-scripts/.git
 
 sdc-napi-ufds-watcher: deps/sdc-napi-ufds-watcher/.git
-	cd deps/sdc-napi-ufds-watcher && make
+	cd deps/sdc-napi-ufds-watcher && ENGBLD_SKIP_VALIDATE_BUILDENV=1 make

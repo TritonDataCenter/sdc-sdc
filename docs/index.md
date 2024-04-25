@@ -11,7 +11,7 @@ apisections:
 
 <!--
     Copyright 2020 Joyent, Inc.
-    Copyright 2022 MNX Cloud, Inc.
+    Copyright 2024 MNX Cloud, Inc.
 -->
 
 # Triton tools/ops zone
@@ -170,7 +170,7 @@ Manta user area for COAL dev testing):
     sapiadm update $(sdc-sapi /applications?name=sdc | json -H 0.uuid) \
         metadata.SDC_MANTA_USER=trent.mick
     sapiadm update $(sdc-sapi /applications?name=sdc | json -H 0.uuid) \
-        metadata.SDC_MANTA_URL=https://us-east.manta.joyent.com
+        metadata.SDC_MANTA_URL=https://us-central.manta.mnx.io
 
 For step (b) you either need to manually add your ssh key on the SDC_MANTA_USER
 you used to the user database being used by Manta... or you could set the
