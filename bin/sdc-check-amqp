@@ -1,6 +1,7 @@
 #!/opt/smartdc/sdc/build/node/bin/node --abort-on-uncaught-exception
 /*
  * Copyright (c) 2013 Joyent Inc. All rights reserved.
+ * Copyright 2024 Spearhead Systems SRL.
  *
  * Checks if Rabbitmq is online and properly sending messages through
  */
@@ -62,6 +63,7 @@ conn.on('ready', function () {
     }
 
     function onMessage(message, headers, deliveryInfo, messageObject) {
+        conn.disconnect();
         assert.equal(deliveryInfo.routingKey, 'checkamqp.testing');
         assert.equal(message.pid, process.pid);
         if (timeout) {
