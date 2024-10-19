@@ -25,7 +25,7 @@
         "extsprintf": "1.2.0",
         "amqp": "git+https://github.com/TritonDataCenter/node-amqp-joyent.git#fd4e05f",
         "amqp-plus": "git+https://github.com/TritonDataCenter/node-amqp-plus.git#a864e07",
-        "json": "9.0.3",
+        "json": "10.0.0",
         "jsprim": "0.5.1",
         "tabula": "1.4.1",
         "ufds": "1.7.1",
