@@ -411,6 +411,10 @@ EOF
         fatal "${action}: no instance uuid provided"
     fi
 
+    if [[ -n ${mechanism} && ${mechanism} != cold && ${mechanism} != live ]]; then
+        fatal "${action}: invalid --mechanism \"${mechanism}\" (expected cold or live)"
+    fi
+
     url="/vms/${vm_uuid}?action=migrate&migration_action=${action}"
     if [[ -n $server_uuid ]]; then
         url="${url}&override_server_uuid=${server_uuid}"
@@ -475,6 +479,12 @@ EOF
 
     if [[ -z ${vm_uuid} ]]; then
         fatal "${action}: no instance uuid provided"
+    fi
+
+    # Validate mechanism locally so a typo surfaces immediately rather
+    # than after the VMAPI round-trip.
+    if [[ -n ${mechanism} && ${mechanism} != cold && ${mechanism} != live ]]; then
+        fatal "${action}: invalid --mechanism \"${mechanism}\" (expected cold or live)"
     fi
 
     url="/vms/${vm_uuid}?action=migrate&migration_action=${action}"
