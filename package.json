@@ -1,8 +1,8 @@
 {
     "name": "sdc",
     "description": "Triton Data Center 'sdc' zone to hold ops/admin tools",
-    "version": "1.9.3",
-    "author": "MNX Cloud (mnx.io)",
+    "version": "1.10.0",
+    "author": "Edgecast Cloud (edgecast.io)",
     "private": true,
     "dependencies": {
         "sdc-clients": "13.0.5",
