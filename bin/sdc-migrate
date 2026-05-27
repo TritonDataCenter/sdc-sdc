@@ -131,11 +131,11 @@ Usage:
 
 Sub-commands:
 
-    get VM_UUID                  - show the migration record for this instance
-    list [-s STATE] [-n CN] [-l] - list migrations in this DC
-    estimate [-n CN] VM_UUID     - estimate how long a migration would take
-    migrate [-n CN] VM_UUID      - full automatic migration for this instance
-    begin [-n CN] VM_UUID        - begin a migration for this instance
+    get VM_UUID                     - show the migration record for this instance
+    list [-s STATE] [-n CN] [-l]    - list migrations in this DC
+    estimate [-n CN] [-m MECH] VM   - estimate how long a migration would take
+    migrate [-n CN] [-m MECH] VM    - full automatic migration for this instance
+    begin [-n CN] [-m MECH] VM      - begin a migration for this instance
     sync VM_UUID                 - sync the filesystems of this migration
     switch VM_UUID               - switch control over to the migrated instance
     pause VM_UUID                - pause a migration operation
@@ -362,6 +362,7 @@ EOF
 
 function migration_estimate() {
     local arg
+    local mechanism
     local server_uuid
     local url
     local vm_uuid
@@ -380,13 +381,20 @@ Usage:
 
 Options:
 
-    -n, --cn    The compute node to migrate the instance to.
+    -n, --cn          The compute node to migrate the instance to.
+    -m, --mechanism   Migration mechanism: "cold" (default) or "live".
+                      "live" requires brand=bhyve.
 EOF
                 return 1
                 ;;
 
             -n|--cn)
                 server_uuid=$1
+                shift
+                ;;
+
+            -m|--mechanism)
+                mechanism=$1
                 shift
                 ;;
             *)
@@ -403,9 +411,16 @@ EOF
         fatal "${action}: no instance uuid provided"
     fi
 
+    if [[ -n ${mechanism} && ${mechanism} != cold && ${mechanism} != live ]]; then
+        fatal "${action}: invalid --mechanism \"${mechanism}\" (expected cold or live)"
+    fi
+
     url="/vms/${vm_uuid}?action=migrate&migration_action=${action}"
     if [[ -n $server_uuid ]]; then
         url="${url}&override_server_uuid=${server_uuid}"
+    fi
+    if [[ -n $mechanism ]]; then
+        url="${url}&migration_mechanism=${mechanism}"
     fi
 
     sdc-vmapi "$url" -X POST | $JSON -q -H
@@ -414,6 +429,7 @@ EOF
 
 function migration_begin() {
     local arg
+    local mechanism
     local server_uuid
     local url
     local vm_uuid
@@ -432,13 +448,23 @@ Usage:
 
 Options:
 
-    -n, --cn    The compute node to migrate the instance to.
+    -n, --cn          The compute node to migrate the instance to.
+    -m, --mechanism   Migration mechanism: "cold" (default) or "live".
+                      "cold" stops the instance during the cutover;
+                      "live" hands off between the source and destination
+                      hypervisors with a short paused window.
+                      "live" requires brand=bhyve.
 EOF
                 return 1
                 ;;
 
             -n|--cn)
                 server_uuid=$1
+                shift
+                ;;
+
+            -m|--mechanism)
+                mechanism=$1
                 shift
                 ;;
             *)
@@ -453,6 +479,12 @@ EOF
 
     if [[ -z ${vm_uuid} ]]; then
         fatal "${action}: no instance uuid provided"
+    fi
+
+    # Validate mechanism locally so a typo surfaces immediately rather
+    # than after the VMAPI round-trip.
+    if [[ -n ${mechanism} && ${mechanism} != cold && ${mechanism} != live ]]; then
+        fatal "${action}: invalid --mechanism \"${mechanism}\" (expected cold or live)"
     fi
 
     url="/vms/${vm_uuid}?action=migrate&migration_action=${action}"
@@ -463,6 +495,10 @@ EOF
 
     if [[ -n $MIGRATION_AUTOMATIC ]]; then
         url="${url}&migration_automatic=true"
+    fi
+
+    if [[ -n $mechanism ]]; then
+        url="${url}&migration_mechanism=${mechanism}"
     fi
 
     job_uuid=$(sdc-vmapi "$url" -X POST | $JSON -H job_uuid message)
